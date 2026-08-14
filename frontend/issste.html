@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISSSTE — Padrón de Empleados Federales</title>
+<style>
+:root {
+  --bg: #0f1115;
+  --panel: #1a1d24;
+  --panel2: #232730;
+  --border: #2c313c;
+  --text: #e6e8ec;
+  --muted: #8a93a6;
+  --accent: #4f8cff;
+  --accent2: #6ee7b7;
+  --warn: #f59e0b;
+  --error: #ef4444;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  min-height: 100vh;
+}
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+header .nav { display: flex; gap: 12px; }
+header .nav a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+}
+header .nav a:hover { color: var(--accent2); }
+header .actions { display: flex; gap: 10px; }
+header .actions button {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+header .actions button:hover { background: var(--border); }
+main {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+section h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+section h3 {
+  margin: 16px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.field input, .field select {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.button-row { display: flex; gap: 10px; margin-top: 12px; }
+button.primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+button.primary:hover { background: #3b78e8; }
+button.primary:disabled { background: var(--muted); cursor: wait; }
+button.secondary {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+button.secondary:hover { background: var(--border); }
+.quick-samples { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.quick-samples button {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.quick-samples button:hover { background: var(--border); color: var(--text); }
+.status {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.status.info { background: var(--panel2); color: var(--muted); border-left: 3px solid var(--accent); }
+.status.ok { background: rgba(110, 231, 183, 0.1); color: var(--accent2); border-left: 3px solid var(--accent2); }
+.status.warn { background: rgba(245, 158, 11, 0.1); color: var(--warn); border-left: 3px solid var(--warn); }
+.status.error { background: rgba(239, 68, 68, 0.1); color: var(--error); border-left: 3px solid var(--error); }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+}
+.stat .label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.stat .value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+.stat .value.small { font-size: 14px; font-weight: 600; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 600;
+}
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+tbody tr:hover { background: rgba(79, 140, 255, 0.05); }
+.num { text-align: right; font-family: monospace; }
+.sueldo { font-family: monospace; text-align: right; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.badge.base { background: rgba(79, 140, 255, 0.2); color: var(--accent); }
+.badge.confianza { background: rgba(245, 158, 11, 0.2); color: var(--warn); }
+.spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid var(--muted);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 20px;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏛️ ISSSTE — Padrón de Empleados Federales</h1>
+  <div class="nav">
+    <a href="/buscar.html">🔍 Buscar</a>
+    <a href="/sujeto.html">👤 Sujeto</a>
+    <a href="/admin.html">⚙️ Admin</a>
+    <a href="/cfe_coordenadas.html">📍 CFE Coords</a>
+  </div>
+  <div class="actions">
+    <span id="user-badge" style="font-size:12px;color:var(--muted);"></span>
+    <button id="logout">Salir</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>1. Datos de búsqueda</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Paterno <span style="color:var(--error);">*</span></label>
+        <input id="paterno" type="text" placeholder="LÓPEZ" value="LÓPEZ">
+      </div>
+      <div class="field">
+        <label>Materno</label>
+        <input id="materno" type="text" placeholder="PÉREZ">
+      </div>
+      <div class="field">
+        <label>Nombre</label>
+        <input id="nombre" type="text" placeholder="JUAN">
+      </div>
+      <div class="field">
+        <label>Sexo</label>
+        <select id="sexo">
+          <option value="">— Todos —</option>
+          <option value="H">H</option>
+          <option value="M">M</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Límite</label>
+        <input id="limit" type="number" min="1" max="100" value="50">
+      </div>
+      <div class="field">
+        <label>Regex PCRE</label>
+        <input id="regex" type="checkbox" value="1">
+        <small style="color:var(--muted);font-size:11px">Usar regex PCRE (DuckDB) en lugar de LIKE. Case-sensitive. Use (?i) para case-insensitive.</small>
+      </div>
+    </div>
+
+    <div class="quick-samples">
+      <button data-sample='{"paterno":"LÓPEZ","materno":"","nombre":""}'>📝 LÓPEZ</button>
+      <button data-sample='{"paterno":"GARCÍA","materno":"","nombre":""}'>📝 GARCÍA</button>
+      <button data-sample='{"paterno":"HERNÁNDEZ","materno":"","nombre":""}'>📝 HERNÁNDEZ</button>
+      <button data-sample='{"paterno":"MARTÍNEZ","materno":"","nombre":""}'>📝 MARTÍNEZ</button>
+    </div>
+
+    <div class="button-row">
+      <button class="primary" id="buscar">🔍 Buscar en padrón ISSSTE</button>
+      <button class="secondary" id="limpiar">Limpiar</button>
+    </div>
+  </section>
+
+  <section id="resultados-section" style="display:none;">
+    <h2>2. Resultados</h2>
+    <div id="status"></div>
+    <div id="stats-row" class="stats"></div>
+    <div id="results-table"></div>
+  </section>
+</main>
+
+<footer>
+  ISSSTE base = 2.7M empleados federales (DuckDB) · búsqueda LIKE case-insensitive · ordenado por sueldo descendente
+</footer>
+
+<script>
+const API_URL = (() => {
+  const params = new URLSearchParams(location.search);
+  return params.get("api") || (location.protocol === "file:" ? "http://127.0.0.1:8765" : "");
+})();
+
+function getToken() {
+  return localStorage.getItem("session_token");
+}
+
+async function authedFetch(url, opts = {}) {
+  const token = getToken();
+  const headers = opts.headers || {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  headers["Content-Type"] = headers["Content-Type"] || "application/json";
+  opts.headers = headers;
+  const r = await fetch(API_URL + url, opts);
+  if (r.status === 401) {
+    location.href = "/login.html";
+    return;
+  }
+  return r;
+}
+
+document.querySelectorAll("[data-sample]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const sample = JSON.parse(btn.dataset.sample);
+    document.getElementById("paterno").value = sample.paterno || "";
+    document.getElementById("materno").value = sample.materno || "";
+    document.getElementById("nombre").value = sample.nombre || "";
+  });
+});
+
+document.getElementById("limpiar").addEventListener("click", () => {
+  ["paterno","materno","nombre"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("sexo").value = "";
+  document.getElementById("limit").value = 50;
+  document.getElementById("resultados-section").style.display = "none";
+});
+
+document.getElementById("buscar").addEventListener("click", async () => {
+  const btn = document.getElementById("buscar");
+  const paterno = document.getElementById("paterno").value.trim();
+  const materno = document.getElementById("materno").value.trim();
+  const nombre  = document.getElementById("nombre").value.trim();
+  const sexo    = document.getElementById("sexo").value;
+  const limit   = document.getElementById("limit").value || 50;
+
+  if (!paterno && !materno && !nombre) {
+    alert("Necesitas al menos uno: paterno, materno o nombre");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Buscando...';
+
+  const params = new URLSearchParams();
+  if (paterno) params.set("paterno", paterno);
+  if (materno) params.set("materno", materno);
+  if (nombre)  params.set("nombre",  nombre);
+  if (sexo)    params.set("sexo",    sexo);
+  if (document.getElementById("regex").checked) params.set("regex", "1");
+  params.set("limit", limit);
+
+  try {
+    const r = await authedFetch(`/api/v1/issste/buscar?${params}`);
+    const data = await r.json();
+
+    document.getElementById("resultados-section").style.display = "block";
+    renderResults(data);
+  } catch (e) {
+    document.getElementById("resultados-section").style.display = "block";
+    document.getElementById("status").innerHTML =
+      `<div class="status error">❌ Error de red: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "🔍 Buscar en padrón ISSSTE";
+  }
+});
+
+function fmtSueldo(s) {
+  if (s == null) return "—";
+  return "$" + Number(s).toLocaleString("es-MX", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function renderResults(data) {
+  const statusDiv = document.getElementById("status");
+  const statsDiv  = document.getElementById("stats-row");
+  const tableDiv  = document.getElementById("results-table");
+
+  if (data.error) {
+    statusDiv.innerHTML = `<div class="status error">❌ ${data.error}</div>`;
+    statsDiv.innerHTML = ""; tableDiv.innerHTML = "";
+    return;
+  }
+
+  const count = data.count || 0;
+  const elapsed = data.elapsed_s != null ? data.elapsed_s : 0;
+  const q = data.query || {};
+
+  // Status
+  if (count > 0) {
+    statusDiv.innerHTML = `
+      <div class="status ok">✓ ${count} empleado(s) encontrado(s) en ${elapsed}s
+        ${data.truncated ? " (truncado por límite)" : ""}</div>`;
+  } else {
+    statusDiv.innerHTML = `
+      <div class="status warn">⚠ Sin coincidencias en padrón ISSSTE (${elapsed}s)</div>`;
+  }
+
+  // Stats
+  let totalSueldo = 0, maxSueldo = 0;
+  const rows = data.rows || [];
+  rows.forEach(r => {
+    const s = Number(r.sueldo_issste) || 0;
+    totalSueldo += s;
+    if (s > maxSueldo) maxSueldo = s;
+  });
+  const avgSueldo = count > 0 ? totalSueldo / count : 0;
+
+  statsDiv.innerHTML = `
+    <div class="stat"><div class="label">Coincidencias</div><div class="value">${count}</div></div>
+    <div class="stat"><div class="label">Sueldo máx</div><div class="value small">${fmtSueldo(maxSueldo)}</div></div>
+    <div class="stat"><div class="label">Sueldo promedio</div><div class="value small">${fmtSueldo(avgSueldo)}</div></div>
+    <div class="stat"><div class="label">Tiempo</div><div class="value small">${elapsed}s</div></div>
+    <div class="stat"><div class="label">Truncado</div><div class="value small">${data.truncated ? "Sí" : "No"}</div></div>
+  `;
+
+  // Tabla
+  if (rows.length === 0) {
+    tableDiv.innerHTML = `<div class="status info">No hay resultados que mostrar.</div>`;
+    return;
+  }
+
+  let html = `<table>
+    <thead>
+      <tr>
+        <th>Apellidos</th><th>Nombre</th><th>Nombramiento</th><th>Sexo</th>
+        <th class="num">Sueldo</th><th>Ramo</th><th>Entidad</th><th>Sector</th><th>Modalidad</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  for (const r of rows) {
+    const nom = (r.nombramiento || "").toLowerCase();
+    const badgeClass = nom.includes("confianza") ? "confianza" : "base";
+    html += `<tr>
+      <td>${escapeHtml(r.paterno || "")} ${escapeHtml(r.materno || "")}</td>
+      <td>${escapeHtml(r.nombre || "")}</td>
+      <td><span class="badge ${badgeClass}">${escapeHtml(r.nombramiento || "—")}</span></td>
+      <td>${escapeHtml(r.sexo || "")}</td>
+      <td class="sueldo">${fmtSueldo(r.sueldo_issste)}</td>
+      <td>${escapeHtml((r.ramo || "").substring(0, 50))}</td>
+      <td>${escapeHtml(r.entidad || "")}</td>
+      <td>${escapeHtml(r.sector || "")}</td>
+      <td>${escapeHtml((r.modalidad || "").substring(0, 60))}</td>
+    </tr>`;
+  }
+  html += "</tbody></table>";
+  tableDiv.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+document.getElementById("logout").addEventListener("click", async () => {
+  try {
+    await authedFetch(`/api/auth/logout`, {method: "POST"});
+  } catch (e) {}
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+});
+
+(async () => {
+  if (!getToken()) {
+    location.href = "/login.html";
+    return;
+  }
+  try {
+    const r = await authedFetch(`/api/auth/me`);
+    if (!r) return;
+    const data = await r.json();
+    if (data.username) {
+      document.getElementById("user-badge").textContent = `👤 ${data.username}`;
+    }
+  } catch (e) {
+    document.getElementById("user-badge").textContent = "(sin sesión)";
+  }
+  // Auto-buscar si hay query params
+  const params = new URLSearchParams(location.search);
+  if (params.get("auto") === "1" && params.get("paterno")) {
+    document.getElementById("paterno").value = params.get("paterno");
+    document.getElementById("materno").value = params.get("materno") || "";
+    document.getElementById("nombre").value  = params.get("nombre")  || "";
+    document.getElementById("buscar").click();
+  }
+})();
+</script>
+</body>
+</html>

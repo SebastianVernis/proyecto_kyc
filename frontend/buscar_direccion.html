@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuarto de Paz · Búsqueda por dirección</title>
+<style>
+:root {
+  --bg: #0f1115;
+  --panel: #1a1d24;
+  --panel2: #232730;
+  --border: #2c313c;
+  --text: #e6e8ec;
+  --muted: #8a93a6;
+  --accent: #4f8cff;
+  --accent2: #6ee7b7;
+  --warn: #f59e0b;
+  --error: #ef4444;
+  --highlight: #facc15;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  min-height: 100vh;
+}
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+header h1 .small { font-size: 11px; color: var(--muted); font-weight: 400; display: block; margin-top: 2px; }
+header .nav { display: flex; gap: 10px; flex-wrap: wrap; }
+header .nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+header .nav a:hover { color: var(--text); border-color: var(--border); }
+header .nav a.active { color: var(--accent2); border-color: var(--accent2); }
+header .actions { display: flex; align-items: center; gap: 12px; }
+header .user-badge {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+header .user-badge.admin { color: var(--accent2); border-color: var(--accent2); }
+
+main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+.panel-title {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin: 0 0 14px 0;
+  font-weight: 600;
+}
+.step-num {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 22px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* === Step 1: input de dirección === */
+.direccion-input-wrap {
+  position: relative;
+}
+.direccion-input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 16px;
+  font-family: inherit;
+}
+.direccion-input:focus { outline: none; border-color: var(--accent); }
+.direccion-input::placeholder { color: #555a66; }
+
+.sugerencias {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 0 0 8px 8px;
+  max-height: 380px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+  margin-top: -1px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.sugerencias.open { display: block; }
+.sugerencia-item {
+  padding: 10px 18px;
+  cursor: pointer;
+  border-bottom: 1px solid #1f232c;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sugerencia-item:hover, .sugerencia-item.focused { background: rgba(79,140,255,0.12); }
+.sugerencia-item:last-child { border-bottom: none; }
+.sugerencia-item .cp-tag {
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'SF Mono', monospace;
+  white-space: nowrap;
+}
+.sugerencia-item .colonia { font-weight: 500; }
+.sugerencia-item .mun-estado { color: var(--muted); font-size: 11.5px; }
+.sugerencias .empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+.sugerencias .loading-sug {
+  padding: 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* === Step 2: filtros refinados (post-selección) === */
+.seleccion-card {
+  background: linear-gradient(135deg, var(--panel) 0%, var(--panel2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  display: none;
+}
+.seleccion-card.active { display: block; }
+.seleccion-card .label { font-size: 10px; color: var(--accent2); text-transform: uppercase; letter-spacing: 1.5px; }
+.seleccion-card .addr { font-size: 17px; font-weight: 600; margin: 4px 0 14px 0; }
+.seleccion-card .addr .cp-tag {
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-left: 8px;
+  font-family: 'SF Mono', monospace;
+  vertical-align: middle;
+}
+.seleccion-card .refinar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 100px auto;
+  gap: 10px;
+  align-items: end;
+}
+.refinar .form-field { display: flex; flex-direction: column; gap: 4px; }
+.refinar .form-field label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.refinar .form-field input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.refinar .form-field input:focus { outline: none; border-color: var(--accent); }
+.refinar .form-field input:disabled { opacity: 0.5; cursor: not-allowed; }
+.refinar .form-field .help { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  height: 38px;
+  white-space: nowrap;
+}
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+.btn.big { padding: 12px 28px; font-size: 15px; height: 44px; }
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.status-bar .spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.status-bar.loading .spinner { display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* === KPIs === */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+.kpi {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+}
+.kpi .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.kpi .value { font-size: 22px; font-weight: 700; margin-top: 2px; }
+.kpi.has-results .value { color: var(--accent2); }
+.kpi.zero-results .value { color: var(--muted); }
+.kpi.zero-results { opacity: 0.55; }
+
+/* === Secciones === */
+.section { margin: 18px 0; }
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 10px 14px;
+  background: var(--panel2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  user-select: none;
+}
+.section-header:hover { border-color: var(--accent); }
+.section-header .name { font-weight: 600; }
+.section-header .name .badge { background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 6px; }
+.section-header .toggle { color: var(--muted); font-size: 12px; }
+.section-body { padding: 8px 0; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 12.5px;
+}
+th {
+  text-align: left;
+  background: var(--panel);
+  color: var(--muted);
+  padding: 7px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #1f232c;
+  vertical-align: top;
+}
+tr:hover td { background: rgba(79,140,255,0.06); }
+.muted { color: var(--muted); font-size: 11px; }
+.mono { font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace; font-size: 11.5px; }
+.tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 4px;
+}
+.tag-blue { background: rgba(79,140,255,0.18); color: #93b9ff; }
+.tag-amber { background: rgba(245,158,11,0.18); color: #fcd34d; }
+.tag-green { background: rgba(110,231,183,0.18); color: #6ee7b7; }
+.tag-gray { background: rgba(139,147,166,0.18); color: #b6bccb; }
+
+.family-section {
+  background: rgba(110,231,183,0.05);
+  border-left: 3px solid var(--accent2);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  margin: 8px 0;
+}
+.family-section h4 { margin: 0 0 6px 0; font-size: 12px; color: var(--accent2); }
+.family-chip {
+  display: inline-block;
+  background: var(--panel2);
+  padding: 3px 10px;
+  border-radius: 10px;
+  margin: 2px 4px 2px 0;
+  font-size: 11.5px;
+  border: 1px solid var(--border);
+}
+.family-chip .count { color: var(--accent2); font-weight: 600; margin-left: 4px; }
+
+.empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 1000;
+  display: none;
+  max-width: 340px;
+}
+.toast.error { border-color: var(--error); color: #fca5a5; }
+.toast.ok { border-color: var(--accent2); color: var(--accent2); }
+.toast.show { display: block; }
+
+@media (max-width: 900px) {
+  .refinar { grid-template-columns: 1fr 1fr; }
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>
+    🔎 Búsqueda por dirección
+    <span class="small">Selecciona una colonia del SEPOMEX · match contra Padrón, CFE, Telcel, ATT, REPUVE, IMSS, ISSSTE</span>
+  </h1>
+  <div class="nav">
+    <a href="/buscar.html">Búsqueda padrón</a>
+    <a href="/sujeto.html">Sujeto</a>
+    <a href="/cfe_coordenadas.html">CFE coords</a>
+    <a href="/issste.html">ISSSTE</a>
+    <a href="/buscar_direccion.html" class="active">Por dirección</a>
+  </div>
+  <div class="actions">
+    <span class="user-badge" id="user-badge">cargando…</span>
+  </div>
+</header>
+
+<main>
+  <!-- ============ PASO 1: Tipear dirección ============ -->
+  <div class="panel">
+    <h3 class="panel-title"><span class="step-num">1</span>Tipea la dirección o parte de ella</h3>
+    <div class="direccion-input-wrap">
+      <input id="direccion-input" class="direccion-input"
+             placeholder='Ej: "San Jerónimo Lídice Magdalena Contreras" o "10200" o "Providencia 47"'
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <div class="sugerencias" id="sugerencias"></div>
+    </div>
+    <div class="muted" style="margin-top:8px;">
+      💡 Mientras tipeas aparecerán colonias del SEPOMEX (155K en México). Selecciona una para refinar.
+    </div>
+  </div>
+
+  <!-- ============ PASO 2: Refinar y buscar ============ -->
+  <div class="panel">
+    <h3 class="panel-title"><span class="step-num">2</span>Refina y busca en las bases</h3>
+
+    <div class="seleccion-card" id="seleccion-card">
+      <div class="label">📍 Colonia seleccionada (SEPOMEX)</div>
+      <div class="addr" id="seleccion-display">—</div>
+      <div class="refinar">
+        <div class="form-field">
+          <label for="calle">Calle (opcional)</label>
+          <input id="calle" placeholder="Privada de la Providencia">
+          <div class="help">Sin "Calle" / "Av."</div>
+        </div>
+        <div class="form-field">
+          <label for="ext">Núm. exterior (opcional)</label>
+          <input id="ext" placeholder="47" maxlength="8">
+          <div class="help">Número específico</div>
+        </div>
+        <div class="form-field">
+          <label>&nbsp;</label>
+          <button class="btn secondary" onclick="limpiarSeleccion()">Cambiar</button>
+        </div>
+        <div class="form-field">
+          <label>&nbsp;</label>
+          <button class="btn big" id="btn-buscar" onclick="doSearch()">🔍 Buscar en 7 bases</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="seleccion-card" id="placeholder-card" style="display:block;">
+      <div class="label">📍 Esperando selección</div>
+      <div class="addr muted" style="font-size:14px;font-weight:400;">Selecciona una colonia del paso 1 para poder buscar.</div>
+    </div>
+
+    <div class="status-bar" id="status">
+      <span class="spinner"></span>
+      <span id="status-text">Listo. Tipea la dirección en el paso 1.</span>
+    </div>
+  </div>
+
+  <!-- ============ RESULTADOS ============ -->
+  <div id="results"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== Estado ==========
+const BASES = [
+  { key: "padron",  label: "Padrón",        color: "var(--accent)" },
+  { key: "cfe",     label: "CFE",           color: "var(--warn)" },
+  { key: "telcel",  label: "Telcel",        color: "var(--accent2)" },
+  { key: "att",     label: "ATT",           color: "#9b87f5" },
+  { key: "repuve",  label: "REPUVE",        color: "#ec4899" },
+  { key: "imss",    label: "IMSS Asegu.",   color: "#14b8a6" },
+  { key: "issste",  label: "ISSSTE",        color: "#f97316" },
+];
+
+let selectedSug = null;   // { cp, colonia, municipio, estado, ... }
+let focusedIdx = -1;      // índice en la lista de sugerencias (para teclado)
+let sugerenciasCache = [];
+
+// ========== Helpers ==========
+function toast(msg, kind) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + (kind || "");
+  setTimeout(() => t.className = "toast " + (kind || ""), 4500);
+}
+function setStatus(text, loading) {
+  const sb = document.getElementById("status");
+  sb.className = "status-bar" + (loading ? " loading" : "");
+  document.getElementById("status-text").textContent = text;
+}
+function escapeHTML(s) {
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+function formatNum(n) {
+  if (n === null || n === undefined) return "—";
+  return Number(n).toLocaleString("es-MX");
+}
+
+// ========== Auth ==========
+(async function() {
+  try {
+    const r = await fetch("/api/auth/me");
+    if (!r.ok) { window.location.href = "/login.html"; return; }
+    const d = await r.json();
+    const badge = document.getElementById("user-badge");
+    if (d.is_admin) {
+      badge.textContent = "👑 " + d.username;
+      badge.classList.add("admin");
+    } else {
+      badge.textContent = d.username;
+    }
+  } catch (e) {
+    document.getElementById("user-badge").textContent = "❌ no autenticado";
+  }
+})();
+
+// ========== Sugerencias (autocomplete) ==========
+let sugTimer = null;
+let sugReqSeq = 0;
+
+document.getElementById("direccion-input").addEventListener("input", function(e) {
+  const texto = e.target.value.trim();
+  // Si el usuario edita, limpiamos la selección
+  if (selectedSug && selectedSug.display !== texto) {
+    // Solo limpiamos selección si edita bastante; dejamos que el flujo lo limpie al cambiar
+  }
+  if (sugTimer) clearTimeout(sugTimer);
+  if (texto.length < 2) {
+    cerrarSug();
+    return;
+  }
+  sugTimer = setTimeout(() => fetchSugerencias(texto), 250);
+});
+
+document.getElementById("direccion-input").addEventListener("keydown", function(e) {
+  if (!sugerenciasCache.length) return;
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    focusedIdx = Math.min(focusedIdx + 1, sugerenciasCache.length - 1);
+    renderSugerencias();
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    focusedIdx = Math.max(focusedIdx - 1, 0);
+    renderSugerencias();
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (focusedIdx >= 0) {
+      seleccionarSug(sugerenciasCache[focusedIdx]);
+    } else if (sugerenciasCache.length > 0) {
+      seleccionarSug(sugerenciasCache[0]);
+    }
+  } else if (e.key === "Escape") {
+    cerrarSug();
+  }
+});
+
+// Cerrar sugerencias al hacer click fuera
+document.addEventListener("click", function(e) {
+  if (!e.target.closest(".direccion-input-wrap")) {
+    cerrarSug();
+  }
+});
+
+async function fetchSugerencias(texto) {
+  const mySeq = ++sugReqSeq;
+  const sug = document.getElementById("sugerencias");
+  sug.innerHTML = '<div class="loading-sug">Buscando colonias…</div>';
+  sug.classList.add("open");
+  try {
+    const r = await fetch("/api/direccion/sugerir", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texto, limit: 15 })
+    });
+    const d = await r.json();
+    if (mySeq !== sugReqSeq) return; // descartar respuesta vieja
+    if (d.error) { sug.innerHTML = `<div class="empty">Error: ${escapeHTML(d.error)}</div>`; return; }
+    sugerenciasCache = d.sugerencias || [];
+    focusedIdx = sugerenciasCache.length > 0 ? 0 : -1;
+    if (sugerenciasCache.length === 0) {
+      sug.innerHTML = `<div class="empty">Sin coincidencias para "<strong>${escapeHTML(texto)}</strong>"<br><span class="muted">Prueba con menos palabras, el CP (5 dígitos) o el nombre de municipio.</span></div>`;
+    } else {
+      renderSugerencias();
+    }
+  } catch (e) {
+    if (mySeq !== sugReqSeq) return;
+    sug.innerHTML = `<div class="empty">Error de red: ${escapeHTML(e.message)}</div>`;
+  }
+}
+
+function renderSugerencias() {
+  const sug = document.getElementById("sugerencias");
+  sug.innerHTML = sugerenciasCache.map((s, i) => `
+    <div class="sugerencia-item ${i === focusedIdx ? 'focused' : ''}" data-idx="${i}">
+      <span class="cp-tag">${escapeHTML(s.cp)}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="colonia">${escapeHTML(s.colonia)} <span class="muted" style="font-weight:400;">· ${escapeHTML(s.tipo || '')}</span></div>
+        <div class="mun-estado">${escapeHTML(s.municipio)}, ${escapeHTML(s.estado)}</div>
+      </div>
+      <div class="muted" style="font-size:10px;">${s.score || ''}</div>
+    </div>
+  `).join("");
+  sug.classList.add("open");
+  // Click handlers
+  sug.querySelectorAll(".sugerencia-item").forEach(el => {
+    el.addEventListener("click", () => {
+      const idx = parseInt(el.dataset.idx, 10);
+      seleccionarSug(sugerenciasCache[idx]);
+    });
+    el.addEventListener("mouseenter", () => {
+      focusedIdx = parseInt(el.dataset.idx, 10);
+      sug.querySelectorAll(".sugerencia-item").forEach(e2 => e2.classList.remove("focused"));
+      el.classList.add("focused");
+    });
+  });
+}
+
+function cerrarSug() {
+  document.getElementById("sugerencias").classList.remove("open");
+  focusedIdx = -1;
+}
+
+function seleccionarSug(s) {
+  selectedSug = s;
+  document.getElementById("direccion-input").value = s.display;
+  cerrarSug();
+  // Mostrar tarjeta de refinamiento
+  document.getElementById("seleccion-display").innerHTML =
+    `${escapeHTML(s.colonia)} <span class="muted" style="font-weight:400;">(${escapeHTML(s.tipo || '')})</span>` +
+    `<span class="cp-tag">${escapeHTML(s.cp)}</span><br>` +
+    `<span class="muted" style="font-size:12px;">${escapeHTML(s.municipio)}, ${escapeHTML(s.estado)}</span>`;
+  document.getElementById("seleccion-card").classList.add("active");
+  document.getElementById("placeholder-card").style.display = "none";
+  // Limpiar resultados anteriores
+  document.getElementById("results").innerHTML = "";
+  setStatus("Colonia seleccionada. Refina con calle/número o busca directo.", false);
+  // Focus en campo de calle
+  setTimeout(() => document.getElementById("calle").focus(), 50);
+}
+
+function limpiarSeleccion() {
+  selectedSug = null;
+  document.getElementById("direccion-input").value = "";
+  document.getElementById("calle").value = "";
+  document.getElementById("ext").value = "";
+  document.getElementById("seleccion-card").classList.remove("active");
+  document.getElementById("placeholder-card").style.display = "block";
+  document.getElementById("results").innerHTML = "";
+  setStatus("Listo. Tipea la dirección en el paso 1.", false);
+  document.getElementById("direccion-input").focus();
+}
+
+// ========== Búsqueda en 7 bases ==========
+async function doSearch() {
+  if (!selectedSug) {
+    toast("Selecciona primero una colonia del paso 1", "error");
+    return;
+  }
+  const cp = selectedSug.cp;
+  const colonia = selectedSug.colonia;
+  const calle = document.getElementById("calle").value.trim();
+  const ext = document.getElementById("ext").value.trim();
+  if (!calle && !ext) {
+    // Sin calle/ext, hacer búsqueda solo por CP+colonia
+  }
+  document.getElementById("btn-buscar").disabled = true;
+  setStatus("Buscando en 7 bases…", true);
+  const t0 = performance.now();
+  try {
+    const r = await fetch("/api/direccion/buscar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cp, colonia, calle, ext, limit: 100, offset: 0 })
+    });
+    const d = await r.json();
+    const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+    if (d.error) { toast(d.error, "error"); setStatus("Error: " + d.error, false); return; }
+    renderResults(d, elapsed);
+    setStatus(`Búsqueda completada en ${elapsed}s`, false);
+  } catch (e) {
+    toast("Error: " + e.message, "error");
+    setStatus("Error de red", false);
+  } finally {
+    document.getElementById("btn-buscar").disabled = false;
+  }
+}
+
+// ========== Render ==========
+function renderResults(d, elapsed) {
+  const c = document.getElementById("results");
+  const filtros = d.filtros || {};
+  const totales = d.totales || {};
+  const sep = d.sepomex;
+  const nucleo = d.nucleo_familiar || {};
+
+  // 1) Address card
+  let addrHTML = "";
+  if (sep) {
+    addrHTML = `
+      <div class="address-card" style="background:linear-gradient(135deg, var(--panel) 0%, var(--panel2) 100%);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:12px 0;">
+        <div class="label" style="font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:1.5px;">📍 Dirección validada con SEPOMEX</div>
+        <div class="addr" style="font-size:18px;font-weight:600;margin:4px 0 6px 0;">${escapeHTML(filtros.calle || "(sin calle)")} #${escapeHTML(filtros.ext || "?")}${filtros.calle ? '' : ' <span class="muted" style="font-weight:400;font-size:12px;">—solo colonia</span>'}</div>
+        <div class="sub" style="font-size:12px;color:var(--muted);">${escapeHTML(sep.colonia)} · CP ${escapeHTML(sep.cp)} · ${escapeHTML(sep.municipio)}, ${escapeHTML(sep.estado)}</div>
+      </div>
+    `;
+  } else if (filtros.cp) {
+    addrHTML = `
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin:12px 0;font-size:13px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;">Búsqueda por:</div>
+        <strong>${escapeHTML(filtros.calle || "(sin calle)")}</strong> #${escapeHTML(filtros.ext || "?")}
+        <span class="muted"> en ${escapeHTML(filtros.colonia)}, CP ${escapeHTML(filtros.cp)}</span>
+      </div>
+    `;
+  }
+
+  // 2) KPIs
+  const kpiHTML = `
+    <div class="kpi-grid">
+      ${BASES.map(b => {
+        const n = totales[b.key] || 0;
+        const klass = n > 0 ? "has-results" : "zero-results";
+        return `<div class="kpi ${klass}">
+          <div class="label">${b.label}</div>
+          <div class="value" style="color:${n > 0 ? b.color : 'var(--muted)'};">${formatNum(n)}</div>
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+
+  // 3) Núcleo familiar
+  let nucleoHTML = "";
+  if ((nucleo.paternos && nucleo.paternos.length > 0) || (nucleo.maternos && nucleo.maternos.length > 0)) {
+    nucleoHTML = `
+      <div class="family-section">
+        <h4>👨‍👩‍👧‍👦 Núcleo familiar detectado (top apellidos del padrón)</h4>
+        <div><strong style="font-size:11px;color:var(--muted);">Paternos:</strong>
+          ${(nucleo.paternos || []).map(p => `<span class="family-chip">${escapeHTML(p.apellido)}<span class="count">${p.count}</span></span>`).join("")}
+        </div>
+        <div style="margin-top:6px;"><strong style="font-size:11px;color:var(--muted);">Maternos:</strong>
+          ${(nucleo.maternos || []).map(m => `<span class="family-chip">${escapeHTML(m.apellido)}<span class="count">${m.count}</span></span>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  // 4) Secciones por base
+  c.innerHTML = addrHTML + kpiHTML + nucleoHTML + [
+    renderPadron(d.personas || []),
+    renderCFE(d.cfe || []),
+    renderTelcel(d.telcel || []),
+    renderATT(d.att || []),
+    renderRepuve(d.repuve || []),
+    renderIMSS(d.imss || []),
+    renderISSSTE(d.issste || []),
+  ].join("");
+}
+
+function sectionWrap(name, badge, count, body) {
+  const id = "sec-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return `
+    <div class="section">
+      <div class="section-header" onclick="toggleSection('${id}')">
+        <div class="name">${name} <span class="badge">${count}</span></div>
+        <div class="toggle" id="${id}-toggle">▾</div>
+      </div>
+      <div class="section-body" id="${id}">${body || `<div class="empty-state">Sin coincidencias en ${name}.</div>`}</div>
+    </div>
+  `;
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  const tog = document.getElementById(id + "-toggle");
+  if (el.style.display === "none") { el.style.display = ""; tog.textContent = "▾"; }
+  else { el.style.display = "none"; tog.textContent = "▸"; }
+}
+
+function renderPadron(rows) {
+  if (!rows.length) return sectionWrap("Padrón electoral", "personas", 0);
+  const limit = Math.min(rows.length, 100);
+  return sectionWrap("Padrón electoral", "personas", rows.length, `
+    <table>
+      <thead><tr>
+        <th>Nombre</th><th>CURP</th><th>Fec. nac</th><th>Edad</th><th>Sexo</th>
+        <th>Calle / Int</th><th>Colonia</th><th>CP</th><th>Sección</th>
+      </tr></thead>
+      <tbody>${rows.slice(0, limit).map(r => `
+        <tr>
+          <td><strong>${escapeHTML(r.nombre)} ${escapeHTML(r.paterno)} ${escapeHTML(r.materno)}</strong></td>
+          <td><span class="mono tag-blue">${escapeHTML(r.curp || "—")}</span></td>
+          <td>${escapeHTML(r.fecnac || "—")}</td>
+          <td>${escapeHTML(r.edad || "—")}</td>
+          <td>${escapeHTML(r.sexo || "—")}</td>
+          <td><span class="tag tag-amber">${escapeHTML(r.calle)} #${escapeHTML(r.ext)}</span> int <strong>${escapeHTML(r["int"] || "—")}</strong></td>
+          <td>${escapeHTML(r.colonia || "—")}</td>
+          <td><span class="mono">${escapeHTML(r.cp || "—")}</span></td>
+          <td><span class="muted">${escapeHTML(r.mza || "—")}</span></td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+    ${rows.length > limit ? `<div class="muted" style="text-align:center;padding:8px;">Mostrando primeras ${limit} de ${rows.length} coincidencias</div>` : ""}
+  `);
+}
+
+function renderCFE(rows) {
+  if (!rows.length) return sectionWrap("CFE", "servicios", 0);
+  return sectionWrap("CFE", "servicios", rows.length, `
+    <table>
+      <thead><tr>
+        <th>Num. servicio</th><th>Titular</th><th>Dirección CFE</th><th>Colonia</th>
+        <th>Zona / Agencia</th><th>Div</th>
+      </tr></thead>
+      <tbody>${rows.map(r => `
+        <tr>
+          <td><span class="mono">${escapeHTML(r.numero_servicio)}</span><div class="muted">med: ${escapeHTML(r.codigo_medidor || "—")}</div></td>
+          <td><strong>${escapeHTML(r.nombre)}</strong></td>
+          <td><span class="tag tag-amber">${escapeHTML(r.direccion)}</span>
+            ${r.calle_adicional_1 ? `<div class="muted">${escapeHTML(r.calle_adicional_1)}</div>` : ""}</td>
+          <td>${escapeHTML(r.colonia || "—")}<div class="muted">cp: ${escapeHTML(r.cp || "—")}</div></td>
+          <td>${escapeHTML(r.zona_nom)} / ${escapeHTML(r.agencia_nom || "—")}</td>
+          <td><span class="muted">${escapeHTML(r.division || "—")}</span></td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+  `);
+}
+
+function renderTelcel(rows) {
+  if (!rows.length) return sectionWrap("Telcel", "líneas", 0);
+  return sectionWrap("Telcel", "líneas", rows.length, `
+    <table>
+      <thead><tr>
+        <th>Nombre</th><th>RFC</th><th>Teléfono</th><th>Domicilio</th>
+        <th>Colonia</th><th>Ciudad / Edo</th><th>CP</th>
+      </tr></thead>
+      <tbody>${rows.map(r => `
+        <tr>
+          <td><strong>${escapeHTML(r.nombre1)} ${escapeHTML(r.nombre2)}</strong></td>
+          <td><span class="mono">${escapeHTML(r.rfc || "—")}</span></td>
+          <td><span class="mono">${escapeHTML(r.telefono)}</span>${r.tel_contacto ? `<div class="muted">cont: ${escapeHTML(r.tel_contacto)}</div>` : ""}</td>
+          <td><span class="tag tag-blue">${escapeHTML(r.domicilio)} #${escapeHTML(r.numero)}</span></td>
+          <td>${escapeHTML(r.colonia || "—")}</td>
+          <td>${escapeHTML(r.ciudad || "—")}<div class="muted">${escapeHTML(r.estado || "—")}</div></td>
+          <td><span class="mono">${escapeHTML(r.cp || "—")}</span></td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+  `);
+}
+
+function renderATT(rows) {
+  if (!rows.length) return sectionWrap("ATT", "registros", 0);
+  return sectionWrap("ATT", "registros", rows.length, `
+    <table>
+      <thead><tr>
+        <th>Nombre</th><th>RFC</th><th>Teléfonos</th><th>Dirección</th>
+        <th>Colonia</th><th>Municipio / Edo</th>
+      </tr></thead>
+      <tbody>${rows.map(r => `
+        <tr>
+          <td><strong>${escapeHTML(r.nombre)}</strong>
+            <div class="muted">${escapeHTML(r.paterno)} ${escapeHTML(r.materno)}</div></td>
+          <td><span class="mono">${escapeHTML(r.rfc || "—")}</span></td>
+          <td><span class="mono">${escapeHTML(r.telefono_fijo || "—")}</span>
+            <div class="muted">cel: ${escapeHTML(r.celular || "—")}</div></td>
+          <td><span class="tag tag-amber">${escapeHTML(r.direccion)} #${escapeHTML(r.exterior || "?")}</span>
+            ${r.interior ? `<div class="muted">int: ${escapeHTML(r.interior)}</div>` : ""}</td>
+          <td>${escapeHTML(r.colonia || "—")}</td>
+          <td>${escapeHTML(r.municipio || "—")}<div class="muted">${escapeHTML(r.estado || "—")}</div></td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+  `);
+}
+
+function renderRepuve(rows) {
+  if (!rows.length) return sectionWrap("REPUVE", "vehículos", 0);
+  return sectionWrap("REPUVE", "vehículos", rows.length, `
+    <table>
+      <thead><tr>
+        <th>Propietario</th><th>RFC</th><th>Placa</th><th>Vehículo</th>
+        <th>Dirección</th>
+      </tr></thead>
+      <tbody>${rows.map(r => `
+        <tr>
+          <td><strong>${escapeHTML(r.nombre)}</strong></td>
+          <td><span class="mono">${escapeHTML(r.rfc || "—")}</span></td>
+          <td><span class="mono">${escapeHTML(r.placa || "—")}</span></td>
+          <td>${escapeHTML(r.marca || "—")} ${escapeHTML(r.modelo || "")}
+            <div class="muted">${escapeHTML(r.color || "")}</div></td>
+          <td><span class="tag tag-amber">${escapeHTML(r.direccion)}</span>
+            ${r.telefono ? `<div class="muted">tel: ${escapeHTML(r.telefono)}</div>` : ""}</td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+  `);
+}
+
+function renderIMSS(rows) {
+  if (!rows.length) return sectionWrap("IMSS Asegurados (patrones)", "registros", 0);
+  return sectionWrap("IMSS Asegurados (patrones)", "registros", rows.length, `
+    <div class="muted" style="margin-bottom:8px;">⚠️ Búsqueda por <strong>domicilio del patrón</strong> (empresa donde trabaja la persona).</div>
+    <table>
+      <thead><tr>
+        <th>Asegurado</th><th>CURP / NSS</th><th>Patrón</th>
+        <th>Domicilio patrón</th><th>Ciudad / CP</th><th>Sueldo</th>
+      </tr></thead>
+      <tbody>${rows.map(r => `
+        <tr>
+          <td><strong>${escapeHTML(r.asegurado || "—")}</strong></td>
+          <td><span class="mono">${escapeHTML(r.curp || "—")}</span>
+            <div class="muted">${escapeHTML(r.nss || "")}</div></td>
+          <td>${escapeHTML(r.patron || "—")}</td>
+          <td><span class="tag tag-amber">${escapeHTML(r.domicilio || "—")}</span></td>
+          <td>${escapeHTML(r.ciudad_estado || "—")}<div class="muted">${escapeHTML(r.cp || "")}</div></td>
+          <td><span class="muted">${escapeHTML(r.sueldo || "—")}</span></td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+  `);
+}
+
+function renderISSSTE(rows) {
+  if (!rows.length) return sectionWrap("ISSSTE (por apellido del padrón)", "empleados", 0);
+  return sectionWrap("ISSSTE (por apellido del padrón)", "empleados", rows.length, `
+    <div class="muted" style="margin-bottom:8px;">⚠️ ISSSTE no tiene domicilio. Filtro por <strong>apellidos del núcleo detectado en el padrón</strong>.</div>
+    <table>
+      <thead><tr>
+        <th>Nombre</th><th>Cargo</th><th>Sueldo</th>
+        <th>Ramo / Entidad</th><th>Sector / Estado</th>
+      </tr></thead>
+      <tbody>${rows.map(r => `
+        <tr>
+          <td><strong>${escapeHTML(r.paterno)} ${escapeHTML(r.materno)} ${escapeHTML(r.nombres)}</strong></td>
+          <td>${escapeHTML(r.cargo || "—")}</td>
+          <td>$${escapeHTML(r.sueldo || "—")}</td>
+          <td>${escapeHTML(r.ramo || "—")} / ${escapeHTML(r.entidad || "—")}</td>
+          <td>${escapeHTML(r.sector || "—")} / ${escapeHTML(r.estado || "—")}</td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+  `);
+}
+</script>
+</body>
+</html>

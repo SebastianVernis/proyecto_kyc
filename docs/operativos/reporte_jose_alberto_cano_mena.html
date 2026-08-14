@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte OSINT — JOSE ALBERTO CANO MENA</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #222; }
+    h1 { color: #1a1a2e; border-bottom: 2px solid #e94560; padding-bottom: .3rem; }
+    h2 { color: #16213e; margin-top: 2rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { border: 1px solid #ddd; padding: .6rem .8rem; text-align: left; }
+    th { background: #f4f4f8; font-weight: 600; }
+    tr:nth-child(even) td { background: #fafafa; }
+    code { background: #f0f0f0; padding: .15rem .35rem; border-radius: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 2rem 0; }
+    .footer { color: #666; font-size: .9rem; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+<h1>Validación OSINT — JOSE ALBERTO CANO MENA</h1>
+<h2>Identificación del sujeto</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+<th>Fuente</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nombre(s)</td>
+<td>JOSE ALBERTO</td>
+<td>INE + CheckID</td>
+</tr>
+<tr>
+<td>Primer apellido</td>
+<td>CANO</td>
+<td>INE + CheckID</td>
+</tr>
+<tr>
+<td>Segundo apellido</td>
+<td>MENA</td>
+<td>INE + CheckID</td>
+</tr>
+<tr>
+<td>CURP</td>
+<td><code>CAMA840522HDFNNL08</code></td>
+<td>INE + CheckID</td>
+</tr>
+<tr>
+<td>RFC SAT (con homoclave real)</td>
+<td><code>CAMA840522NP0</code></td>
+<td>CheckID</td>
+</tr>
+<tr>
+<td>Fecha de nacimiento</td>
+<td>1984-05-22</td>
+<td>INE + CheckID</td>
+</tr>
+<tr>
+<td>Sexo</td>
+<td>HOMBRE</td>
+<td>CheckID</td>
+</tr>
+<tr>
+<td>Entidad de nacimiento (CURP)</td>
+<td>CIUDAD DE MEXICO</td>
+<td>CheckID</td>
+</tr>
+<tr>
+<td>NSS (IMSS)</td>
+<td><code>45028439185</code></td>
+<td>CheckID</td>
+</tr>
+</tbody>
+</table>
+<h2>Domicilio según padrón INE (CDMX_2.xlsx)</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Calle</td>
+<td>C PEGASO</td>
+</tr>
+<tr>
+<td>Número exterior</td>
+<td>78</td>
+</tr>
+<tr>
+<td>Colonia</td>
+<td>COL PRADO CHURUBUSCO</td>
+</tr>
+<tr>
+<td>Código postal</td>
+<td>04230</td>
+</tr>
+<tr>
+<td>Sección</td>
+<td>519</td>
+</tr>
+<tr>
+<td>Manzana</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Folio INE</td>
+<td>150044627</td>
+</tr>
+<tr>
+<td>Clave de elector (CVE INE)</td>
+<td>CNMNAL84052209H901</td>
+</tr>
+</tbody>
+</table>
+<h2>Datos fiscales (CheckID)</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Régimen fiscal</td>
+<td>605 - Sueldos y Salarios e Ingresos Asimilados a Salarios</td>
+</tr>
+<tr>
+<td>Código postal fiscal</td>
+<td>04230</td>
+</tr>
+<tr>
+<td>Situación 69 / 69B</td>
+<td>Sin problema (<code>conProblema: false</code>)</td>
+</tr>
+<tr>
+<td>Email de contacto SAT</td>
+<td>albertocanomena@gmail.com</td>
+</tr>
+<tr>
+<td>RFC válido hasta</td>
+<td>2029-07-04</td>
+</tr>
+</tbody>
+</table>
+<h2>Notas y advertencias</h2>
+<ul>
+<li><strong>El campo <code>CVE</code> del INE (<code>CNMNAL84052209H901</code>) NO es el RFC</strong>. Es el identificador interno del padrón electoral. El RFC real con homoclave del SAT es <code>CAMA840522NP0</code>, confirmado vía CheckID.</li>
+<li>El CURP <code>CAMA840522HDFNNL08</code> coincide entre INE y CheckID.</li>
+<li>El CP <code>04230</code> coincide entre el domicilio INE y el CP fiscal reportado por CheckID.</li>
+<li>No se encontró indicio de situación 69/69B en la validación fiscal.</li>
+<li>Créditos CheckID restantes al momento de la consulta: <strong>282</strong>.</li>
+</ul>
+<h2>Fuentes consultadas</h2>
+<ol>
+<li>Padrón electoral INE 2018 — archivo <code>CDMX_2.xlsx</code> (local).</li>
+<li>API CheckID (Canicalabs) — búsqueda por CURP/RFC, 2026-07-29.</li>
+</ol>
+<hr />
+<p><em>Reporte generado automáticamente. Última actualización: 2026-07-29.</em></p>
+</body>
+</html>

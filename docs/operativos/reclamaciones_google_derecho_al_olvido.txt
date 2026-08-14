@@ -1,0 +1,262 @@
+GUÍA DE RECLAMACIONES ANTE GOOGLE
+
+Derecho al olvido, información descontextualizada y lenguaje difamatorio o sensacionalista
+
+México
+
+Documento de apoyo para presentar solicitudes de desindexación
+
+Fecha de elaboración: 26 de julio de 2026
+
+IMPORTANTE
+
+Este documento es un modelo de apoyo y no constituye asesoría jurídica. Google evalúa cada solicitud individualmente y puede ponderar privacidad, reputación, libertad de expresión e interés público. No se debe afirmar que una acusación es falsa si no existe evidencia para demostrarlo. Sustituye los campos entre corchetes y adjunta documentación oficial cuando esté disponible.
+
+DATOS DEL SOLICITANTE
+
+Nombre completo: [NOMBRE COMPLETO]
+País de residencia: México
+Relación con la información: Persona directamente identificada en el contenido
+Correo de contacto: [CORREO ELECTRÓNICO]
+
+ARGUMENTOS GENERALES RECOMENDADOS
+
+• La información está asociada directamente con mi nombre completo.
+• El contenido mezcla acusaciones, investigaciones, medidas cautelares y opiniones con hechos aparentemente definitivos.
+• No se acredita necesariamente una sentencia firme.
+• El lenguaje utilizado es sensacionalista, condenatorio o moralizante.
+• La información puede estar desactualizada, incompleta o sin contexto procesal.
+• La indexación causa un perjuicio desproporcionado a mi reputación personal y profesional.
+• Solicito la desindexación para búsquedas por mi nombre completo, aunque el contenido pueda permanecer en el sitio de origen.
+
+PASOS PARA PRESENTAR LAS RECLAMACIONES
+
+1. Reúne la documentación
+
+Prepara una identificación oficial. Oculta datos que no sean necesarios, como domicilio, CURP, número de documento o firma, salvo que Google los solicite. Reúne también resoluciones de absolución, sobreseimiento, archivo, cancelación de órdenes, levantamiento de embargos, rectificaciones, acuerdos o cualquier documento que demuestre inexactitud o desactualización.
+
+2. Conserva evidencia de cada URL
+
+Guarda la URL exacta, el título, una captura de pantalla y la fecha en que consultaste la página. Señala las frases concretas que consideras falsas, descontextualizadas o difamatorias. Si el contenido cambió, conserva también la versión anterior y la actual.
+
+3. Accede al formulario de Google
+
+Busca en Google: “Solicitud de retirada de contenido por motivos legales” o “Retirada de contenido personal de los resultados de búsqueda”. Utiliza siempre una página oficial de Google y verifica que el dominio sea google.com.
+
+El formulario puede variar según el país, el tipo de contenido y la cuenta de Google. Elige la opción relacionada con información personal, privacidad, derecho al olvido o contenido legalmente perjudicial.
+
+4. Presenta una reclamación por cada URL
+
+Cuando sea posible, presenta una solicitud separada para cada enlace. Esto permite explicar con precisión qué afirma cada publicación y qué documento respalda tu reclamación. Incluye las búsquedas concretas en las que aparece el contenido, por ejemplo:
+
+[NOMBRE COMPLETO]
+[NOMBRE COMPLETO] fraude
+[NOMBRE COMPLETO] ficha roja
+[NOMBRE COMPLETO] empresario
+
+5. Explica el perjuicio
+
+Describe de forma objetiva cómo afecta el resultado a tu reputación, actividad profesional, relaciones comerciales, vida familiar u oportunidades laborales. Evita insultos, amenazas o afirmaciones que no puedas acreditar.
+
+6. Solicita una solución concreta
+
+Pide que Google retire la URL de los resultados asociados con tu nombre completo. Si no solicitas la eliminación de la página de origen, acláralo: “Solicito la desindexación en búsquedas por mi nombre, no necesariamente la eliminación del contenido del sitio de origen”.
+
+7. Declara la información con precisión
+
+Distingue entre hechos y alegaciones. Utiliza expresiones como “la nota afirma”, “el artículo presenta como hecho”, “no existe una sentencia firme que acredite” o “la información quedó desactualizada”. No escribas que hubo difamación judicialmente determinada si no cuentas con una resolución que así lo establezca.
+
+8. Conserva el número de referencia
+
+Después de enviar cada formulario, guarda el número de caso, el correo de confirmación y la respuesta de Google. Si Google solicita información adicional, responde dentro del plazo indicado y adjunta únicamente documentos pertinentes.
+
+9. Solicita actualización o corrección al medio
+
+De manera paralela, contacta al medio y solicita una rectificación, actualización o derecho de réplica. Pide que se corrijan errores concretos y que se indique el estado actual del procedimiento. Guarda el correo enviado y cualquier respuesta.
+
+10. Si Google rechaza la solicitud
+
+Lee el motivo del rechazo. Puedes presentar una nueva solicitud si cuentas con evidencia adicional, una resolución posterior o una explicación más concreta. Si el asunto implica datos personales, amenazas, suplantación, información íntima o una falsedad demostrable, utiliza también el canal específico de Google para ese tipo de contenido.
+
+RECOMENDACIONES IMPORTANTES
+
+• No bases la reclamación únicamente en que la noticia es negativa.
+• Identifica frases concretas y explica por qué son falsas, incompletas o descontextualizadas.
+• Un embargo precautorio no equivale por sí solo a una condena.
+• Una investigación, denuncia, orden de aprehensión o ficha de búsqueda no equivale por sí sola a culpabilidad.
+• No afirmes que una persona “es delincuente” si únicamente existe una acusación.
+• Si el proceso penal es reciente, el argumento de derecho al olvido puede ser más débil; en ese caso enfatiza errores verificables, ausencia de sentencia, actualización posterior o lenguaje injurioso.
+• Si hay domicilio, teléfono, correo, placas, documentos oficiales o fotografías de familiares, presenta también una solicitud específica por exposición de datos personales.
+
+RECLAMACIÓN 1 — DARÍO CELIS
+
+URL: https://dariocelis.mx/la-caida-de-the-phone-house/
+
+Solicito la desindexación de esta URL respecto de las búsquedas realizadas con mi nombre completo.
+
+El artículo identifica expresamente a Bernardo Romano García y a Aitana García Hernández y les atribuye, como hechos aparentemente establecidos, conductas graves relacionadas con supuestas irregularidades empresariales, deudas por más de 400 millones de pesos, una orden de aprehensión, una supuesta ficha roja y la intervención de autoridades migratorias. Sin embargo, el texto no presenta de manera suficiente las resoluciones judiciales, documentos oficiales completos ni la versión de las personas afectadas que permitan verificar esas afirmaciones.
+
+Además, el contenido utiliza un enfoque editorial y moralizante que excede la información objetiva. Describe un supuesto estilo de vida de lujo, vacaciones, yates, propiedades y vehículos, y concluye que la historia constituye “lo que no se debe hacer” cuando un negocio enfrenta dificultades. Estas expresiones producen una impresión de culpabilidad y reproche social, aunque el propio contenido no acredita mediante una sentencia firme la comisión de delitos.
+
+La publicación mezcla asuntos mercantiles, deudas, medidas cautelares y acusaciones penales sin distinguir claramente entre una denuncia, una investigación, una orden judicial, una medida precautoria y una condena. La permanencia de la URL en los resultados de Google afecta de forma desproporcionada mi reputación personal, profesional, familiar y empresarial, particularmente porque aparece asociada directamente con mi nombre.
+
+Solicito que Google valore el derecho al olvido, la falta de actualidad o contexto suficiente, la posible inexactitud de las afirmaciones y el uso de lenguaje sensacionalista. En caso de que el contenido se conserve en la página de origen, solicito cuando menos que deje de aparecer al buscar mi nombre completo.
+
+RECLAMACIÓN 2 — NOTIVER: “FICHA ROJA A 2 EMPRESARIOS”
+
+URL: https://www.notiver.com/primera/ficha-roja-a-2-empresarios-son-los-duenos-de-una-empresa-de-telefonia-movil-2/
+
+Solicito la desindexación de esta URL de las búsquedas relacionadas con mi nombre.
+
+El título utiliza la expresión “¡FICHA ROJA A 2 EMPRESARIOS!” y presenta como hechos concluidos una supuesta orden de aprehensión por extorsión, una ficha roja y un adeudo millonario. El contenido también afirma que el delito está “documentado y debidamente acreditado”, expresión que puede inducir al lector a creer que existe una sentencia firme, aunque el texto únicamente menciona una carpeta de investigación y medidas precautorias.
+
+La publicación no distingue adecuadamente entre una denuncia, una investigación ministerial, una orden de aprehensión, una ficha de búsqueda, un embargo precautorio y una condena. Asimismo, reproduce afirmaciones sobre supuestas deudas por cientos de millones de pesos y sobre la intención de ocultar o dilapidar bienes, sin ofrecer el expediente completo ni una resolución definitiva.
+
+El lenguaje empleado es sensacionalista y presenta una narrativa de culpabilidad anticipada. La URL aparece asociada de forma directa con mi nombre completo y perjudica mi reputación, relaciones comerciales y oportunidades profesionales.
+
+Solicito que Google retire esta URL de los resultados vinculados con mi nombre, por tratarse de información personal de carácter penal y financiero presentada sin suficiente contexto, con afirmaciones potencialmente inexactas y sin respetar plenamente la presunción de inocencia. Si Google considera que la eliminación total no procede, solicito la desindexación de las búsquedas por mi nombre completo.
+
+RECLAMACIÓN 3 — ÍNDICE CORPORATIVO
+
+URL: https://indicecorporativo.com/2025/03/las-deudas-que-ahogaron-a-la-familia-romano/
+
+Solicito la desindexación de esta URL respecto de las búsquedas realizadas con mi nombre completo.
+
+El artículo emplea un tono claramente editorial, despectivo y sensacionalista. Utiliza expresiones como “se hizo millonaria de la noche a la mañana”, “gastaban como si el dinero se diera en maceta”, “grandes empresarios”, “vida de excesos”, “bancarrota”, “prófugos” y “algún día van a caer”. Estas expresiones no constituyen una exposición neutral de hechos, sino una narrativa de reproche y condena pública.
+
+El contenido atribuye a personas identificables deudas superiores a 400 millones de pesos, demandas, órdenes de aprehensión y una supuesta ficha roja, pero no ofrece suficiente contexto sobre el estado procesal de cada asunto ni acredita la existencia de una sentencia firme. También presenta como hechos afirmaciones que parecen provenir de fuentes no identificadas o de interpretaciones del autor.
+
+La publicación continúa apareciendo asociada con mi nombre y puede ser interpretada por terceros como una confirmación de que cometí delitos. El uso de términos como “prófugos” y “bancarrota” resulta especialmente perjudicial porque transforma alegaciones y controversias financieras en afirmaciones categóricas.
+
+Solicito que Google aplique el derecho al olvido y retire esta URL de las búsquedas por mi nombre. La solicitud se basa en la desproporción entre el interés público actual y el perjuicio permanente que causa la indexación, así como en el lenguaje difamatorio, amarillista y potencialmente inexacto utilizado por el artículo.
+
+RECLAMACIÓN 4 — AL CALOR POLÍTICO
+
+URL: https://www.alcalorpolitico.com/informacion/embargan-bienes-de-empresario-y-esposa-por-adeudo-millonario-en-boca-del-rio-422116.html
+
+Solicito la desindexación de esta URL respecto de las búsquedas asociadas con mi nombre completo.
+
+El artículo identifica a Bernardo Romano García y Aitana García Fernández y relaciona sus nombres con un embargo precautorio, un adeudo de 5,026,015 pesos, una supuesta orden de aprehensión por extorsión y una solicitud de ficha roja. Aunque menciona actuaciones judiciales, no proporciona el texto completo de las resoluciones, el estado actual de los procedimientos ni una actualización que permita saber si las medidas siguen vigentes.
+
+El contenido también afirma que las personas afectadas podrían ocultar o dilapidar bienes, y que sus deudas ascenderían a alrededor de 400 millones de pesos. Tales expresiones pueden ser interpretadas como acusaciones de conducta fraudulenta o evasiva, aun cuando no se presenta una sentencia firme que las confirme.
+
+La URL mezcla un procedimiento civil de carácter precautorio con imputaciones penales, sin explicar de manera suficiente que un embargo precautorio no equivale a una condena y que una orden de aprehensión o una investigación tampoco acreditan por sí solas la culpabilidad.
+
+Solicito la desindexación de la URL para búsquedas realizadas con mi nombre completo por tratarse de información personal sensible, posiblemente desactualizada, incompleta y presentada sin equilibrio suficiente.
+
+RECLAMACIÓN 5 — LA ALDEA DE LA INFORMACIÓN
+
+URL: https://laaldeadelainformacion.com.mx/2025/07/27/empresario-veracruzano-bernardo-detenido-por-fraude-su-esposa-profuga/
+
+Solicito la desindexación de esta URL de los resultados vinculados con mi nombre completo.
+
+El artículo presenta a una persona identificable como “empresario veracruzano Bernardo” y después la vincula directamente con Bernardo Romano García. Le atribuye fraude financiero, un posible fraude superior a 400 millones de pesos, lavado de dinero, captación ilegal de recursos, evasión fiscal y simulación de operaciones. También utiliza el término “prófuga” respecto de otra persona y describe una supuesta “pirámide cuidadosamente construida”.
+
+Estas afirmaciones son de extrema gravedad y pueden causar un daño irreversible a la reputación. Sin embargo, el artículo no aporta una sentencia firme que demuestre la comisión de esos delitos. Presenta investigaciones, denuncias, señalamientos de inversionistas y medidas cautelares como si constituyeran conclusiones definitivas.
+
+Solicito que Google considere el derecho al olvido, la presunción de inocencia, la falta de resolución definitiva y el riesgo de que la información sea inexacta o esté desactualizada. Pido retirar la URL de las búsquedas realizadas con mi nombre completo o limitar su indexación mientras el medio no publique una corrección y una actualización documentada.
+
+RECLAMACIÓN 6 — DIARIO CAMBIO 22
+
+URL: https://diariocambio22.mx/estafadores-portenos-vivian-como-reyes/
+
+Solicito la desindexación de esta URL respecto de las búsquedas por mi nombre completo.
+
+El propio título califica directamente a las personas identificadas como “estafadores”, sin que el artículo acredite una sentencia firme. El contenido utiliza un lenguaje amarillista y condenatorio, como “vivían como reyes”, “el escándalo”, “el dinero ajeno” y “los excesos tienen factura”. Estas expresiones presentan una opinión editorial como si fuera un hecho judicialmente establecido.
+
+La publicación muestra o describe fotografías de viajes, ropa, relojes, yates y bienes de lujo, y utiliza esos elementos para insinuar que los recursos provenían de un supuesto fraude. Esa conclusión no está demostrada en el propio artículo. También afirma que existía una ficha roja, que las personas habían huido del país y que sus propiedades fueron embargadas, sin proporcionar contexto procesal suficiente ni una actualización verificable.
+
+Solicito el retiro de esta URL de los resultados asociados con mi nombre por difamación, sensacionalismo, falta de contexto y posible inexactitud. Invoco el derecho al olvido y solicito que Google valore que una acusación no equivale a una condena.
+
+RECLAMACIÓN 7 — X / MARTÍNEZ ESPINOSA
+
+URL: https://x.com/martinespinosa/status/1902538170367131950?lang=es
+
+Solicito la desindexación de esta publicación respecto de las búsquedas realizadas con mi nombre completo.
+
+La publicación de X vincula mi nombre con acusaciones y/o calificativos relacionados con delitos, deudas o conductas ilícitas. Al tratarse de una publicación de una red social, el contenido carece de la verificación editorial, contexto procesal y documentación completa que permitirían valorar la exactitud de tales afirmaciones.
+
+La publicación puede ser replicada, indexada y mostrada como resultado destacado al buscar mi nombre, generando una asociación inmediata entre mi identidad y acusaciones que no necesariamente han sido confirmadas por una sentencia firme. No se aclara si se trata de una opinión, una denuncia, una investigación o un hecho judicialmente probado.
+
+Solicito que Google retire la publicación de las búsquedas realizadas con mi nombre completo porque contiene información personal sensible, potencialmente difamatoria y descontextualizada.
+
+Nota: revisa el texto exacto de la publicación antes de enviar la reclamación y sustituye este modelo por las frases concretas que aparezcan en ella.
+
+RECLAMACIÓN 8 — LA OPINIÓN
+
+URL: https://laopinion.net/ficha-roja-y-embargo-a-bernardo-romano/
+
+Solicito la desindexación de esta URL respecto de las búsquedas relacionadas con mi nombre completo.
+
+La nota vincula mi nombre con un embargo precautorio, un supuesto adeudo de 5,026,015 pesos, una orden de aprehensión por extorsión y una ficha roja. También afirma que mis deudas podrían ascender a 400 millones de pesos y que se mantuvo un estilo de vida de lujo con recursos cuya procedencia se presenta de forma insinuada.
+
+El artículo no distingue con claridad entre una reclamación civil, una medida precautoria, una orden de aprehensión, una ficha de búsqueda y una condena penal. Tampoco ofrece el estado actual de los procedimientos ni una resolución definitiva. El lector puede concluir erróneamente que los hechos imputados ya fueron probados.
+
+Solicito que Google aplique el derecho al olvido y retire la URL de las búsquedas por mi nombre, debido a que la información es sensible, potencialmente desactualizada, incompleta y presentada sin una separación adecuada entre alegaciones y hechos comprobados.
+
+RECLAMACIÓN 9 — PLUMAS LIBRES
+
+URL: https://plumaslibres.com.mx/2025/08/02/pese-a-la-gravedad-de-acusaciones-en-su-contra-juez-manda-al-empresario-bernardo-romano-a-que-siga-su-proceso-en-su-casa/
+
+Solicito la desindexación de esta URL respecto de las búsquedas vinculadas con mi nombre completo.
+
+El artículo utiliza un tono abiertamente condenatorio y sensacionalista. Afirma que existe una “brutal corrupción” en el sistema de justicia, califica el trato judicial como privilegiado y emplea expresiones como “se va a su CASITA”, “señorito” y “duerme tranquilo”. También vincula mi nombre con fraude, lavado de dinero, extorsión y homicidio.
+
+La publicación presenta acusaciones graves como si fueran conclusiones definitivas, aunque el propio texto indica que se trata de una investigación o proceso en curso. No se distingue de forma suficiente entre acusación, imputación, medida cautelar, arraigo domiciliario, brazalete electrónico y sentencia.
+
+Solicito que Google retire esta URL de los resultados asociados con mi nombre por lenguaje difamatorio, amarillista, falta de neutralidad, información potencialmente inexacta y ausencia de una resolución firme. Invoco el derecho al olvido y la presunción de inocencia.
+
+RECLAMACIÓN 10 — NOTIVER: “CAPTURAN A EMPRESARIO”
+
+URL: https://www.notiver.com/sucesos/capturan-a-empresario-tenia-orden-de-aprehension-por-fraude-extorsion-y-lavado-de-dinero/
+
+Solicito la desindexación de esta URL respecto de las búsquedas por mi nombre completo.
+
+El artículo identifica a Bernardo R.G. y lo relaciona con fraude, extorsión, lavado de dinero, captación ilegal de recursos, evasión fiscal y simulación de operaciones. También afirma que habría participado en un esquema de más de 400 millones de pesos y que enfrentaría hasta 40 años de prisión.
+
+Aunque se refiere a una detención y a investigaciones de autoridades, el texto utiliza términos y titulares que pueden ser interpretados como una declaración de culpabilidad. No distingue suficientemente entre acusaciones, investigaciones abiertas y una eventual sentencia. Presenta estimaciones, calificativos y afirmaciones de terceros como si fueran hechos probados.
+
+Solicito que Google valore el derecho al olvido, la presunción de inocencia, la falta de actualización y el carácter potencialmente difamatorio del contenido. Pido retirar la URL de las búsquedas por mi nombre completo.
+
+RECLAMACIÓN 11 — RAZÓN DE VERACRUZ
+
+URL: https://razondeveracruz.com.mx/mosno.php?nota=12231
+
+Solicito la desindexación de esta URL respecto de las búsquedas realizadas con mi nombre completo.
+
+La nota vincula directamente mi nombre con un embargo precautorio, un adeudo de 5,026,015 pesos, una supuesta orden de aprehensión por extorsión y una solicitud de ficha roja. También afirma que las deudas podrían ascender a 400 millones de pesos y utiliza una narrativa sobre supuestos gastos excesivos, viajes y bienes de lujo.
+
+El contenido no presenta una resolución definitiva que confirme la responsabilidad penal o financiera de las personas mencionadas. Un embargo precautorio tiene naturaleza cautelar y no equivale a una condena. Una carpeta de investigación, una orden de aprehensión o una solicitud de búsqueda tampoco constituyen por sí solas prueba definitiva de culpabilidad.
+
+Solicito que Google retire esta URL de las búsquedas relacionadas con mi nombre bajo el derecho al olvido, debido a la falta de contexto, posible desactualización, tratamiento sensacionalista de información personal sensible y ausencia de una condena firme.
+
+RECLAMACIÓN 12 — NOTIVER: “UNIDAD DE INTELIGENCIA FINANCIERA…”
+
+URL: https://www.notiver.com/sucesos/unidad-de-inteligencia-financiera-investiga-a-empresarios-profugos/
+
+Solicito la desindexación de esta URL respecto de las búsquedas vinculadas con mi nombre completo.
+
+El título utiliza la palabra “prófugos” y el contenido afirma que la Unidad de Inteligencia Financiera investigaría posibles operaciones con recursos de procedencia ilícita, captación ilegal de recursos y simulación de operaciones. También relaciona mi nombre con una alerta de Interpol, un embargo y supuestos testimonios de acreedores.
+
+El artículo presenta investigaciones y señalamientos como si fueran conclusiones de responsabilidad. No ofrece suficiente documentación oficial, no incorpora mi versión, no aclara el estado actual de la investigación y no distingue adecuadamente entre una investigación financiera, una denuncia, una alerta migratoria, una ficha de búsqueda y una condena penal.
+
+Además, utiliza lenguaje sensacionalista al afirmar que llevábamos una “vida de película”, que los bienes se pagaban “con dinero ajeno” y que la UIF “ya los tiene en la mira”. Solicito que Google aplique el derecho al olvido y retire esta URL de los resultados asociados con mi nombre por falta de contexto, posible inexactitud o desactualización, presunción de inocencia y carácter desproporcionado de mantener indexadas acusaciones no acompañadas de una sentencia firme.
+
+LISTA DE CONTROL ANTES DE ENVIAR
+
+[ ] Sustituí [NOMBRE COMPLETO], correo y demás campos.
+[ ] Revisé que cada URL sea correcta.
+[ ] Guardé capturas de pantalla de cada resultado.
+[ ] Identifiqué las frases concretas que impugno.
+[ ] Adjunté documentos oficiales pertinentes.
+[ ] No afirmé hechos que no puedo demostrar.
+[ ] Expliqué el perjuicio concreto.
+[ ] Pedí desindexación por mi nombre completo.
+[ ] Guardé cada número de caso de Google.
+[ ] Solicité rectificación o actualización a los medios.
+
+CIERRE MODELO PARA CADA FORMULARIO
+
+Declaro que la información proporcionada es verdadera según mi leal saber y entender. Solicito que Google valore esta reclamación de forma individual, teniendo en cuenta mi derecho a la privacidad, al honor, a la reputación y a la protección de mis datos personales, así como la falta de contexto, posible inexactitud, desactualización y lenguaje sensacionalista del contenido señalado. Estoy disponible para proporcionar documentación adicional que permita verificar el estado actual de los hechos.
+
+Fin del documento.

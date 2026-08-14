@@ -1,0 +1,16 @@
+[Unit]
+Description=cuartodepazsearch backend (KYC/OSINT DuckDB server)
+After=network.target
+
+[Service]
+Type=simple
+User=%I
+WorkingDirectory=/root/proyecto_kyc
+ExecStart=/root/ine_server/.venv/bin/python /root/proyecto_kyc/backend/servir.py --port 8765
+Restart=always
+RestartSec=5
+Environment="PYTHONUNBUFFERED=1"
+EnvironmentFile=-/root/proyecto_kyc/backend/.env
+
+[Install]
+WantedBy=multi-user.target
