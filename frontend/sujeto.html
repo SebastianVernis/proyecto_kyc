@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<title>Sujeto — Investigación KYC + OSINT</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --bg: #0f1115;
+  --panel: #1a1d24;
+  --panel2: #232730;
+  --border: #2c313c;
+  --text: #e6e8ec;
+  --muted: #8a93a6;
+  --accent: #4f8cff;
+  --accent2: #6ee7b7;
+  --warn: #f59e0b;
+  --error: #ef4444;
+  --highlight: #facc15;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  gap: 12px;
+}
+header h1 { margin: 0; font-size: 18px; font-weight: 600; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+header .badge {
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+header .actions { display: flex; gap: 8px; flex-shrink: 0; }
+header .actions a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+}
+header .actions a:hover { border-color: var(--accent); }
+main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+h2 {
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin: 24px 0 12px;
+  font-weight: 600;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.card .title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-wrap: wrap;
+}
+.card .title .badge {
+  background: var(--accent2);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+.card .title .badge.warn { background: var(--warn); }
+.card .title .badge.error { background: var(--error); color: #fff; }
+.card .title .badge.accent { background: var(--accent); color: #fff; }
+
+.kv {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 8px 12px;
+  font-size: 13px;
+}
+.kv .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding-top: 2px; }
+.kv .v { word-break: break-word; }
+.kv .v.empty { color: var(--muted); font-style: italic; }
+.kv .v.rfc-highlight {
+  color: var(--accent2);
+  font-weight: 600;
+  font-family: monospace;
+  background: rgba(110, 231, 183, 0.08);
+  padding: 2px 6px;
+  border-radius: 3px;
+  border-left: 3px solid var(--accent2);
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.status-bar > span:last-child { word-break: break-word; overflow-wrap: anywhere; }
+.status-bar.running { border-color: var(--warn); color: var(--warn); }
+.status-bar.ok { border-color: var(--accent2); color: var(--accent2); }
+.status-bar.error { border-color: var(--error); color: var(--error); }
+.spinner {
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner-big {
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* === Modal === */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 90%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.modal-header h3 { margin: 0; font-size: 16px; }
+.modal-close {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); padding: 4px 10px; border-radius: 4px;
+  cursor: pointer; font-size: 14px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover { color: var(--text); border-color: var(--accent); }
+.modal-body { padding: 20px; flex: 1 1 auto; overflow-y: auto; }
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.secondary {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn.accent2 { background: var(--accent2); color: #000; }
+
+/* === Validaciones (chips de validaciones disponibles) === */
+.validations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.validation-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 12px;
+}
+.validation-card.busy { border-left-color: var(--warn); }
+.validation-card.done { border-left-color: var(--accent2); }
+.validation-card.error { border-left-color: var(--error); }
+.validation-card h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.validation-card .provider-tag {
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.validation-card .provider-tag.apify { background: #b45cf9; }
+.validation-card .provider-tag.singula { background: #ff5e5e; }
+
+/* ==== Badges de cache (2026-08-04) — muestran si validación Singula
+   cobraría al pulsar ▶ Ejecutar, o viene del cache local ==== */
+.validation-card .cache-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-family: monospace;
+  letter-spacing: 0.3px;
+}
+.validation-card .cache-badge.cache-fresh {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+.validation-card .cache-badge.cache-paid {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+  border: 1px solid rgba(255, 152, 0, 0.4);
+}
+.validation-card .cache-badge.cache-err {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+}
+.validation-card .cache-badge.cache-skip {
+  background: rgba(158, 158, 158, 0.15);
+  color: #9e9e9e;
+  border: 1px solid rgba(158, 158, 158, 0.3);
+}
+.validation-card .desc {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.validation-card .input-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.validation-card .input-row input {
+  flex: 1;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: monospace;
+  min-height: 36px;
+}
+.validation-card .run-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  width: 100%;
+  min-height: 36px;
+}
+.validation-card .run-btn:hover { filter: brightness(1.1); }
+.validation-card .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.validation-card .result {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--muted);
+}
+.validation-card .result.success { color: var(--accent2); }
+.validation-card .result.error { color: var(--error); }
+
+.summary-pill {
+  display: inline-block;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  margin-right: 6px;
+  margin-bottom: 4px;
+}
+.summary-pill .k { color: var(--muted); margin-right: 4px; }
+.summary-pill .v { color: var(--accent2); font-weight: 600; }
+
+.data-ok { color: var(--accent2); }
+.data-warn { color: var(--warn); }
+.data-err { color: var(--error); }
+
+code {
+  background: var(--panel2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+a { color: var(--accent); }
+a:hover { text-decoration: underline; }
+
+/* === Responsive: móvil === */
+@media (max-width: 640px) {
+  html, body { font-size: 15px; }
+  header {
+    padding: 10px 12px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 14px; gap: 4px; flex: 1; min-width: 0; }
+  header h1 span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  header .badge { font-size: 9px; padding: 2px 6px; flex-shrink: 0; }
+  header .actions { width: auto; flex-shrink: 0; }
+  header .actions a {
+    font-size: 12px;
+    padding: 8px 10px;
+    min-height: 36px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  main { padding: 10px; }
+  h2 { font-size: 12px; margin: 16px 0 8px; letter-spacing: 0.6px; }
+  .card { padding: 10px; border-radius: 6px; margin-bottom: 10px; }
+  .card .title { font-size: 12px; margin-bottom: 8px; }
+
+  .kv { grid-template-columns: 1fr; gap: 1px 0; }
+  .kv .k { padding-top: 5px; padding-bottom: 1px; font-size: 10px; }
+  .kv .v { padding-bottom: 6px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .kv .v:last-child { border-bottom: none; }
+
+  .status-bar { align-items: flex-start; padding: 8px 10px; font-size: 12px; }
+
+  .btn,
+  .btn.secondary,
+  .modal-close,
+  .validation-card .run-btn,
+  header .actions a {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  .validations-grid { grid-template-columns: 1fr; gap: 8px; }
+  .validation-card { padding: 10px; }
+  .validation-card h4 { font-size: 13px; }
+  .validation-card .desc,
+  .validation-card .result { font-size: 11px; }
+  .validation-card .input-row input,
+  .validation-card .run-btn { font-size: 13px; min-height: 44px; }
+
+  #modal-query,
+  input[type="text"] {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+
+  /* Mapa más compacto en móvil */
+  #map { height: 220px; }
+
+  /* Modal tipo bottom sheet en móvil */
+  .modal-backdrop.open { align-items: flex-end; }
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    height: 95vh;
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+  }
+  .modal-header {
+    padding: 12px 16px;
+    position: relative;
+    justify-content: center;
+    cursor: grab;
+  }
+  .modal-header::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+  }
+  .modal-header h3 { font-size: 15px; text-align: center; margin-right: 8px; }
+  .modal-close {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 18px;
+  }
+  .modal-body { padding: 12px 16px; }
+  .modal-footer {
+    padding: 10px 16px;
+    justify-content: stretch;
+  }
+  .modal-footer .btn {
+    flex: 1;
+    min-height: 44px;
+    font-size: 14px;
+  }
+}
+
+@media print {
+  header .actions, #btn-reporte-ai, #btn-imprimir-reporte, .modal-backdrop { display: none !important; }
+}
+
+/* ==== Mapa Leaflet ==== */
+#map-container {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+#map {
+  height: 350px;
+  width: 100%;
+  background: var(--panel2);
+}
+#map .leaflet-control-zoom a {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--border);
+}
+#map .leaflet-control-attribution {
+  background: rgba(15,17,21,0.8);
+  color: var(--muted);
+  font-size: 9px;
+}
+
+/* ==== Premium buttons (glass-morphism) — 2026-08-04 ==== */
+button, .btn, input[type="submit"] {
+  font-family: inherit;
+  letter-spacing: 0.2px;
+  transition: transform 0.12s ease, box-shadow 0.18s ease,
+              background 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
+  will-change: transform;
+}
+button:not(:disabled):hover, .btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+button:not(:disabled):active, .btn:not(:disabled):active {
+  transform: translateY(0);
+}
+/* Primary: gradient azul + glass + shadow */
+.btn:not(.secondary):not(.btn-secondary):not(.btn-warn):not(.btn-danger),
+button.primary, button:not([class]), .btn-primary {
+  background: linear-gradient(180deg, rgba(79,140,255,0.95) 0%, rgba(59,120,235,0.95) 100%) !important;
+  border: 1px solid rgba(120,170,255,0.45) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    0 4px 14px -4px rgba(79,140,255,0.55) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff !important;
+  font-weight: 600;
+}
+.btn:not(.secondary):not(.btn-secondary):not(.btn-warn):not(.btn-danger):hover,
+button.primary:hover, button:not([class]):hover {
+  background: linear-gradient(180deg, rgba(99,160,255,1) 0%, rgba(79,140,255,1) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.25) inset,
+    0 6px 20px -4px rgba(79,140,255,0.7) !important;
+  filter: none !important;
+}
+.btn:not(.secondary):not(.btn-secondary):not(.btn-warn):not(.btn-danger):focus-visible,
+button.primary:focus-visible {
+  outline: none !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    0 4px 14px -4px rgba(79,140,255,0.55),
+    0 0 0 3px rgba(120,170,255,0.35) !important;
+}
+/* Secondary: glass oscuro + border translúcido */
+.btn.secondary, .btn-secondary, button.secondary {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  color: var(--text) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,0.3) !important;
+}
+.btn.secondary:hover, .btn-secondary:hover, button.secondary:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%) !important;
+  border-color: rgba(120,170,255,0.4) !important;
+  color: var(--accent) !important;
+  box-shadow: 0 4px 12px -2px rgba(79,140,255,0.25) !important;
+}
+
+/* ==== Scrollbars estilizadas — Chrome / Edge / Safari ==== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(120,130,150,0.25);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.18s ease;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(120,130,150,0.45); background-clip: padding-box; }
+::-webkit-scrollbar-thumb:active { background: rgba(120,170,255,0.55); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+/* Firefox + estándar */
+html { scrollbar-width: thin; scrollbar-color: rgba(120,130,150,0.35) transparent; }
+aside, main, .modal, [style*="overflow"] { scrollbar-width: thin; scrollbar-color: rgba(120,130,150,0.35) transparent; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>
+    <span id="sujeto-titulo">Cargando...</span>
+    <span class="badge" id="sujeto-curp"></span>
+  </h1>
+  <div class="actions">
+    <a href="buscar.html" id="btn-back">← Volver al padrón</a>
+    <a href="cfe_coordenadas.html">📍 CFE Coords</a>
+    <a href="#" id="btn-issste">🏛️ ISSSTE</a>
+  </div>
+</header>
+
+<main>
+  <!-- Status bar -->
+  <div id="status" class="status-bar">
+    <span class="spinner"></span>
+    <span>Cargando datos del padrón...</span>
+  </div>
+
+  <!-- Sección 1: Datos del Padrón + RFC calculado -->
+  <h2>1. Datos del Padrón + RFC</h2>
+  <div class="card">
+    <div class="title">🪪 Identidad</div>
+    <div class="kv" id="kv-padron"></div>
+  </div>
+
+  <div class="card">
+    <div class="title">🧮 RFC (Singula SAT)
+      <span class="badge" id="rfc-source-badge">calculando...</span>
+    </div>
+    <div class="kv" id="kv-rfc"></div>
+  </div>
+
+  <!-- Sección 1b: Validación SEPOMEX -->
+  <h2>1b. Validación de dirección SEPOMEX</h2>
+  <div class="card">
+    <div class="title">📮 Cruce con catálogo oficial SEPOMEX
+      <span class="badge" id="sepomex-badge">validando...</span>
+    </div>
+    <div class="kv" id="kv-sepomex"></div>
+  </div>
+
+  <!-- Mapa de la dirección del padrón (Leaflet + Nominatim) -->
+  <h2>📍 Mapa — Dirección en el padrón</h2>
+  <div id="map-container" style="display:none;">
+    <div style="padding:8px 12px; background:var(--panel2); border-bottom:1px solid var(--border); font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">
+      <span>📍</span>
+      <span id="map-direccion-label" style="color:var(--text);"></span>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <!-- Sección 2: CheckID (fiscal principal) -->
+  <h2>2. CheckID — Datos fiscales y laborales</h2>
+  <div class="card">
+    <div class="title">🏛️ CheckID (RFC, NSS, régimen, CP, 69/69B)
+      <span class="badge" id="checkid-badge">consultando...</span>
+    </div>
+    <div class="kv" id="kv-checkid"></div>
+  </div>
+
+  <!-- Sección 2b: Redes Sociales (automático) -->
+  <h2>2b. Redes Sociales</h2>
+  <div class="card" id="social-media-card">
+    <div class="title">🌐 Perfiles en redes sociales
+      <span class="badge" id="social-media-badge">buscando...</span>
+    </div>
+    <div id="kv-social-media">
+      <div style="text-align:center;padding:12px;color:var(--muted);">
+        <span class="spinner"></span> Buscando perfiles en 13 redes sociales...
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección 3: Validación automática en Tlaloc -->
+  <h2>3. Validación automática en Tlaloc (RENAPO)</h2>
+  <div class="card">
+    <div class="title">🪪 Tlaloc /curp
+      <span class="badge" id="tlaloc-source-badge">validando...</span>
+    </div>
+    <div class="kv" id="kv-tlaloc"></div>
+  </div>
+
+  <div class="card">
+    <div class="title">🛡️ Tlaloc /rfc (validación contra SAT)
+      <span class="badge" id="tlaloc-rfc-badge">validando...</span>
+    </div>
+    <div class="kv" id="kv-tlaloc-rfc"></div>
+  </div>
+
+  <!-- Sección 3b: Bases externas (att, empleadores, repuve, telcel,
+       imss_asegurado, imss_salud) — 2026-08-05.
+       Lazy: se llama DESPUÉS de pintar el sujeto principal, vía
+       /api/v1/sujeto/enriquecido. -->
+  <h2>3b. Bases externas (6) — enriquecimiento</h2>
+  <div class="card" id="bases-externas-card">
+    <div class="title">📚 Cruce con las 6 bases consolidadas
+      <span class="badge" id="bases-externas-badge">cargando...</span>
+      <span class="badge" id="bases-externas-total" style="background:var(--accent2);color:#000;margin-left:6px">0</span>
+    </div>
+    <div class="kv" id="kv-bases-externas"></div>
+
+    <!-- 6 sub-cards con totales y preview por base -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:14px">
+      <div class="card" style="padding:12px">
+        <div class="title" style="font-size:13px">🏠 ATT (dirección + teléfonos) <span class="badge" id="att-badge">…</span></div>
+        <div class="kv" id="kv-att"></div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="title" style="font-size:13px">🏢 Empleadores (PM dueños) <span class="badge" id="emp-badge">…</span></div>
+        <div class="kv" id="kv-emp"></div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="title" style="font-size:13px">🚗 REPUVE (vehículos) <span class="badge" id="repuve-badge">…</span></div>
+        <div class="kv" id="kv-repuve"></div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="title" style="font-size:13px">📱 Telcel (líneas) <span class="badge" id="telcel-badge">…</span></div>
+        <div class="kv" id="kv-telcel"></div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="title" style="font-size:13px">💼 IMSS Asegurados (patrones) <span class="badge" id="imss-a-badge">…</span></div>
+        <div class="kv" id="kv-imss-a"></div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="title" style="font-size:13px">🩺 IMSS Segmentación (salud) <span class="badge" id="imss-s-badge">…</span></div>
+        <div class="kv" id="kv-imss-s"></div>
+      </div>
+    </div>
+
+    <!-- Detalle expandible — oculto por defecto, se muestra con un toggle -->
+    <details style="margin-top:14px">
+      <summary style="cursor:pointer;color:var(--accent2);font-weight:600">🔍 Ver detalle completo (todos los campos de las 6 bases)</summary>
+      <div id="bases-externas-detalle" style="margin-top:12px"></div>
+    </div>
+
+    <!-- Sección 3c: Verificación unificada (ISSSTE + CFE + CFE por CP) — 2026-08-14.
+         Lazy: se llama DESPUÉS de pintar el sujeto principal, vía
+         /api/v1/sujeto/verificar_unificada. -->
+  <h2>3c. Verificación unificada (ISSSTE + CFE + CFE por CP)</h2>
+  <div class="card" id="verificacion-unificada-card">
+    <div class="title">🔍 Verificación unificada <span class="badge" id="verificacion-unificada-badge">cargando...</span></div>
+    <div class="kv" id="kv-verificacion-unificada"></div>
+    <div id="verificacion-unificada-detalle" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Sección 3d: Análisis de familia (2026-08-06). -->
+  <div class="card" id="familia-card">
+    <div class="title">👨‍👩‍👧‍👦 Personas con el mismo apellido y dirección
+      <span class="badge" id="familia-badge">cargando...</span>
+      <span class="badge" id="familia-total" style="background:var(--accent2);color:#000;margin-left:6px">0</span>
+    </div>
+    <div class="kv" id="kv-familia"></div>
+    <div id="familia-detalle" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Sección 3d: Hermanos + Progenitores (2026-08-06).
+       Detecta hermanos probables con score de certeza, e infiere
+       los nombres de los padres desde RENAPO + fallback del padrón. -->
+  <h2>3d. Hermanos &amp; Progenitores <span style="font-size:13px;color:var(--muted);font-weight:400">— score de certeza + inferencia de padres</span></h2>
+  <div class="card" id="hermanos-card">
+    <div class="title">👫 Hermanos probables (mismos dos apellidos + score)
+      <span class="badge" id="hermanos-badge">cargando...</span>
+      <span class="badge" id="hermanos-total" style="background:var(--accent2);color:#000;margin-left:6px">0</span>
+    </div>
+    <div class="kv" id="kv-hermanos"></div>
+    <div id="hermanos-detalle" style="margin-top:12px"></div>
+  </div>
+
+  <!-- 2026-08-14: progenitores ocultos a pedido del usuario. Endpoint aún
+       no funciona al 100%, se conserva en backend por si se reactiva. -->
+  <div class="card" id="progenitores-card" style="margin-top:14px; display:none">
+    <div class="title">👨‍👩 Progenitores (RENAPO + inferencia padrón)
+      <span class="badge" id="progenitores-badge">cargando...</span>
+    </div>
+    <div class="kv" id="kv-progenitores"></div>
+    <div id="progenitores-detalle" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Sección 4: Validaciones opcionales (Apify + Singula) -->
+  <h2>4. Validaciones opcionales (Apify + Singula)</h2>
+  <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+    Click en una validación para abrir el modal, editar el query y ejecutar.
+    Cada validación corre en su propio request (1 a 1).
+  </p>
+  <div class="validations-grid" id="validations-grid">
+    <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--muted);">
+      <span class="spinner-big"></span>
+      <div style="margin-top: 8px;">Cargando validaciones disponibles...</div>
+    </div>
+  </div>
+
+  <!-- Sección 5: Reporte AI -->
+  <h2>5. Reporte AI (opcional)</h2>
+  <div class="card">
+    <div class="title">🤖 Reporte narrativo con IA</div>
+    <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+      Genera un reporte narrativo (deepseek-v4-pro) integrando todos los datos recolectados.
+    </p>
+    <button class="btn" id="btn-reporte-ai">📄 Generar Reporte AI</button>
+    <button class="btn secondary" id="btn-imprimir-reporte" style="display:none; margin-left: 8px;">🖨️ Imprimir / Guardar PDF</button>
+    <div id="reporte-result" style="margin-top: 12px;"></div>
+  </div>
+</main>
+
+<!-- Modal: una validación a la vez -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header" id="modal-header">
+      <h3 id="modal-title">Validación</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- contenido dinámico -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal()">Cerrar</button>
+      <button class="btn accent2" id="modal-run-btn">Ejecutar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==== API URL ==== */
+const API_URL = (() => {
+  const h = location.hostname;
+  if (h.endsWith(".trycloudflare.com") || h.endsWith(".pages.dev") ||
+      h.endsWith(".workers.dev") || h === "cuartodepazsearch.com" ||
+      h.endsWith(".cuartodepazsearch.com") ||
+      h.endsWith(".cuartodepaz.org")) {
+    return `${location.protocol}//${location.host}`;
+  }
+  // local
+  return "http://localhost:8765";
+})();
+
+/* ==== Estado ==== */
+const params = new URLSearchParams(location.search);
+const CURP = params.get("curp");
+
+const state = {
+  sujeto: null,        // datos del padrón + RFC calculado
+  tlaloc_curp: null,   // validación RENAPO
+  tlaloc_rfc: null,    // validación SAT vía Tlaloc
+  checkid: null,       // datos fiscales/laborales CheckID
+  validations: [],     // validaciones opcionales disponibles
+  results: {},         // {validation_id: result}
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+}[c]));
+
+/* ==== 1. Cargar datos del sujeto ==== */
+async function loadSujeto() {
+  // Verificar sesión
+  const token = localStorage.getItem("session_token");
+  try {
+    const me = await fetch(`${API_URL}/api/auth/me`, {headers: token ? {"Authorization": `Bearer ${token}`} : {}}).then(r => r.json());
+    if (!me.ok) {
+      location.href = "/login.html";
+      return;
+    }
+  } catch (e) {
+    setStatus("error", "No se pudo conectar al backend: " + e.message);
+    return;
+  }
+  if (!CURP) {
+    setStatus("error", "Falta parámetro ?curp=...");
+    return;
+  }
+  setStatus("running", `Cargando sujeto ${CURP}...`);
+  try {
+    const r = await fetch(`${API_URL}/api/sujeto?curp=${encodeURIComponent(CURP)}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+
+    state.sujeto = data.sujeto;
+    state.tlaloc_curp = data.tlaloc_curp;
+    state.tlaloc_rfc = data.tlaloc_rfc;
+    state.checkid = data.checkid || null;
+    state.social_media = data.social_media || null;
+    state.validations = data.validations || [];
+    // 2026-08-04: capturar el metadata de cache de Singula para mostrar
+    // badges "cached" en el modal de validaciones (saber qué se cobraría al pulsar ▶).
+    state.singula = data.singula || {};
+
+    // Título
+    $("sujeto-titulo").textContent = data.sujeto.nombre_completo || "Sin nombre";
+    $("sujeto-curp").textContent = CURP;
+    document.title = `${data.sujeto.nombre_completo || CURP} — Investigación`;
+
+    // 2026-08-13: link dinámico a issste con paterno+nombre prellenados
+    const btnIssste = document.getElementById("btn-issste");
+    if (btnIssste) {
+      const params = new URLSearchParams({auto: "1"});
+      if (data.sujeto.paterno) params.set("paterno", data.sujeto.paterno);
+      if (data.sujeto.materno) params.set("materno", data.sujeto.materno);
+      if (data.sujeto.nombre)  params.set("nombre",  data.sujeto.nombre);
+      btnIssste.href = `issste.html?${params}`;
+    }
+
+    // Render padrón
+    renderPadron(data.sujeto);
+    // Validación SEPOMEX contra padrón
+    await renderSepomex(data.sujeto);
+    // Mapa de la colonia
+    loadMap(data.sujeto);
+    // Render RFC
+    renderRfc(data);
+    // Render CheckID
+    renderCheckId(data.checkid);
+    // Render Redes Sociales (automático)
+    renderSocialMedia(data.social_media);
+    // Render Tlaloc CURP
+    renderTlalocCurp(data.tlaloc_curp);
+    // Render Tlaloc RFC
+    renderTlalocRfc(data.tlaloc_rfc, data.sujeto.rfc);
+
+    // 2026-08-05: enriquecimiento lazy con las 6 bases externas.
+    // No bloquea el render principal — corre en background y pinta
+    // cuando termina. Pasamos el RFC del sujeto (de CheckID o local)
+    // y el NSS (de imss_a o CheckID) si están disponibles.
+    const sujetoRfc = data.sujeto && data.sujeto.rfc;
+    const sujetoNss = (data.checkid && data.checkid.nss) || (data.sujeto && data.sujeto.nss) || null;
+    loadBasesExternas(sujetoRfc, sujetoNss, data.sujeto);
+
+    // Render validaciones opcionales
+    renderValidations();
+
+    setStatus("ok",
+      `✓ Cargado: RFC=${data.sujeto.rfc || "—"} · CheckID: ${data.checkid?.exitoso ? "✓" : (data.checkid?.error ? "⚠" : "—")} · Tlaloc CURP: ${data.tlaloc_curp?.valid ? "✓ válido" : "✗ no encontrado"} · Tlaloc RFC: ${data.tlaloc_rfc?.valid ? "✓" : (data.tlaloc_rfc?.error ? "⚠" : "—")}`
+    );
+  } catch (e) {
+    setStatus("error", `Error cargando sujeto: ${e.message}`);
+  }
+}
+
+function setStatus(kind, msg) {
+  const el = $("status");
+  el.className = "status-bar " + kind;
+  let icon = "";
+  if (kind === "running") icon = '<span class="spinner"></span>';
+  el.innerHTML = icon + `<span>${esc(msg)}</span>`;
+}
+
+function renderPadron(s) {
+  if (!s) return;
+  const fields = [
+    ["RFC", s.rfc || "—", s.rfc ? "rfc-highlight" : "empty"],
+    ["CURP", s.curp], ["Nombre", s.nombre], ["Paterno", s.paterno],
+    ["Materno", s.materno], ["F. nacimiento", s.fecnac],
+    ["Sexo", s.sexo], ["Estado (e)", s.estado], ["Municipio (m)", s.municipio],
+    ["Sección (s)", s.seccion], ["Manzana", s.mza], ["Calle", s.calle],
+    ["Número ext.", s.ext], ["Número int.", s.interior], ["Colonia", s.colonia],
+    ["CP", s.cp], ["Folio", s.folio], ["Año registro", s.anio_reg],
+  ];
+  $("kv-padron").innerHTML = fields.map(([k, v, cls]) => {
+    const c = v === null || v === undefined || v === "" ? "empty" : (cls || "");
+    return `<div class="k">${k}</div><div class="v ${c}">${esc(v || "—")}</div>`;
+  }).join("");
+}
+
+async function renderSepomex(s) {
+  if (!s) return;
+  // cp ahora es VARCHAR y puede venir con 5 dígitos exactos o 8 con padding de ceros.
+  // Tomamos los primeros 5 dígitos como CP válido para SEPOMEX.
+  const cp = (s.cp || "").toString().slice(0, 5);
+  const colonia = (s.colonia || "").toUpperCase();
+  const estadoNombre = s.estado_nombre || "";
+  const municipioNombre = s.municipio_nombre || "";
+  const kv = $("kv-sepomex");
+  const badge = $("sepomex-badge");
+
+  if (!cp || cp === "00000") {
+    kv.innerHTML = '<div class="k">CP</div><div class="v empty">No hay CP en padrón</div>';
+    badge.textContent = "sin CP";
+    badge.style.background = "var(--muted)";
+    return;
+  }
+
+  try {
+    const r = await fetch(`${API_URL}/api/sepomex/validate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("session_token") ? {"Authorization": `Bearer ${localStorage.getItem("session_token")}`} : {}) },
+      body: JSON.stringify({cp, colonia, estado: estadoNombre, municipio: municipioNombre}),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+
+    const ok = "✓";
+    const ko = "✗";
+    const fields = [
+      ["CP", data.cp],
+      ["Estado (SEPOMEX)", `${data.coincidencias.estado ? ok : ko} ${esc(data.estado_oficial || "—")}` + (estadoNombre ? ` <span style="color:var(--muted);font-size:11px;">(padrón: ${esc(estadoNombre)})</span>` : "")],
+      ["Municipio (SEPOMEX)", `${data.coincidencias.municipio ? ok : ko} ${esc(data.municipio_oficial || "—")}`],
+      ["Colonia (padrón)", esc(colonia || "—")],
+      ["Colonia oficial", data.colonia_oficial ? `${ok} ${esc(data.colonia_oficial)}` : (colonia ? `${ko} no existe` : "—")],
+      ["Score", `${data.score}/100`],
+      ["Veredicto", data.verdict],
+    ];
+
+    if (data.colonias_oficiales && data.colonias_oficiales.length) {
+      const list = data.colonias_oficiales.slice(0, 15).map(c => `${esc(c.nombre)} <span style="color:var(--muted);font-size:10px;">${esc(c.tipo || "")}</span>`).join(", ");
+      const extra = data.colonias_oficiales.length > 15 ? ` <span style="color:var(--muted);">… (+${data.colonias_oficiales.length - 15})</span>` : "";
+      fields.push(["Colonias oficiales CP", `${list}${extra}`]);
+    }
+
+    kv.innerHTML = fields.map(([k, v]) =>
+      `<div class="k">${k}</div><div class="v ${v && v.startsWith("✗") ? "empty" : ""}">${v}</div>`
+    ).join("");
+
+    if (data.score >= 70) {
+      badge.textContent = "✓ verificado";
+      badge.style.background = "var(--accent2)";
+    } else if (data.score >= 40) {
+      badge.textContent = "⚠ parcial";
+      badge.style.background = "var(--warn)";
+    } else {
+      badge.textContent = "✗ no coincide";
+      badge.style.background = "var(--error)";
+    }
+  } catch (e) {
+    kv.innerHTML = `<div class="k">Error</div><div class="v empty">${esc(e.message)}</div>`;
+    badge.textContent = "error";
+    badge.style.background = "var(--error)";
+  }
+}
+
+function renderRfc(data) {
+  if (!data.rfc) {
+    $("kv-rfc").innerHTML = '<div class="v empty">No se pudo calcular el RFC</div>';
+    $("rfc-source-badge").textContent = "error";
+    $("rfc-source-badge").className = "badge error";
+    return;
+  }
+  const r = data.rfc;
+  $("rfc-source-badge").textContent = r.source || "Singula SAT";
+  $("rfc-source-badge").className = "badge";
+
+  const local = r.local || {};
+  const sat = r.sat || {};
+  const match = r.match;
+  const matchBadge = match === true ? '<span class="badge" style="background:var(--accent2);color:#000">✓ coincide</span>'
+                   : match === false ? '<span class="badge warn">⚠ no coincide</span>'
+                   : '<span class="badge">—</span>';
+
+  // detectar si el RFC está incompleto (sin homoclave real)
+  const rfcPrincipal = r.rfc || "";
+  const estaCompleto = rfcPrincipal.length >= 13;
+  const rfcDisplay = estaCompleto ? rfcPrincipal : (local.rfc_10 || rfcPrincipal || "—");
+  const alertaHomoclave = estaCompleto ? "" : `
+    <div style="grid-column: 1 / -1; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warn); border-radius: 4px; padding: 8px 10px; font-size: 12px; color: var(--warn); margin-bottom: 8px;">
+      ⚠ Falta la <strong>homoclave real</strong> del SAT. RFC mostrado: primeros 10 caracteres calculados localmente.
+      ${r.error ? `<div style="margin-top: 4px;">Error del proveedor: ${esc(r.error)}</div>` : ""}
+      <div style="margin-top: 4px; font-size: 11px;">Recarga créditos en Singula para obtener el RFC completo.</div>
+    </div>`;
+
+  const rows = [
+    ["RFC", rfcDisplay, rfcDisplay ? "rfc-highlight" : "empty"],
+    ["Estado", estaCompleto ? "✓ Completo (homoclave real)" : "⚠ Incompleto (falta homoclave)"],
+    ["Match local vs SAT", matchBadge, null, true],  // isHtml=true
+    ["RFC 10 chars (local)", local.rfc_10],
+    ["RFC SAT", sat.rfc],
+    ["Homoclave", sat.homoclave || "—"],
+    ["DV (SAT)", sat.dv || "—"],
+    ["Coincide local con SAT", local.coincide_con_sat === true ? "✓ Sí" : (local.coincide_con_sat === false ? "✗ No" : "—")],
+    ["Fuente", r.source],
+  ];
+  $("kv-rfc").innerHTML = alertaHomoclave + rows.map(([k, v, cls, isHtml]) => {
+    const isCode = !isHtml && (k === "RFC" || k === "RFC 10 chars (local)" || k === "RFC SAT" || k === "Homoclave" || k === "DV (SAT)") && v && typeof v === "string";
+    const c = !v || v === "—" ? "empty" : (cls || "");
+    const display = isHtml ? v : (isCode ? "<code>" + esc(v) + "</code>" : (typeof v === "string" ? esc(v) : v));
+    return `<div class="k">${k}</div><div class="v ${c}">${display}</div>`;
+  }).join("");
+}
+
+function renderCheckId(c) {
+  const el = $("checkid-badge");
+  const kv = $("kv-checkid");
+  if (!c) {
+    el.textContent = "no ejecutado";
+    el.className = "badge warn";
+    kv.innerHTML = '<div class="v empty">Sin respuesta de CheckID</div>';
+    return;
+  }
+  if (c.exitoso) {
+    el.textContent = "✓ éxito";
+    el.className = "badge";
+  } else {
+    el.textContent = "⚠ falló";
+    el.className = "badge warn";
+  }
+  const e69 = c.estado_69_69b;
+  const emailLink = c.email ? `<a href="mailto:${esc(c.email)}" target="_blank">${esc(c.email)}</a>` : "—";
+  const rows = [
+    ["Exitoso", c.exitoso ? "✓ Sí" : "✗ No"],
+    ["RFC", c.rfc, c.rfc ? "rfc-highlight" : "empty"],
+    ["Razón social", c.razon_social],
+    ["NSS", c.nss],
+    ["Email fiscal", emailLink],
+    ["Código postal", c.codigo_postal],
+    ["Régimen fiscal", c.regimen_fiscal],
+    ["69/69B con problema", e69?.con_problema === true ? "⚠ Sí" : (e69?.con_problema === false ? "✓ No" : "—")],
+    ["Detalles 69/69B", e69?.detalles ? JSON.stringify(e69.detalles).slice(0, 200) : "—"],
+    ["Error", c.error],
+  ];
+  kv.innerHTML = rows.map(([k, v, cls]) => {
+    const c = v === null || v === undefined || v === "" ? "empty" : (cls || "");
+    const isCode = (k === "RFC" || k === "NSS" || k === "Código postal") && v && typeof v === "string";
+    return `<div class="k">${k}</div><div class="v ${c}">${isCode ? "<code>" + esc(v) + "</code>" : v}</div>`;
+  }).join("");
+}
+
+
+function renderSocialMedia(sm) {
+  const badge = $("social-media-badge");
+  const kv = $("kv-social-media");
+  if (!sm || sm.error) {
+    badge.textContent = sm?.error ? "⚠ error" : "sin datos";
+    badge.className = "badge warn";
+    kv.innerHTML = '<div class="v empty">' + esc(sm?.error || "Sin resultados de busqueda de redes sociales.") + '</div>';
+    return;
+  }
+  const perfiles = sm.perfiles || [];
+  if (perfiles.length === 0) {
+    badge.textContent = "0 perfiles";
+    badge.className = "badge warn";
+    kv.innerHTML = '<div class="v empty">No se encontraron coincidencias exactas de nombre en redes sociales (' + (sm.total_encontrados || 0) + ' candidatos revisados).</div>';
+    return;
+  }
+  badge.textContent = "✓ " + perfiles.length + (perfiles.length > 1 ? " perfiles" : " perfil");
+  badge.className = "badge";
+  var html = "";
+  for (var i = 0; i < perfiles.length; i++) {
+    var p = perfiles[i];
+    var platform = p.platform || p._search_name || "red social";
+    var name = p.displayName || p.name || p.fullName || p.title || "—";
+    var url = p.url || p.profileUrl || p.link || "";
+    var bio = (p.bio || p.description || p.biography || "").slice(0, 120);
+    var followers = p.followers || p.followerCount || p.followersCount || "";
+    var verified = p.verified || p.isVerified ? " ✓" : "";
+    html += '<div style="background:var(--panel2); border:1px solid var(--border); border-radius:6px; padding:10px; margin-bottom:8px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+        '<span style="font-weight:600; font-size:13px; text-transform:capitalize;">' + esc(platform) + verified + '</span>' +
+        (followers ? '<span style="font-size:11px; color:var(--muted);">' + esc(String(followers)) + ' seguidores</span>' : "") +
+      '</div>' +
+      '<div style="font-size:13px; color:var(--accent2); margin-bottom:2px;">' + esc(name) + '</div>' +
+      (bio ? '<div style="font-size:11px; color:var(--muted); margin-bottom:4px;">' + esc(bio) + '</div>' : "") +
+      (url ? '<div style="font-size:11px;"><a href="' + esc(url) + '" target="_blank" style="color:var(--accent); text-decoration:none;">🔗 ' + esc(url) + '</a></div>' : "") +
+    '</div>';
+  }
+  kv.innerHTML = html;
+}
+
+
+function renderTlalocCurp(t) {
+  const el = $("tlaloc-source-badge");
+  if (!t) {
+    el.textContent = "no ejecutado";
+    el.className = "badge warn";
+    $("kv-tlaloc").innerHTML = '<div class="v empty">Sin respuesta</div>';
+    return;
+  }
+  if (t.error) {
+    el.textContent = "error";
+    el.className = "badge error";
+    $("kv-tlaloc").innerHTML = `<div class="v data-err">${esc(t.error)}</div>`;
+    return;
+  }
+  if (t.valid) {
+    el.textContent = "✓ válido";
+    el.className = "badge";
+  } else {
+    el.textContent = "✗ no encontrado";
+    el.className = "badge error";
+  }
+  const fields = [
+    ["Status", t.status],
+    ["Nombres", t.nombres],
+    ["Apellido paterno", t.primerApellido],
+    ["Apellido materno", t.segundoApellido],
+    ["Sexo", t.sexo],
+    ["Fecha de nacimiento", t.fechaNacimiento],
+    ["Nacionalidad", t.nacionalidad],
+    ["Entidad", t.entidad],
+    ["Doc. probatorio", t.docProbatorio ? (t.docProbatorio.entidadRegistro + " / " + t.docProbatorio.municipioRegistro) : null],
+  ];
+  $("kv-tlaloc").innerHTML = fields.map(([k, v]) => {
+    const c = !v ? "empty" : "";
+    return `<div class="k">${k}</div><div class="v ${c}">${esc(v || "—")}</div>`;
+  }).join("");
+}
+
+function renderTlalocRfc(t, rfc) {
+  const el = $("tlaloc-rfc-badge");
+  if (!rfc) {
+    el.textContent = "sin RFC";
+    el.className = "badge warn";
+    $("kv-tlaloc-rfc").innerHTML = '<div class="v empty">No hay RFC para validar</div>';
+    return;
+  }
+  if (!t || t.error) {
+    el.textContent = "error";
+    el.className = "badge error";
+    $("kv-tlaloc-rfc").innerHTML = `<div class="v data-err">${esc(t?.error || "Error")}</div>`;
+    return;
+  }
+  if (t.valid) {
+    el.textContent = "✓ válido en SAT";
+    el.className = "badge";
+  } else {
+    el.textContent = "✗ no encontrado";
+    el.className = "badge error";
+  }
+  const fields = [
+    ["RFC", rfc],
+    ["Valid", t.valid ? "✓ Sí" : "✗ No"],
+    ["Acepta CFDI", t.accept_cfdi ? "✓ Sí" : "✗ No"],
+    ["Mensaje del SAT", t.reason],
+  ];
+  $("kv-tlaloc-rfc").innerHTML = fields.map(([k, v]) => {
+    const c = !v ? "empty" : "";
+    return `<div class="k">${k}</div><div class="v ${c}">${esc(v || "—")}</div>`;
+  }).join("");
+}
+
+/* ==== 2. Render validaciones opcionales ==== */
+// 2026-08-04: helper para convertir timestamp UNIX a "hace Nh / Nd"
+function _cacheAge(timestamp) {
+  if (!timestamp || typeof timestamp !== "number") return null;
+  const ageSec = (Date.now() / 1000) - timestamp;
+  if (ageSec < 0) return null;
+  if (ageSec < 3600) return `hace ${Math.round(ageSec / 60)}m`;
+  if (ageSec < 86400) return `hace ${Math.round(ageSec / 3600)}h`;
+  return `hace ${Math.round(ageSec / 86400)}d`;
+}
+
+// 2026-08-04: dado un validation_id de Singula (singula-judicial, etc), devuelve
+// {cached, age_str, error} si la respuesta /api/sujeto trae esa metadata.
+function _singulaCacheFor(validationId) {
+  const s = state.singula || {};
+  const v = s.validations || {};
+  const fc = v.from_cache || {};
+  // Mapear validation_id del modal a la key interna usada por _run_singula_validations.
+  const idToKey = {
+    "singula-judicial":        "judicial",
+    "singula-blacklist":       "blacklist",
+    "singula-email-lookup":    "email_lookup",
+    "singula-intel-basic":     "intel_basic",
+    "singula-intel-premium":   "intel_premium",
+  };
+  const key = idToKey[validationId];
+  if (!key) return null;
+  const entry = (v || {})[key];
+  if (!entry || typeof entry !== "object") return null;
+  const cached = !!fc[key];
+  const cachedAt = entry.cached_at;
+  return {
+    cached,
+    ageStr: cached ? _cacheAge(cachedAt) : null,
+    error: entry.error || null,
+    skipped: entry.skipped || null,
+  };
+}
+
+/* ==== 3b. Bases externas (lazy, después de pintar el sujeto principal) ==== */
+async function loadBasesExternas(rfc, nss, sujeto) {
+  const token = localStorage.getItem("session_token");
+  // 2026-08-06: además de curp/rfc/nss, mandar nombre+paterno+materno+fecnac
+  // para que el backend pueda hacer el fallback por nombre cuando el xwalk
+  // curp→rfc no encuentra nada (caso típico: curp presente en el padrón
+  // pero sin rfc en imss_s).
+  const s = sujeto || (typeof state !== "undefined" && state.sujeto) || {};
+  const params = new URLSearchParams();
+  if (CURP)             params.set("curp", CURP);
+  if (rfc)              params.set("rfc", rfc);
+  if (nss)              params.set("nss", nss);
+  if (s.nombre)         params.set("nombre",  s.nombre);
+  if (s.paterno)        params.set("paterno", s.paterno);
+  if (s.materno)        params.set("materno", s.materno);
+  if (s.fecnac)         params.set("fecnac",  s.fecnac);
+  try {
+    const r = await fetch(
+      `${API_URL}/api/v1/sujeto/enriquecido?${params.toString()}`,
+      { headers: token ? {"Authorization": `Bearer ${token}`} : {} }
+    );
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    renderBasesExternas(data);
+    // 2026-08-06: después de pintar las bases externas, lanzar el
+    // análisis de familia (también lazy, no bloquea el render principal).
+    if (data && data.xwalk && (data.xwalk.rfcs && data.xwalk.rfcs.length > 0
+                              || data.xwalk.nombre_rfcs && data.xwalk.nombre_rfcs.length > 0)) {
+      loadFamilia(s);
+    }
+    // 2026-08-06: cargar también hermanos + progenitores (sección 3d).
+    // No requiere xwalk, basta con la CURP del sujeto.
+    loadHermanosYProgenitores(s);
+    // 2026-08-14: verificación unificada (ISSSTE + CFE regex + CFE por CP).
+    loadVerificacionUnificada(s);
+  } catch (e) {
+    const badge = $("bases-externas-badge");
+    if (badge) {
+      badge.textContent = "error";
+      badge.className = "badge err";
+    }
+    const el = $("kv-bases-externas");
+    if (el) el.innerHTML = `<div class="v err">Error al cruzar bases externas: ${esc(String(e))}</div>`;
+  }
+}
+
+/* ==== 3c. Análisis de familia (lazy) ==== */
+// 2026-08-06: mapeo de personas con el mismo apellido en direcciones
+// iguales. Combina att+telcel+repuve+padrón. Devuelve clusters de
+// convivientes (mismo domicilio + ciudad) y los muestra en el front.
+async function loadFamilia(sujeto) {
+  const s = sujeto || (typeof state !== "undefined" && state.sujeto) || {};
+  if (!s.paterno) {
+    const el = $("familia-detalle");
+    if (el) el.innerHTML = `<div class="v">No hay paterno para análisis familiar.</div>`;
+    const badge = $("familia-badge");
+    if (badge) { badge.textContent = "skipped"; badge.className = "badge muted"; }
+    return;
+  }
+  const token = localStorage.getItem("session_token");
+  const params = new URLSearchParams();
+  params.set("paterno", s.paterno);
+  if (s.materno)        params.set("materno", s.materno);
+  if (s.nombre)         params.set("nombre",  s.nombre);
+  if (s.estado_nombre)  params.set("estado",  s.estado_nombre);
+  try {
+    const r = await fetch(
+      `${API_URL}/api/v1/familia/mapa?${params.toString()}`,
+      { headers: token ? {"Authorization": `Bearer ${token}`} : {} }
+    );
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    renderFamilia(data);
+  } catch (e) {
+    const badge = $("familia-badge");
+    if (badge) { badge.textContent = "error"; badge.className = "badge err"; }
+    const el = $("familia-detalle");
+    if (el) el.innerHTML = `<div class="v err">Error al mapear familia: ${esc(String(e))}</div>`;
+  }
+}
+
+function renderFamilia(d) {
+  const badge  = $("familia-badge");
+  const totEl  = $("familia-total");
+  const sumEl  = $("kv-familia");
+  const detEl  = $("familia-detalle");
+  if (!badge || !sumEl || !detEl) return;
+
+  const tot = d.totales || {};
+  const nClusters = (d.clusters || []).length;
+  const nPadClusters = (d.padron_clusters || []).length;
+  const total = nClusters + nPadClusters;
+  if (totEl) totEl.textContent = `${total} clusters`;
+
+  if (total === 0 && (!d.padron_matches || d.padron_matches.length === 0)) {
+    badge.textContent = "sin clusters";
+    badge.className = "badge muted";
+    sumEl.innerHTML = `<div class="v">No se encontraron clusters familiares (>=2 personas en misma dirección).</div>`;
+    return;
+  }
+  badge.textContent = total > 0 ? `${total} clusters` : "sin clusters";
+  badge.className = total > 0 ? "badge ok" : "badge muted";
+
+  // Resumen
+  sumEl.innerHTML = [
+    kvRow("personas_recolectadas", tot.personas_recolectadas || 0),
+    kvRow("att / telcel / repuve", `${tot.att_count || 0} / ${tot.telcel_count || 0} / ${tot.repuve_count || 0}`),
+    kvRow("clusters att+telcel+repuve", nClusters),
+    kvRow("clusters padrón (domicilios)", nPadClusters),
+    kvRow("matches padrón local", (d.padron_matches || []).length),
+  ].join("");
+
+  // Detalle: clusters externos + clusters padrón
+  let html = "";
+  if ((d.clusters || []).length > 0) {
+    html += `<div style="margin-top:10px"><strong style="color:var(--accent2)">📡 Clusters en att/telcel/repuve:</strong></div>`;
+    html += renderClustersTable(d.clusters);
+  }
+  if ((d.padron_clusters || []).length > 0) {
+    html += `<div style="margin-top:14px"><strong style="color:var(--accent2)">🗺️ Clusters del padrón (mapeo familiar directo):</strong></div>`;
+    html += renderPadronClustersTable(d.padron_clusters);
+  }
+  detEl.innerHTML = html;
+}
+
+function renderClustersTable(clusters) {
+  let html = `<table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:6px">`;
+  html += `<thead><tr style="text-align:left;border-bottom:1px solid var(--muted)">
+    <th style="padding:4px">n</th><th>Dirección</th><th>Fuentes</th><th>RFCs</th>
+    <th>Personas</th>
+  </tr></thead><tbody>`;
+  for (const c of clusters) {
+    html += `<tr style="border-bottom:1px solid #222">`;
+    html += `<td style="padding:4px;font-weight:600">${c.n_personas_unicas}</td>`;
+    html += `<td>${esc(c.direccion || '')}<br><small style="color:var(--muted)">${esc(c.colonia || '')}, ${esc(c.ciudad || '')}, ${esc(c.estado || '')}</small></td>`;
+    html += `<td>${(c.fuentes || []).map(f => `<span class="badge">${esc(f)}</span>`).join(' ')}</td>`;
+    html += `<td><small>${(c.rfcs_unicos || []).map(r => esc(r)).join('<br>')}</small></td>`;
+    html += `<td><small>${(c.personas || []).map(p =>
+      `${esc(p.nombre || '')}<br><span style="color:var(--muted)">${esc(p.fuente)} · ${esc(p.telefono || '')}</span>`
+    ).join('<br>')}</small></td>`;
+    html += `</tr>`;
+  }
+  html += `</tbody></table>`;
+  return html;
+}
+
+function renderPadronClustersTable(pclusters) {
+  let html = `<table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:6px">`;
+  html += `<thead><tr style="text-align:left;border-bottom:1px solid var(--muted)">
+    <th style="padding:4px">n</th><th>Municipio, Estado</th><th>Domicilio</th><th>Personas (CURP, edad)</th>
+  </tr></thead><tbody>`;
+  for (const c of pclusters) {
+    html += `<tr style="border-bottom:1px solid #222">`;
+    html += `<td style="padding:4px;font-weight:600">${c.n_personas}</td>`;
+    html += `<td><small>${esc(c.municipio || '')}, ${esc(c.estado || '')}<br>${esc(c.colonia || '')}</small></td>`;
+    html += `<td><small>${esc(c.direccion || '')}</small></td>`;
+    html += `<td><small>${(c.personas || []).map(p =>
+      `${esc(p.nombre || '')} ${esc(p.paterno || '')} ${esc(p.materno || '')}` +
+      `<br><span style="color:var(--muted)">${esc(p.curp || '')} · ${p.edad || '?'} años</span>`
+    ).join('<br>')}</small></td>`;
+    html += `</tr>`;
+  }
+  html += `</tbody></table>`;
+  return html;
+}
+
+// 2026-08-14: verificación unificada (ISSSTE + CFE regex + CFE por CP).
+async function loadVerificacionUnificada(sujeto) {
+  const s = sujeto || (typeof state !== "undefined" && state.sujeto) || {};
+  const curp = s.curp || (typeof CURP !== "undefined" ? CURP : "");
+  if (!curp) {
+    const b = $("[id$='-badge'][id*='verificacion']");
+    if (b) { b.textContent = "sin curp"; b.className = "badge muted"; }
+    return;
+  }
+  const token = localStorage.getItem("session_token");
+  const headers = token ? {"Authorization": `Bearer ${token}`} : {};
+
+  // Badge y contenedor
+  const badge = $("verificacion-unificada-badge");
+  const sumEl = $("kv-verificacion-unificada");
+  const detEl = $("verificacion-unificada-detalle");
+  if (!badge || !sumEl || !detEl) return;
+
+  badge.textContent = "cargando...";
+  badge.className = "badge";
+
+  try {
+    const r = await fetch(
+      `${API_URL}/api/v1/sujeto/verificar_unificada?curp=${encodeURIComponent(curp)}`,
+      { headers }
+    );
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+
+    badge.textContent = d.elapsed_s ? `✓ ${d.elapsed_s}s` : "✓";
+    badge.className = "badge ok";
+
+    // Resumen
+    const v = d.verificaciones || {};
+    const parts = [];
+    const addRow = (label, check) => {
+      if (!check) return;
+      if (check.skipped) {
+        parts.push(kvRow(label, `skipped (${check.reason})`));
+      } else if (check.error) {
+        parts.push(kvRow(label, `error: ${check.error}`));
+      } else {
+        parts.push(kvRow(label, `${check.count || 0} resultados`));
+      }
+    };
+    addRow("Padrón base", v.sujeto_base);
+    addRow("CFE por nombre", v.cfe_por_nombre);
+    addRow("ISSSTE", v.issste);
+    addRow("CFE por CP", v.cfe_coordenadas);
+    sumEl.innerHTML = parts.join("");
+
+    // Detalle expandible
+    let html = "";
+    const renderSection = (label, check, emptyMsg) => {
+      if (!check || check.skipped || check.error) return "";
+      const rows = check.rows || [];
+      if (!rows.length) return "";
+      const ai = check.ai_analysis || {};
+      const hasAI = !ai.skipped && ai.confianza_global;
+
+      let h = `<div style="margin-top:12px"><strong style="color:var(--accent2)">${label}</strong> (${rows.length} resultados)`;
+      if (hasAI) {
+        const conf = ai.confianza_global;
+        const colors = {alta: "#16a34a", media: "#f59e0b", baja: "#ef4444"};
+        const c = colors[conf] || "#94a3b8";
+        h += ` <span style="background:${c};color:#000;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600">🤖 IA: ${conf.toUpperCase()}</span>`;
+        if (ai.resumen) {
+          h += `<div style="font-size:11px;color:var(--muted);margin-top:4px;font-style:italic">${esc(ai.resumen)}</div>`;
+        }
+      }
+      h += `</div>`;
+
+      h += `<table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:6px"><thead>`;
+      const cols = Object.keys(rows[0]).filter(c => c !== "ai_razon");  // excluir razon del render
+      h += `<tr style="text-align:left;border-bottom:1px solid var(--muted)">${cols.map(c => `<th style="padding:4px">${c}</th>`).join('')}</tr></thead><tbody>`;
+      for (const r of rows.slice(0, 20)) {
+        const cells = cols.map(c => {
+          let val = r[c];
+          let style = "padding:4px;font-size:11px";
+          // Highlight rows with ai_match=true
+          if (r.ai_match === true) style += ";background:rgba(22,163,74,0.12)";
+          if (r.ai_match === false && typeof r.ai_score === "number") style += ";opacity:0.55";
+          return `<td style="${style}">${esc(val == null ? '' : val)}</td>`;
+        }).join('');
+        h += `<tr style="border-bottom:1px solid #222">${cells}</tr>`;
+      }
+      if (rows.length > 20) {
+        h += `<tr><td colspan="999" style="padding:4px;color:var(--muted);font-size:11px">... y ${rows.length - 20} más</td></tr>`;
+      }
+      h += "</tbody></table>";
+      return h;
+    };
+    const v_sujeto = renderSection("Padrón base", v.sujeto_base);
+    const v_cfe = renderSection("CFE por nombre", v.cfe_por_nombre);
+    const v_issste = renderSection("ISSSTE", v.issste);
+    const v_cp = renderSection("CFE por CP", v.cfe_coordenadas);
+    detEl.innerHTML = v_sujeto + v_cfe + v_issste + v_cp;
+  } catch (e) {
+    const badge = $("verificacion-unificada-badge");
+    if (badge) { badge.textContent = "error"; badge.className = "badge err"; }
+    detEl.innerHTML = `<div class="v err">Error: ${esc(String(e))}</div>`;
+  }
+}
+
+/* ==== 3d. Hermanos + Progenitores ==== */
+// 2026-08-06: detecta hermanos probables con score de certeza
+// (apellidos+cp+edad+domicilio) y trata de inferir los nombres
+// de los padres desde RENAPO + fallback del padrón.
+async function loadHermanosYProgenitores(sujeto) {
+  const s = sujeto || (typeof state !== "undefined" && state.sujeto) || {};
+  const curp = s.curp || (typeof CURP !== "undefined" ? CURP : "");
+  if (!curp) {
+    const setSkipped = (id) => {
+      const b = $(id);
+      if (b) { b.textContent = "sin curp"; b.className = "badge muted"; }
+    };
+    setSkipped("hermanos-badge");
+    // 2026-08-14: progenitores deshabilitado (card oculta + endpoint inestable).
+    return;
+  }
+  const token = localStorage.getItem("session_token");
+  const headers = token ? {"Authorization": `Bearer ${token}`} : {};
+  // Hermanos. Progenitores deshabilitado el 2026-08-14:
+  //   - card #progenitores-card display:none
+  //   - endpoint /api/v1/familia/progenitores no funciona al 100%
+  //   - renderProgenitores() queda definido por si se reactiva
+  await fetch(`${API_URL}/api/v1/familia/hermanos?curp=${encodeURIComponent(curp)}&delta_max=18`, { headers })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if (d) renderHermanos(d); })
+    .catch(e => {
+      const b = $("hermanos-badge");
+      if (b) { b.textContent = "error"; b.className = "badge err"; }
+    });
+}
+
+function renderHermanos(d) {
+  const badge = $("hermanos-badge");
+  const totEl = $("hermanos-total");
+  const sumEl = $("kv-hermanos");
+  const detEl = $("hermanos-detalle");
+  if (!badge || !sumEl || !detEl) return;
+
+  const tot = d.totales || {};
+  const total = tot.hermanos_detectados || 0;
+  if (totEl) totEl.textContent = `${total} hermanos`;
+  if (total === 0) {
+    badge.textContent = "sin coincidencias";
+    badge.className = "badge muted";
+    sumEl.innerHTML = `<div class="v">No hay hermanos probables con score >=40 en el padrón.</div>`;
+    return;
+  }
+  badge.textContent = `${total} detectados`;
+  badge.className = "badge ok";
+
+  const s = d.sujeto || {};
+  sumEl.innerHTML = [
+    kvRow("sujeto", `${s.nombre || ''} ${s.paterno || ''} ${s.materno || ''} · ${s.fecnac || ''}`),
+    kvRow("muy probables", tot.muy_probable || 0),
+    kvRow("probables",     tot.probable || 0),
+    kvRow("posibles",      tot.posible || 0),
+    kvRow("candidatos examinados", tot.candidatos_examinados || 0),
+  ].join("");
+
+  let html = "";
+  for (const nivel of ["muy_probable", "probable", "posible"]) {
+    if ((d.hermanos[nivel] || []).length === 0) continue;
+    const color = nivel === "muy_probable" ? "var(--ok)" : (nivel === "probable" ? "var(--accent2)" : "var(--muted)");
+    html += `<div style="margin-top:10px"><strong style="color:${color}">${nivel.replace("_", " ").toUpperCase()}</strong></div>`;
+    html += `<table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:6px">`;
+    html += `<thead><tr style="text-align:left;border-bottom:1px solid var(--muted)">
+      <th style="padding:4px">score</th><th>nombre</th><th>CURP</th>
+      <th>fecnac</th><th>domicilio</th>
+    </tr></thead><tbody>`;
+    for (const h of d.hermanos[nivel]) {
+      html += `<tr style="border-bottom:1px solid #222">`;
+      html += `<td style="padding:4px;font-weight:600;color:${color}">${h.score}</td>`;
+      html += `<td>${esc(h.nombre)} ${esc(h.paterno)} ${esc(h.materno)}<br><small style="color:var(--muted)">${esc(h.sexo)} · ${h.edad} años</small></td>`;
+      html += `<td><small>${esc(h.curp)}</small></td>`;
+      html += `<td><small>${esc(h.fecnac)}</small></td>`;
+      html += `<td><small>${esc(h.domicilio)}<br>Col ${esc(h.colonia || '')}, CP ${esc(h.cp || '')}<br>${esc(h.municipio_nombre || '')}, ${esc(h.estado_nombre || '')}</small></td>`;
+      html += `</tr>`;
+      if (h.razones && h.razones.length > 0) {
+        html += `<tr><td colspan="5" style="padding:2px 4px;font-size:10px;color:var(--muted)">↳ ${h.razones.map(esc).join(" · ")}</td></tr>`;
+      }
+    }
+    html += `</tbody></table>`;
+  }
+  detEl.innerHTML = html;
+}
+
+function renderProgenitores(d) {
+  const badge = $("progenitores-badge");
+  const sumEl = $("kv-progenitores");
+  const detEl = $("progenitores-detalle");
+  if (!badge || !sumEl || !detEl) return;
+
+  const fuentes = d.fuentes || [];
+  const hasPadre = !!d.padre;
+  const hasMadre = !!d.madre;
+  const tieneAlgo = hasPadre || hasMadre;
+
+  if (tieneAlgo) {
+    badge.textContent = fuentes.join(" + ") || "detectado";
+    badge.className = "badge ok";
+  } else if (fuentes.length === 0) {
+    badge.textContent = "sin datos";
+    badge.className = "badge muted";
+  } else {
+    badge.textContent = "RENAPO sin resultado";
+    badge.className = "badge muted";
+  }
+
+  if (!tieneAlgo) {
+    sumEl.innerHTML = `<div class="v">No se detectaron progenitores. ${d.nota ? esc(d.nota.slice(0,200)) : ''}</div>`;
+    return;
+  }
+
+  function renderParental(p, tipo) {
+    if (!p) return "";
+    return `<div style="margin-bottom:10px"><strong style="color:var(--accent2)">${tipo}:</strong> ` +
+      `${esc(p.nombre || '?')} ${esc(p.paterno || '')} ${esc(p.materno || '')}` +
+      ` (${p.edad || '?'} años · fecnac ${esc(p.fecnac || '?')})` +
+      `<br><small style="color:var(--muted)">CURP: ${esc(p.curp || '?')} · fuente: ${esc(p.fuente || '?')}</small>` +
+      (p.domicilio ? `<br><small style="color:var(--muted)">dom: ${esc(p.domicilio)} Col ${esc(p.colonia || '')} CP ${esc(p.cp || '')}</small>` : '') +
+      (p.municipio_nombre ? `<br><small style="color:var(--muted)">${esc(p.municipio_nombre)}, ${esc(p.estado_nombre || '')}</small>` : '') +
+      (p.criterio ? `<br><small style="color:var(--muted);font-size:10px">criterio: ${esc(p.criterio)}</small>` : '') +
+      `</div>`;
+  }
+  detEl.innerHTML = renderParental(d.padre, "👨 Padre") + renderParental(d.madre, "👩 Madre");
+
+  // Mostrar advertencia si hay candidatos H descartados por edad
+  const desc = (d.metadata || {}).padron_inferencia_warning;
+  if (desc) {
+    detEl.innerHTML += `<div style="margin-top:8px;padding:8px;background:#332200;border-radius:6px;font-size:11px">⚠️ ${esc(desc)}</div>`;
+  }
+  const herms = (d.metadata || {}).padron_hermanos_detectados || [];
+  if (herms.length > 0) {
+    let h = `<div style="margin-top:8px"><small style="color:var(--muted)">Candidatos masculinos descartados (probablemente hermanos/tíos):</small><br>`;
+    for (const x of herms.slice(0, 3)) {
+      h += `<small>· ${esc(x.nombre)} ${esc(x.fecnac)} (${esc(x.razon)})</small><br>`;
+    }
+    h += `</div>`;
+    detEl.innerHTML += h;
+  }
+}
+
+function renderBasesExternas(d) {
+  const badge = $("bases-externas-badge");
+  const totEl = $("bases-externas-total");
+  const total = d.total_registros || 0;
+  if (totEl) totEl.textContent = total.toLocaleString() + " registros";
+  if (badge) {
+    badge.textContent = total > 0 ? "✓ cargado" : "sin coincidencias";
+    badge.className = total > 0 ? "badge" : "badge warn";
+  }
+
+  // Resumen superior
+  const xwalk = d.xwalk || {};
+  const summaryEl = $("kv-bases-externas");
+  if (summaryEl) {
+    summaryEl.innerHTML = [
+      kvRow("CURP", d.curp || ""),
+      kvRow("RFC usado en lookup", (xwalk.rfcs || []).join(", ") || "—"),
+      kvRow("NSS (info adicional)", d.nss || "—"),
+      kvRow("Total filas externas", (d.total_registros || 0).toLocaleString()),
+    ].join("");
+  }
+
+  // 6 sub-cards
+  renderBaseCard("att",         "🏠 ATT",           d.att,         ["nombres","telefono_fijo","celular","direccion","colonia","municipio","estado"]);
+  renderBaseCard("emp",         "🏢 Empleadores",   d.empleadores, ["razon_social","num_empleados","dom_calle","dom_municipio","dom_entidad","dom_cp"]);
+  renderBaseCard("repuve",      "🚗 REPUVE",        d.repuve,      ["placa","marca","modelo","color","propietario"]);
+  renderBaseCard("telcel",      "📱 Telcel",        d.telcel,      ["telefono","plan_actual","marca","modelo","estado_linea","titular_nombre1"]);
+  renderBaseCard("imss-a",      "💼 IMSS Asegurados", d.imss_asegurado, ["registro_patron","empresa_nombre","empresa_giro","empresa_cp","sueldo"]);
+  renderBaseCard("imss-s",      "🩺 IMSS Segmentación", d.imss_salud, ["edad","genero","ooad","unidad_medica","segmentacion_diabetes_mellitus","segmento_hipertension"]);
+
+  // Detalle completo (panel expandible)
+  const det = $("bases-externas-detalle");
+  if (det) det.innerHTML = renderBasesDetalle(d);
+}
+
+function renderBaseCard(prefix, label, b, previewFields) {
+  const badgeEl = $(`${prefix}-badge`);
+  const kvEl    = $(`kv-${prefix}`);
+  if (!b || !badgeEl || !kvEl) return;
+  const total = b.total || 0;
+  const error = b.error || null;
+  const count = b.count || 0;
+  const truncated = total > count;
+
+  badgeEl.textContent = error ? "error" : (total === 0 ? "0" : (truncated ? `${count}/${total.toLocaleString()}` : total.toLocaleString()));
+  badgeEl.className   = error ? "badge err" : (total === 0 ? "badge" : "badge");
+
+  if (error) {
+    kvEl.innerHTML = `<div class="v err">⚠️ ${esc(error)}</div>`;
+    return;
+  }
+  if (total === 0) {
+    kvEl.innerHTML = `<div class="v empty">— sin registros en esta base —</div>`;
+    return;
+  }
+  // Mostrar primeras N filas como kv-rows (sólo algunos campos relevantes).
+  const rows = (b.rows || []).slice(0, 3);
+  const html = [];
+  for (const r of rows) {
+    html.push('<div style="font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:0.5px">— registro —</div>');
+    for (const f of previewFields) {
+      const v = r[f];
+      if (v === undefined || v === null || v === "") continue;
+      html.push(kvRow(f.replace(/_/g, " "), String(v).slice(0, 80), true));
+    }
+  }
+  if (truncated) {
+    html.push(`<div style="margin-top:8px;font-size:11px;color:var(--accent2)">… mostrando ${count} de ${total.toLocaleString()} (cap=50 en este endpoint, paginación futura)</div>`);
+  }
+  kvEl.innerHTML = html.join("");
+}
+
+function renderBasesDetalle(d) {
+  const blocks = [];
+  for (const [k, label] of [
+    ["att", "ATT"], ["empleadores", "Empleadores"], ["repuve", "REPUVE"],
+    ["telcel", "Telcel"], ["imss_asegurado", "IMSS Asegurados"], ["imss_salud", "IMSS Segmentación"],
+  ]) {
+    const b = d[k] || {};
+    if (!b.total && !b.error) continue;
+    blocks.push(`<h4 style="margin:18px 0 6px 0;color:var(--accent)">${label} — ${b.total || 0} registros ${b.error ? '<span style="color:#ff6b6b">(error)</span>' : ''}</h4>`);
+    if (b.error) {
+      blocks.push(`<pre style="color:#ff6b6b;background:rgba(255,107,107,0.08);padding:8px;border-radius:6px;font-size:11px">${esc(b.error)}</pre>`);
+    }
+    if (b.rows && b.rows.length) {
+      blocks.push(`<details><summary style="cursor:pointer">Ver ${b.rows.length} filas en JSON</summary><pre style="max-height:300px;overflow:auto;background:#0e1014;color:#c9d1d9;padding:10px;border-radius:6px;font-size:11px;white-space:pre-wrap">${esc(JSON.stringify(b.rows, null, 2))}</pre></details>`);
+    }
+  }
+  if (!blocks.length) return '<div style="color:var(--muted)">Sin datos para mostrar.</div>';
+  return blocks.join("");
+}
+
+function kvRow(k, v, small) {
+  return `<div class="k">${esc(k)}</div><div class="v${small ? ' sm' : ''}">${esc(v || '—')}</div>`;
+}
+
+function renderValidations() {
+  const grid = $("validations-grid");
+  if (!state.validations.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">No hay validaciones disponibles</div>';
+    return;
+  }
+  // 2026-08-04: helper local para badge cache row (timestamp + texto)
+  const cacheBadge = (vId) => {
+    const meta = _singulaCacheFor(vId);
+    if (!meta) return "";
+    if (meta.error) {
+      return `<div class="cache-badge cache-err" title="Error en última consulta">⚠ ${esc(meta.error).slice(0, 60)}</div>`;
+    }
+    if (meta.skipped) {
+      return `<div class="cache-badge cache-skip" title="Saltado automático">⏭ ${esc(meta.skipped)}</div>`;
+    }
+    if (meta.cached && meta.ageStr) {
+      return `<div class="cache-badge cache-fresh" title="Reusado del cache local — sin cobro nuevo">✓ cache ${esc(meta.ageStr)}</div>`;
+    }
+    // No tenemos info: marcar como "cobrará si pulsa ▶"
+    return `<div class="cache-badge cache-paid" title="Al pulsar ▶ Ejecutar se cobra a Singula">💰 cobrará al ejecutar</div>`;
+  };
+
+  grid.innerHTML = state.validations.map(v => `
+    <div class="validation-card" id="vcard-${v.id}">
+      <h4>
+        ${esc(v.name)}
+        <span class="provider-tag ${v.provider}">${v.provider}</span>
+      </h4>
+      <div class="desc">${esc(v.description)}</div>
+      ${v.provider === "singula" ? cacheBadge(v.id) : ""}
+      <div class="input-row">
+        <input type="text" id="vq-${v.id}" value="${esc(v.default_query)}" placeholder="query">
+        <button class="btn secondary" style="font-size: 10px; padding: 4px 8px;" onclick="openModal('${v.id}')">⚙️</button>
+      </div>
+      <button class="run-btn" onclick="runValidation('${v.id}')">▶ Ejecutar</button>
+      <div class="result" id="vresult-${v.id}" style="display:none;"></div>
+    </div>
+  `).join("");
+}
+
+/* ==== 3. Modal: ejecutar validación ==== */
+let currentValidation = null;
+
+function openModal(validationId) {
+  currentValidation = state.validations.find(v => v.id === validationId);
+  if (!currentValidation) return;
+  $("modal-title").textContent = currentValidation.name;
+  const defaultQuery = $("vq-" + validationId).value;
+  $("modal-body").innerHTML = `
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">${esc(currentValidation.description)}</p>
+    <div style="background:var(--panel2); padding: 10px 12px; border-radius: 4px; margin-bottom: 12px; font-size: 12px;">
+      <div><span class="summary-pill"><span class="k">Proveedor:</span><span class="v">${currentValidation.provider.toUpperCase()}</span></span></div>
+    </div>
+    <label style="font-size: 12px; color: var(--muted); display:block; margin-bottom: 4px;">Query a buscar (editable):</label>
+    <input type="text" id="modal-query" value="${esc(defaultQuery)}"
+           style="width:100%; background:var(--panel2); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:4px; font-family:monospace; font-size: 13px;">
+    <div id="modal-result" style="margin-top: 16px;"></div>
+  `;
+  $("modal-run-btn").onclick = () => runValidationInModal(validationId);
+  $("modal-result").innerHTML = "";
+  $("modal").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  $("modal").classList.remove("open");
+  document.body.style.overflow = "";
+  currentValidation = null;
+}
+
+function renderValidationResult(data, validationId) {
+  const res = data?.result;
+  if (res && ("sin_coincidencias_determinantes" in res || Array.isArray(res.perfiles))) {
+    const perfiles = res.perfiles || [];
+    if (res.sin_coincidencias_determinantes) {
+      let html = `<div style="background:var(--panel2); border:1px solid var(--border); border-radius:6px; padding:12px; margin-bottom:10px;">
+        <div style="color:var(--error); font-weight:600; margin-bottom:6px;">⚠ Sin coincidencias determinantes</div>
+        <div style="font-size:12px; color:var(--muted);">${esc(res.mensaje || "Ningún perfil alcanzó el umbral de confianza.")}</div>
+        ${res.total_evaluados ? `<div style="font-size:11px; color:var(--muted); margin-top:4px;">Evaluados: ${res.total_evaluados}</div>` : ""}
+      </div>`;
+      if (perfiles.length) {
+        html += `<div style="font-size:12px; color:var(--muted); margin-bottom:6px;">Perfiles más cercanos (baja confianza):</div>`;
+        html += perfiles.map(p => renderProfileCard(p, false)).join("");
+      }
+      return html;
+    }
+    let html = `<div style="background:rgba(76,175,80,0.08); border:1px solid rgba(76,175,80,0.3); border-radius:6px; padding:12px; margin-bottom:10px;">
+      <div style="color:var(--success,#4caf50); font-weight:600; margin-bottom:6px;">✓ ${esc(res.mensaje || `${perfiles.length} perfiles determinantes`)}</div>
+      ${res.total_descartados !== undefined ? `<div style="font-size:11px; color:var(--muted);">${res.total_evaluados} evaluados · ${res.total_descartados} descartados por baja confianza</div>` : ""}
+    </div>`;
+    html += perfiles.map(p => renderProfileCard(p, true)).join("");
+    return html;
+  }
+  // fallback: mostrar JSON crudo
+  return `<pre style="background:var(--bg); padding: 12px; border-radius: 4px; max-height: 360px; overflow:auto; font-size: 11px; color:var(--accent2);">${esc(JSON.stringify(data, null, 2))}</pre>`;
+}
+
+function renderProfileCard(p, determinante) {
+  const score = p._score || {};
+  const sc = score.score ?? 0;
+  const color = sc >= 80 ? "#4caf50" : (sc >= 60 ? "#ff9800" : "#f44336");
+  const det = score.determinante || determinante;
+  const platform = p.plataforma || "instagram";
+  const url = p.url || p.profileUrl || (p.username ? `https://instagram.com/${p.username}` : "");
+  const name = p.full_name || p.fullName || p.name || p.title || "—";
+  const username = p.username || "—";
+  const email = p.public_email || p.publicEmail || p.user_public_email || p.email || "";
+  const phone = p.public_phone || p.publicPhone || p.user_public_phone_number || p.user_contact_phone_number || p.phone || "";
+  const bio = p.biography || p.user_biography || p.description || "";
+  const extra = [];
+  if (email) extra.push(`📧 ${esc(email)}`);
+  if (phone) extra.push(`📞 ${esc(phone)}`);
+  if (p.followersCount || p.user_follower_count) extra.push(`👥 ${p.followersCount || p.user_follower_count} seguidores`);
+  if (p.location || p.city) extra.push(`📍 ${esc(p.location || p.city)}`);
+  if (p.is_verified || p.user_is_verified || p.verified) extra.push(`✅ Verificado`);
+  return `
+    <div style="background:var(--panel2); border:1px solid ${det ? 'rgba(76,175,80,0.3)' : 'var(--border)'}; border-left:4px solid ${color}; border-radius:6px; padding:12px; margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div style="font-weight:600; font-size:14px;">${platform.toUpperCase()} · ${esc(username)}</div>
+        <div style="background:${color}; color:#000; font-weight:700; font-size:12px; padding:2px 8px; border-radius:12px;">${sc}</div>
+      </div>
+      <div style="font-size:13px; color:var(--text); margin-bottom:4px;">${esc(name)}</div>
+      ${bio ? `<div style="font-size:12px; color:var(--muted); margin-bottom:8px;">${esc(bio.slice(0,160))}</div>` : ""}
+      ${extra.length ? `<div style="display:flex; flex-wrap:wrap; gap:6px; font-size:11px; color:var(--muted);">${extra.map(e => `<span style="background:var(--bg); padding:3px 6px; border-radius:4px;">${e}</span>`).join("")}</div>` : ""}
+      ${url ? `<div style="margin-top:8px; font-size:11px;"><a href="${esc(url)}" target="_blank" style="color:var(--accent); text-decoration:none;">🔗 ${esc(url)}</a></div>` : ""}
+      ${!det ? `<div style="margin-top:6px; font-size:11px; color:var(--error);">⚠ Baja confianza · no considerar como evidencia definitiva</div>` : ""}
+    </div>
+  `;
+}
+
+async function runValidation(validationId) {
+  const v = state.validations.find(x => x.id === validationId);
+  if (!v) return;
+  const query = $("vq-" + validationId).value.trim();
+  if (!query) {
+    alert("Query vacío");
+    return;
+  }
+  const card = $("vcard-" + validationId);
+  const btn = card.querySelector(".run-btn");
+  const result = $("vresult-" + validationId);
+  btn.disabled = true;
+  btn.textContent = "⏳ Ejecutando...";
+  card.classList.remove("done", "error");
+  card.classList.add("busy");
+  result.style.display = "block";
+  result.className = "result";
+  result.textContent = "Ejecutando validación...";
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutos para Apify/OSINT
+  try {
+    const r = await fetch(`${API_URL}/api/validar`, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("session_token") ? {"Authorization": `Bearer ${localStorage.getItem("session_token")}`} : {}) },
+      body: JSON.stringify({
+        validation_id: validationId,
+        curp: CURP,
+        query: query,
+        sujeto: state.sujeto,
+        rfc: state.sujeto?.rfc,
+      }),
+    });
+    clearTimeout(timeoutId);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${r.status}`);
+    }
+    const data = await r.json();
+    state.results[validationId] = data;
+    card.classList.remove("busy");
+    card.classList.add("done");
+    btn.textContent = "✓ Ejecutar de nuevo";
+    result.className = "result success";
+    result.innerHTML = renderValidationResult(data, validationId);
+  } catch (e) {
+    card.classList.remove("busy");
+    card.classList.add("error");
+    btn.textContent = "✗ Reintentar";
+    result.className = "result error";
+    result.textContent = `Error: ${e.name === "AbortError" ? "La validación tardó demasiado (timeout 5 min)." : e.message}`;
+  } finally {
+    btn.disabled = false;
+    clearTimeout(timeoutId);
+  }
+}
+
+async function runValidationInModal(validationId) {
+  const query = $("modal-query").value.trim();
+  if (!query) {
+    alert("Query vacío");
+    return;
+  }
+  // sincronizar con el input del card
+  $("vq-" + validationId).value = query;
+  $("modal-run-btn").disabled = true;
+  $("modal-run-btn").textContent = "⏳ Ejecutando...";
+  $("modal-result").innerHTML = '<div style="text-align:center;padding:20px;"><span class="spinner-big"></span><div style="margin-top:8px;color:var(--muted);">Ejecutando...</div></div>';
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutos para Apify/OSINT
+  try {
+    const r = await fetch(`${API_URL}/api/validar`, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("session_token") ? {"Authorization": `Bearer ${localStorage.getItem("session_token")}`} : {}) },
+      body: JSON.stringify({
+        validation_id: validationId,
+        curp: CURP,
+        query: query,
+        sujeto: state.sujeto,
+        rfc: state.sujeto?.rfc,
+      }),
+    });
+    clearTimeout(timeoutId);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${r.status}`);
+    }
+    const data = await r.json();
+    state.results[validationId] = data;
+    $("modal-result").innerHTML = renderValidationResult(data, validationId);
+    // también actualizar el card de la grid
+    const card = $("vcard-" + validationId);
+    card.classList.remove("busy", "error");
+    card.classList.add("done");
+    const r2 = $("vresult-" + validationId);
+    r2.style.display = "block";
+    r2.className = "result success";
+    r2.innerHTML = renderValidationResult(data, validationId);
+  } catch (e) {
+    $("modal-result").innerHTML = `<div style="color:var(--error);">Error: ${esc(e.name === "AbortError" ? "La validación tardó demasiado (timeout 5 min)." : e.message)}</div>`;
+  } finally {
+    $("modal-run-btn").disabled = false;
+    $("modal-run-btn").textContent = "Ejecutar";
+    clearTimeout(timeoutId);
+  }
+}
+
+/* ==== 4. Reporte AI ==== */
+$("btn-reporte-ai").addEventListener("click", async () => {
+  const btn = $("btn-reporte-ai");
+  btn.disabled = true;
+  btn.textContent = "⏳ Generando...";
+  const cont = $("reporte-result");
+  cont.innerHTML = '<div style="text-align:center;padding:20px;"><span class="spinner-big"></span><div style="margin-top:8px;color:var(--muted);">Generando reporte AI con deepseek-v4-pro...</div></div>';
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutos para Ollama + generación
+  try {
+    const r = await fetch(`${API_URL}/api/report/generate`, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("session_token") ? {"Authorization": `Bearer ${localStorage.getItem("session_token")}`} : {}) },
+      body: JSON.stringify({
+        sujeto: state.sujeto,
+        enrichment: { results: state.results, tlaloc_curp: state.tlaloc_curp, tlaloc_rfc: state.tlaloc_rfc, checkid: state.checkid, social_media: state.social_media },
+        style: "formal",
+        format: "html",
+      }),
+    });
+    clearTimeout(timeoutId);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${r.status}`);
+    }
+    const html = await r.text();
+    cont.innerHTML = `<iframe id="reporte-iframe" style="width:100%; height:480px; border:0; border-radius:6px; background:#fff;" srcdoc='${html.replace(/'/g, "&#39;")}'></iframe>`;
+    $("btn-imprimir-reporte").style.display = "inline-block";
+  } catch (e) {
+    cont.innerHTML = `<div style="color:var(--error);">Error: ${esc(e.name === "AbortError" ? "La generación del reporte tardó demasiado (timeout 5 min)." : e.message)}</div>`;
+    $("btn-imprimir-reporte").style.display = "none";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📄 Generar Reporte AI";
+    clearTimeout(timeoutId);
+  }
+});
+
+$("btn-imprimir-reporte").addEventListener("click", () => {
+  const iframe = $("reporte-iframe");
+  if (!iframe || !iframe.contentWindow) {
+    alert("Primero genera el reporte.");
+    return;
+  }
+  try {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  } catch (e) {
+    alert("No se pudo abrir el diálogo de impresión: " + e.message);
+  }
+});
+
+/* ==== Cierre del modal ==== */
+const modalBackdrop = $("modal");
+const modalHeader = $("modal-header");
+
+modalBackdrop.addEventListener("click", e => {
+  if (e.target === modalBackdrop) closeModal();
+});
+
+let touchStartY = 0;
+let touchStartX = 0;
+modalHeader.addEventListener("touchstart", e => {
+  touchStartY = e.changedTouches[0].screenY;
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+modalHeader.addEventListener("touchend", e => {
+  const endY = e.changedTouches[0].screenY;
+  const endX = e.changedTouches[0].screenX;
+  const deltaY = endY - touchStartY;
+  const deltaX = endX - touchStartX;
+  if (deltaY > 50 && Math.abs(deltaX) < 100) closeModal();
+}, { passive: true });
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
+});
+
+async function logout() {
+  await fetch(`${API_URL}/api/auth/logout`, {method: "POST"});
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+}
+
+/* ==== Mapa Leaflet ==== */
+let _mapInstance = null;
+
+function buildDireccion(s) {
+  const partes = [];
+  const calle = (s.calle || "").trim();
+  const ext = (s.ext || "").toString().trim();
+  const interior = (s.interior || "").toString().trim();
+
+  if (calle) {
+    let num = ext || "S/N";
+    partes.push(`${calle} ${num}`);
+    if (interior) partes.push(`Int. ${interior}`);
+  }
+  const colonia = (s.colonia || "").trim();
+  if (colonia) partes.push(colonia);
+  const municipio = (s.municipio_nombre || "").trim();
+  if (municipio) partes.push(municipio);
+  const estado = (s.estado_nombre || "").trim();
+  if (estado) partes.push(estado);
+  const cp = (s.cp || "").toString().slice(0, 5);
+  if (cp && cp !== "00000") partes.push(cp);
+
+  return partes.join(", ");
+}
+
+async function loadMap(s) {
+  const cp = (s.cp || "").toString().slice(0, 5);
+  const container = document.getElementById("map-container");
+  if (!cp || cp === "00000") {
+    container.style.display = "none";
+    return;
+  }
+
+  const direccion = buildDireccion(s);
+  const colonia = s.colonia || "Colonia";
+
+  // Intentar geocodificar la dirección completa primero
+  let geo = null;
+  try {
+    const q = encodeURIComponent(direccion);
+    const r = await fetch(`${API_URL}/api/geo/geocode/${cp}?q=${q}`, {
+      headers: localStorage.getItem("session_token")
+        ? {"Authorization": `Bearer ${localStorage.getItem("session_token")}`}
+        : {},
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (!data.error) geo = data;
+    }
+  } catch (e) { /* fallback abajo */ }
+
+  // Fallback: geocodificar solo por CP
+  if (!geo) {
+    try {
+      const r = await fetch(`${API_URL}/api/geo/geocode/${cp}`, {
+        headers: localStorage.getItem("session_token")
+          ? {"Authorization": `Bearer ${localStorage.getItem("session_token")}`}
+          : {},
+      });
+      if (r.ok) {
+        const data = await r.json();
+        if (!data.error) geo = data;
+      }
+    } catch (e) { /* sin mapa */ }
+  }
+
+  if (!geo) {
+    container.style.display = "none";
+    return;
+  }
+
+  container.style.display = "block";
+
+  // Mostrar la dirección en la barra superior del mapa
+  const labelEl = document.getElementById("map-direccion-label");
+  if (labelEl) labelEl.textContent = direccion || `CP ${cp}`;
+
+  // Destruir mapa anterior si existe
+  if (_mapInstance) {
+    _mapInstance.remove();
+    _mapInstance = null;
+  }
+
+  const lat = geo.lat;
+  const lon = geo.lon;
+
+  _mapInstance = L.map("map").setView([lat, lon], 16);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(_mapInstance);
+
+  // Marcador con la dirección completa del padrón
+  const popupHtml = `<div style="font-size:13px;max-width:250px;">
+    <b style="color:#1a73e8;">📍 Dirección en el padrón</b><br>
+    <span style="font-size:12px;">${esc(direccion)}</span><br>
+    <small style="color:#666;">CP ${cp} · lat ${lat.toFixed(5)}, lon ${lon.toFixed(5)}</small>
+  </div>`;
+  L.marker([lat, lon])
+    .addTo(_mapInstance)
+    .bindPopup(popupHtml)
+    .openPopup();
+
+  // Si hay boundingbox, ajustar vista
+  if (geo.boundingbox && geo.boundingbox.length === 4) {
+    const [south, north, west, east] = geo.boundingbox;
+    try {
+      _mapInstance.fitBounds([[south, west], [north, east]], {padding: [20, 20]});
+    } catch(e) { /* ignorar si el bbox es inválido */ }
+  }
+}
+
+/* ==== Inicio ==== */
+loadSujeto();
+</script>
+</body>
+</html>

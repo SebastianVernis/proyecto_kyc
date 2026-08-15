@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<title>Admin — Cuarto de Paz Search</title>
+<style>
+:root {
+  --bg: #0f1115;
+  --panel: #1a1d24;
+  --panel2: #232730;
+  --border: #2c313c;
+  --text: #e6e8ec;
+  --muted: #8a93a6;
+  --accent: #4f8cff;
+  --accent2: #6ee7b7;
+  --warn: #f59e0b;
+  --error: #ef4444;
+  --highlight: #facc15;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+header h1 .badge {
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  margin-left: 10px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+header .actions { display: flex; gap: 10px; }
+header .actions a, header .actions button {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  min-height: 32px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
+}
+header .actions a:hover, header .actions button:hover {
+  border-color: var(--accent); color: var(--accent);
+}
+/* tabs */
+.tabs {
+  display: flex;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  overflow-x: auto;
+}
+.tab {
+  padding: 10px 16px;
+  cursor: pointer;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  user-select: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+.tab-panel { display: none; padding: 20px; }
+.tab-panel.active { display: block; }
+
+/* cards / panels */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.card h2 { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+.card .subtitle { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+
+/* tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* forms */
+.field { margin-bottom: 12px; }
+.field label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+input[type="text"], input[type="password"], input[type="search"], input[type="number"], input[type="date"], select {
+  width: 100%;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  min-height: 38px;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+
+/* buttons */
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 38px;
+  font-family: inherit;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+.btn-danger { background: var(--error); }
+.btn-warn { background: var(--warn); color: #000; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* pills / status */
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.pill-active { background: rgba(110,231,183,0.15); color: var(--accent2); }
+.pill-inactive { background: rgba(239,68,68,0.15); color: var(--error); }
+.pill-admin { background: rgba(79,140,255,0.15); color: var(--accent); }
+.pill-user { background: rgba(138,147,166,0.15); color: var(--muted); }
+.action-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--panel2);
+  color: var(--muted);
+}
+.action-tag.login { color: var(--accent2); }
+.action-tag.logout { color: var(--muted); }
+.action-tag.login_fail { color: var(--error); }
+.action-tag.search { color: var(--accent); }
+.action-tag.view_sujeto, .action-tag.view_curp { color: var(--highlight); }
+.action-tag.user_create, .action-tag.user_delete, .action-tag.user_disable, .action-tag.user_enable, .action-tag.user_reset { color: var(--warn); }
+.action-tag.export_csv { color: var(--accent); }
+.action-tag.admin_view { color: var(--accent); }
+
+/* stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+/* 2026-08-05: indicador de salud Singula */
+.health-row { display:flex; align-items:center; gap:14px; padding:10px 0; flex-wrap:wrap; }
+.health-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0;
+              box-shadow: 0 0 12px currentColor, 0 0 4px currentColor; }
+.health-ok  { color: var(--accent2); background: var(--accent2); }
+.health-err { color: var(--error);    background: var(--error); }
+.health-pending { color: #fbbf24; background: #fbbf24; }
+.health-detail { font-size:13px; color: var(--muted); font-family: 'JetBrains Mono', 'Menlo', monospace; }
+.health-hint  { font-size:13px; padding:8px 12px; border-radius:8px; margin-top:10px;
+                background: rgba(239,68,68,0.1); border:1px solid var(--error); color:var(--error); }
+
+.stat-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.stat-box .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat-box .value { font-size: 22px; font-weight: 600; }
+.stat-box .sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* modal (para confirmación de acciones admin) */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 22px;
+}
+.modal h3 { margin: 0 0 12px; font-size: 16px; }
+.modal p { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+
+/* toasts / messages */
+.msg {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: none;
+}
+.msg.ok { background: rgba(110,231,183,0.1); border: 1px solid var(--accent2); color: var(--accent2); }
+.msg.error { background: rgba(239,68,68,0.1); border: 1px solid var(--error); color: var(--error); }
+.msg.show { display: block; }
+
+/* pagination */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.pager .btn-row { gap: 6px; }
+.pager .btn { padding: 6px 10px; min-height: 32px; font-size: 12px; }
+
+/* responsive */
+@media (max-width: 720px) {
+  header h1 { font-size: 16px; }
+  .tab-panel { padding: 12px; }
+  .card { padding: 12px; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+  /* mobile-friendly: hide some columns */
+  .hide-mobile { display: none; }
+}
+
+/* ==== Premium buttons (glass-morphism) — 2026-08-04 ==== */
+button, .btn, input[type="submit"] {
+  font-family: inherit;
+  letter-spacing: 0.2px;
+  transition: transform 0.12s ease, box-shadow 0.18s ease,
+              background 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
+  will-change: transform;
+}
+button:not(:disabled):hover, .btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+button:not(:disabled):active, .btn:not(:disabled):active {
+  transform: translateY(0);
+}
+/* Primary: gradient azul + glass + shadow */
+.btn:not(.secondary):not(.btn-secondary):not(.btn-warn):not(.btn-danger),
+button.primary, button:not([class]), .btn-primary {
+  background: linear-gradient(180deg, rgba(79,140,255,0.95) 0%, rgba(59,120,235,0.95) 100%) !important;
+  border: 1px solid rgba(120,170,255,0.45) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    0 4px 14px -4px rgba(79,140,255,0.55) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff !important;
+  font-weight: 600;
+}
+.btn:not(.secondary):not(.btn-secondary):not(.btn-warn):not(.btn-danger):hover,
+button.primary:hover, button:not([class]):hover {
+  background: linear-gradient(180deg, rgba(99,160,255,1) 0%, rgba(79,140,255,1) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.25) inset,
+    0 6px 20px -4px rgba(79,140,255,0.7) !important;
+  filter: none !important;
+}
+.btn:not(.secondary):not(.btn-secondary):not(.btn-warn):not(.btn-danger):focus-visible,
+button.primary:focus-visible {
+  outline: none !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    0 4px 14px -4px rgba(79,140,255,0.55),
+    0 0 0 3px rgba(120,170,255,0.35) !important;
+}
+/* Secondary: glass oscuro + border translúcido */
+.btn.secondary, .btn-secondary, button.secondary {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  color: var(--text) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,0.3) !important;
+}
+.btn.secondary:hover, .btn-secondary:hover, button.secondary:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%) !important;
+  border-color: rgba(120,170,255,0.4) !important;
+  color: var(--accent) !important;
+  box-shadow: 0 4px 12px -2px rgba(79,140,255,0.25) !important;
+}
+
+/* ==== Scrollbars estilizadas — Chrome / Edge / Safari ==== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(120,130,150,0.25);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.18s ease;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(120,130,150,0.45); background-clip: padding-box; }
+::-webkit-scrollbar-thumb:active { background: rgba(120,170,255,0.55); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+/* Firefox + estándar */
+html { scrollbar-width: thin; scrollbar-color: rgba(120,130,150,0.35) transparent; }
+aside, main, .modal, [style*="overflow"] { scrollbar-width: thin; scrollbar-color: rgba(120,130,150,0.35) transparent; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ Panel Admin <span class="badge" id="admin-badge">cargando…</span></h1>
+  <div class="actions">
+    <a href="/buscar.html">🔍 Búsqueda</a>
+    <a href="/cfe_coordenadas.html">📍 CFE Coords</a>
+    <a href="/issste.html">🏛️ ISSSTE</a>
+    <button onclick="logout()">Salir</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="users">Usuarios</div>
+  <div class="tab" data-tab="activity">Actividad</div>
+  <div class="tab" data-tab="stats">Estadísticas</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: USUARIOS                                                -->
+<!-- ============================================================ -->
+<div class="tab-panel active" id="panel-users">
+  <div class="card">
+    <h2>Crear usuario</h2>
+    <div class="row">
+      <div class="field">
+        <label>Usuario / correo</label>
+        <input type="text" id="new-username" placeholder="usuario@email.com" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Contraseña inicial</label>
+        <input type="password" id="new-password" placeholder="••••••" autocomplete="off">
+      </div>
+    </div>
+    <div id="users-msg" class="msg"></div>
+    <button class="btn" onclick="createUser()">Crear usuario</button>
+  </div>
+
+  <div class="card">
+    <h2>Usuarios existentes <span class="subtitle" id="users-count" style="float:right"></span></h2>
+    <div class="subtitle">Activar/desactivar acceso, cambiar rol admin, resetear contraseña, eliminar.</div>
+    <div id="users-msg-list" class="msg"></div>
+    <div style="overflow-x:auto">
+    <table id="users-table">
+      <thead><tr>
+        <th>Usuario</th>
+        <th class="hide-mobile">Última actividad</th>
+        <th class="hide-mobile">Logins 30d</th>
+        <th>Estado</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: ACTIVIDAD                                               -->
+<!-- ============================================================ -->
+<div class="tab-panel" id="panel-activity">
+  <div class="card">
+    <h2>Filtros</h2>
+    <div class="row">
+      <div class="field">
+        <label>Usuario</label>
+        <input type="search" id="f-username" placeholder="admin" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Acción</label>
+        <select id="f-action">
+          <option value="">— todas —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Desde</label>
+        <input type="date" id="f-since">
+      </div>
+      <div class="field">
+        <label>Hasta</label>
+        <input type="date" id="f-until">
+      </div>
+      <div class="field">
+        <label>Endpoint contiene</label>
+        <input type="search" id="f-endpoint" placeholder="/api/" autocomplete="off">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="loadActivity(0)">Aplicar filtros</button>
+      <button class="btn btn-secondary" onclick="clearFilters()">Limpiar</button>
+      <button class="btn btn-secondary" onclick="loadActivity(0)">↻ Refrescar</button>
+      <button class="btn btn-warn" onclick="exportActivity()">⬇ Exportar CSV</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Log de actividad <span class="subtitle" id="activity-count" style="float:right"></span></h2>
+    <div class="subtitle">Cada acción autenticada queda registrada con IP, user-agent, duración y resumen sanitizado.</div>
+    <div id="activity-msg" class="msg"></div>
+    <div style="overflow-x:auto">
+    <table id="activity-table">
+      <thead><tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Acción</th>
+        <th class="hide-mobile">Endpoint</th>
+        <th>Status</th>
+        <th class="hide-mobile">Duración</th>
+        <th class="hide-mobile">Resultados</th>
+        <th class="hide-mobile">IP</th>
+        <th>Detalle</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+    <div class="pager">
+      <div id="pager-info">—</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="pager-prev" onclick="pagePrev()">‹ Anterior</button>
+        <button class="btn btn-secondary" id="pager-next" onclick="pageNext()">Siguiente ›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: ESTADÍSTICAS                                            -->
+<!-- ============================================================ -->
+<div class="tab-panel" id="panel-stats">
+  <div class="card" id="singula-health-card">
+    <h2>Estado de Singula</h2>
+    <div class="subtitle">Ping de salud de la API de Singula. Si la luz está roja, la <code>SINGULA_API_KEY</code> está expirada o la cuota se agotó. Rota la key en el dashboard de Singula y reemplázala en <code>.env</code>.</div>
+    <div id="singula-health-status">Cargando…</div>
+    <button class="btn btn-secondary" style="margin-top:12px" onclick="loadSingulaHealth()">🔄 Re-ping</button>
+  </div>
+  <div class="card">
+    <h2>Resumen últimos 30 días</h2>
+    <div class="stats-grid" id="stats-grid">Cargando…</div>
+  </div>
+  <div class="card">
+    <h2>Uso por usuario</h2>
+    <div class="subtitle">Total de acciones y desglose por tipo. Útil para detectar uso anómalo.</div>
+    <div style="overflow-x:auto">
+    <table id="stats-table">
+      <thead><tr>
+        <th>Usuario</th>
+        <th>Total</th>
+        <th>Última actividad</th>
+        <th>Desglose</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL de confirmación para acciones destructivas             -->
+<!-- ============================================================ -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal">
+    <h3 id="confirm-title">¿Confirmar?</h3>
+    <p id="confirm-body">—</p>
+    <div class="btn-row" style="justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Sí, hacer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = location.origin;
+const PAGE = { limit: 50, offset: 0, total: 0 };
+const $ = id => document.getElementById(id);
+
+function token() { return localStorage.getItem("session_token") || ""; }
+function authHeaders(extra = {}) {
+  return { "Content-Type": "application/json", ...(token() ? {"Authorization": `Bearer ${token()}`} : {}), ...extra };
+}
+function esc(s) { return String(s ?? "").replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c])); }
+function fmtDate(epoch) {
+  if (!epoch) return "—";
+  const d = new Date(epoch * 1000);
+  return d.toLocaleString("es-MX", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+function showMsg(id, kind, text) {
+  const m = $(id);
+  m.className = `msg show ${kind}`;
+  m.textContent = text;
+  if (kind === "ok") setTimeout(() => { m.className = "msg"; }, 4000);
+}
+
+// === TABS ===
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    const target = tab.dataset.tab;
+    $(`panel-${target}`).classList.add("active");
+    if (target === "activity") loadActivity(0);
+    if (target === "stats") { loadStats(); loadSingulaHealth(); }
+  });
+});
+
+// === INIT ===
+async function init() {
+  // Verificar sesión + rol admin
+  let me;
+  try {
+    me = await fetch(`${API_URL}/api/auth/me`, { headers: authHeaders() }).then(r => r.json());
+  } catch (e) {
+    location.href = "/login.html";
+    return;
+  }
+  if (!me.ok) { location.href = "/login.html"; return; }
+  if (me.user.username !== "admin") {
+    $("admin-badge").textContent = "no admin";
+    document.body.innerHTML = "<div style='padding:40px;text-align:center'><h2>Acceso denegado</h2><p>Esta página es solo para administradores.</p><a href='/buscar.html'>← Volver a búsqueda</a></div>";
+    return;
+  }
+  $("admin-badge").textContent = me.user.username;
+  loadUsers();
+}
+
+// === USUARIOS ===
+async function loadUsers() {
+  try {
+    const r = await fetch(`${API_URL}/api/admin/users`, {
+      method: "GET", headers: authHeaders(),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    const tb = $("users-table").querySelector("tbody");
+    tb.innerHTML = "";
+    $("users-count").textContent = `${data.users.length} usuario(s)`;
+    for (const u of data.users) {
+      const tr = document.createElement("tr");
+      const statusPill = u.is_active
+        ? '<span class="pill pill-active">activo</span>'
+        : '<span class="pill pill-inactive">inactivo</span>';
+      const rolePill = u.is_admin
+        ? '<span class="pill pill-admin">admin</span>'
+        : '<span class="pill pill-user">usuario</span>';
+      const isMe = u.username === (JSON.parse(localStorage.getItem("me") || "{}").username || "");
+      tr.innerHTML = `
+        <td><strong>${esc(u.username)}</strong></td>
+        <td class="hide-mobile">${fmtDate(u.last_seen)}</td>
+        <td class="hide-mobile">${u.logins_30d || 0}</td>
+        <td>${statusPill}</td>
+        <td>${rolePill}</td>
+        <td>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="toggleActive('${esc(u.username)}', ${u.is_active})">
+              ${u.is_active ? "Desactivar" : "Activar"}
+            </button>
+            <button class="btn btn-secondary" onclick="toggleAdmin('${esc(u.username)}', ${u.is_admin})">
+              ${u.is_admin ? "Quitar admin" : "Hacer admin"}
+            </button>
+            <button class="btn btn-secondary" onclick="resetPwPrompt('${esc(u.username)}')">
+              Reset pw
+            </button>
+            <button class="btn btn-danger" onclick="confirmDelete('${esc(u.username)}')">
+              Eliminar
+            </button>
+          </div>
+        </td>`;
+      tb.appendChild(tr);
+    }
+  } catch (e) {
+    showMsg("users-msg-list", "error", "Error cargando usuarios: " + e.message);
+  }
+}
+
+async function createUser() {
+  const username = $("new-username").value.trim();
+  const password = $("new-password").value;
+  if (!username || !password) {
+    showMsg("users-msg", "error", "Ingresa usuario y contraseña.");
+    return;
+  }
+  try {
+    const r = await fetch(`${API_URL}/api/auth/users`, {
+      method: "POST", headers: authHeaders(),
+      body: JSON.stringify({action: "create", username, password}),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    showMsg("users-msg", "ok", `Usuario creado: ${data.username}`);
+    $("new-username").value = "";
+    $("new-password").value = "";
+    loadUsers();
+  } catch (e) {
+    showMsg("users-msg", "error", "Error: " + e.message);
+  }
+}
+
+async function toggleActive(username, currentState) {
+  const newState = !currentState;
+  const action = newState ? "enable" : "disable";
+  try {
+    const r = await fetch(`${API_URL}/api/admin/users`, {
+      method: "POST", headers: authHeaders(),
+      body: JSON.stringify({action, username}),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    showMsg("users-msg-list", "ok", `${username}: ${newState ? "activado" : "desactivado"}`);
+    loadUsers();
+  } catch (e) {
+    showMsg("users-msg-list", "error", "Error: " + e.message);
+  }
+}
+
+async function toggleAdmin(username, currentState) {
+  const newState = !currentState;
+  try {
+    const r = await fetch(`${API_URL}/api/admin/users`, {
+      method: "POST", headers: authHeaders(),
+      body: JSON.stringify({action: "set_admin", username, is_admin: newState}),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    showMsg("users-msg-list", "ok", `${username}: ${newState ? "ahora es admin" : "ya no es admin"}`);
+    loadUsers();
+  } catch (e) {
+    showMsg("users-msg-list", "error", "Error: " + e.message);
+  }
+}
+
+function resetPwPrompt(username) {
+  openConfirm(
+    `Resetear contraseña de "${username}"`,
+    `Ingresa la nueva contraseña. El usuario tendrá que usarla en su próximo login.`,
+    async () => {
+      const pw = prompt(`Nueva contraseña para ${username}:`);
+      if (!pw) return;
+      try {
+        const r = await fetch(`${API_URL}/api/admin/users`, {
+          method: "POST", headers: authHeaders(),
+          body: JSON.stringify({action: "reset_password", username, password: pw}),
+        });
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
+        showMsg("users-msg-list", "ok", `Contraseña reseteada para ${username}`);
+        loadUsers();
+      } catch (e) {
+        showMsg("users-msg-list", "error", "Error: " + e.message);
+      }
+    }
+  );
+}
+
+function confirmDelete(username) {
+  openConfirm(
+    `Eliminar usuario "${username}"`,
+    `Esta acción NO se puede deshacer. Se eliminarán también todas sus sesiones y credenciales WebAuthn.`,
+    async () => {
+      try {
+        const r = await fetch(`${API_URL}/api/admin/users`, {
+          method: "POST", headers: authHeaders(),
+          body: JSON.stringify({action: "delete", username}),
+        });
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
+        showMsg("users-msg-list", "ok", `Usuario ${username} eliminado`);
+        loadUsers();
+      } catch (e) {
+        showMsg("users-msg-list", "error", "Error: " + e.message);
+      }
+    }
+  );
+}
+
+// === ACTIVIDAD ===
+async function loadActivity(resetOffset = 0) {
+  if (resetOffset !== undefined) PAGE.offset = resetOffset;
+  const params = new URLSearchParams();
+  if ($("f-username").value.trim()) params.set("username", $("f-username").value.trim());
+  if ($("f-action").value) params.set("action", $("f-action").value);
+  if ($("f-endpoint").value.trim()) params.set("endpoint", $("f-endpoint").value.trim());
+  if ($("f-since").value) {
+    const d = new Date($("f-since").value); d.setHours(0,0,0,0);
+    params.set("since", d.getTime() / 1000);
+  }
+  if ($("f-until").value) {
+    const d = new Date($("f-until").value); d.setHours(23,59,59,999);
+    params.set("until", d.getTime() / 1000);
+  }
+  params.set("limit", PAGE.limit);
+  params.set("offset", PAGE.offset);
+
+  try {
+    const r = await fetch(`${API_URL}/api/admin/activity?${params}`, {
+      method: "GET", headers: authHeaders(),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    PAGE.total = data.total;
+    $("activity-count").textContent = `${data.total.toLocaleString("es-MX")} eventos`;
+
+    // poblar select de acciones si aún no lo hicimos
+    const actionSel = $("f-action");
+    if (actionSel.options.length <= 1 && data.actions_known) {
+      for (const [k, v] of Object.entries(data.actions_known)) {
+        const o = document.createElement("option");
+        o.value = k; o.textContent = `${k} — ${v}`;
+        actionSel.appendChild(o);
+      }
+    }
+
+    const tb = $("activity-table").querySelector("tbody");
+    tb.innerHTML = "";
+    if (data.rows.length === 0) {
+      tb.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Sin resultados</td></tr>`;
+    }
+    for (const r of data.rows) {
+      const tr = document.createElement("tr");
+      const statusColor = r.status_code >= 500 ? "var(--error)" :
+                          r.status_code >= 400 ? "var(--warn)" :
+                          r.status_code >= 200 ? "var(--accent2)" : "var(--muted)";
+      const qs = r.query_summary || {};
+      const detail = Object.entries(qs)
+        .filter(([k, v]) => v !== "" && v !== null && v !== undefined)
+        .map(([k, v]) => `<span class="action-tag">${esc(k)}</span> ${esc(typeof v === "object" ? JSON.stringify(v) : v)}`)
+        .join(" &nbsp; ") || "—";
+      tr.innerHTML = `
+        <td>${fmtDate(r.created_at)}</td>
+        <td>${esc(r.username || "—")}</td>
+        <td><span class="action-tag ${esc(r.action)}">${esc(r.action)}</span></td>
+        <td class="hide-mobile"><code style="font-size:11px">${esc(r.method || "")} ${esc(r.endpoint || "")}</code></td>
+        <td style="color:${statusColor};font-weight:600">${r.status_code || "—"}</td>
+        <td class="hide-mobile">${r.duration_ms != null ? r.duration_ms + "ms" : "—"}</td>
+        <td class="hide-mobile">${r.results_count != null ? r.results_count : "—"}</td>
+        <td class="hide-mobile" style="font-family:monospace;font-size:11px">${esc(r.ip || "—")}</td>
+        <td style="font-size:12px">${detail}</td>`;
+      tb.appendChild(tr);
+    }
+    // pager
+    const from = PAGE.offset + 1;
+    const to = Math.min(PAGE.offset + data.rows.length, data.total);
+    $("pager-info").textContent = data.total === 0 ? "—" :
+      `Mostrando ${from}–${to} de ${data.total.toLocaleString("es-MX")}`;
+    $("pager-prev").disabled = PAGE.offset === 0;
+    $("pager-next").disabled = to >= data.total;
+  } catch (e) {
+    showMsg("activity-msg", "error", "Error: " + e.message);
+  }
+}
+
+function pagePrev() { PAGE.offset = Math.max(0, PAGE.offset - PAGE.limit); loadActivity(); }
+function pageNext() { PAGE.offset = PAGE.offset + PAGE.limit; loadActivity(); }
+function clearFilters() {
+  ["f-username", "f-endpoint"].forEach(id => $(id).value = "");
+  $("f-action").value = "";
+  $("f-since").value = "";
+  $("f-until").value = "";
+  loadActivity(0);
+}
+
+async function exportActivity() {
+  const body = {};
+  if ($("f-username").value.trim()) body.username = $("f-username").value.trim();
+  if ($("f-action").value) body.action = $("f-action").value;
+  if ($("f-since").value) {
+    const d = new Date($("f-since").value); d.setHours(0,0,0,0);
+    body.since = d.getTime() / 1000;
+  }
+  if ($("f-until").value) {
+    const d = new Date($("f-until").value); d.setHours(23,59,59,999);
+    body.until = d.getTime() / 1000;
+  }
+  try {
+    const r = await fetch(`${API_URL}/api/admin/activity/export`, {
+      method: "POST", headers: authHeaders(), body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${r.status}`);
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    a.href = url; a.download = `activity_${ts}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    showMsg("activity-msg", "error", "Error exportando: " + e.message);
+  }
+}
+
+// === STATS ===
+async function loadSingulaHealth() {
+  const div = $("singula-health-status");
+  div.innerHTML = `<div class="health-row"><span class="health-dot health-pending"></span><span class="health-detail">Pinging Singula…</span></div>`;
+  try {
+    const r = await fetch(`${API_URL}/api/singula/health`, { headers: authHeaders() });
+    const data = await r.json();
+    if (data.ok) {
+      div.innerHTML = `
+        <div class="health-row">
+          <span class="health-dot health-ok"></span>
+          <strong style="color:var(--accent2)">Operacional</strong>
+          <span class="health-detail">${data.latency_ms}ms · ${data.env} · ${data.cache_size} customers en cache</span>
+        </div>
+        <div class="health-detail" style="margin-top:4px">organization_id: <code>${esc(data.organization_id || "—")}</code></div>`;
+    } else {
+      div.innerHTML = `
+        <div class="health-row">
+          <span class="health-dot health-err"></span>
+          <strong style="color:var(--error)">Caído</strong>
+          <span class="health-detail">${data.latency_ms || 0}ms · status ${data.status_code || "—"} · ${esc(data.env || "")}</span>
+        </div>
+        <div class="health-detail" style="margin-top:4px">${esc(data.error || "")}</div>
+        ${data.hint ? `<div class="health-hint">💡 ${esc(data.hint)}</div>` : ""}`;
+    }
+  } catch (e) {
+    div.innerHTML = `<div style="color:var(--error)">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch(`${API_URL}/api/admin/stats`, {
+      method: "GET", headers: authHeaders(),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+
+    // summary
+    const total = data.users.reduce((acc, u) => acc + u.total, 0);
+    const actives = data.users.filter(u => u.total > 0).length;
+    const grid = $("stats-grid");
+    grid.innerHTML = `
+      <div class="stat-box">
+        <div class="label">Eventos 30d</div>
+        <div class="value">${total.toLocaleString("es-MX")}</div>
+        <div class="sub">Todas las acciones</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">Usuarios activos</div>
+        <div class="value">${actives}</div>
+        <div class="sub">de ${data.users.length} registrados</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">Retención</div>
+        <div class="value">${data.retention_days}d</div>
+        <div class="sub">Auto-purge</div>
+      </div>`;
+
+    // table
+    const tb = $("stats-table").querySelector("tbody");
+    tb.innerHTML = "";
+    if (data.users.length === 0) {
+      tb.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Sin actividad</td></tr>`;
+    }
+    for (const u of data.users) {
+      const tr = document.createElement("tr");
+      const breakdown = Object.entries(u.by_action)
+        .map(([k, v]) => `<span class="action-tag ${esc(k)}">${esc(k)}</span> ${v}`)
+        .join(" &nbsp; ") || "—";
+      tr.innerHTML = `
+        <td><strong>${esc(u.username)}</strong></td>
+        <td>${u.total.toLocaleString("es-MX")}</td>
+        <td>${fmtDate(u.last_seen)}</td>
+        <td style="font-size:12px">${breakdown}</td>`;
+      tb.appendChild(tr);
+    }
+  } catch (e) {
+    $("stats-grid").innerHTML = `<div style="color:var(--error)">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+// === CONFIRM MODAL ===
+function openConfirm(title, body, onOk) {
+  $("confirm-title").textContent = title;
+  $("confirm-body").textContent = body;
+  const okBtn = $("confirm-ok");
+  const newOk = okBtn.cloneNode(true);
+  okBtn.parentNode.replaceChild(newOk, okBtn);
+  newOk.addEventListener("click", async () => {
+    closeConfirm();
+    await onOk();
+  });
+  $("confirm-modal").classList.add("open");
+}
+function closeConfirm() { $("confirm-modal").classList.remove("open"); }
+
+// === LOGOUT ===
+async function logout() {
+  await fetch(`${API_URL}/api/auth/logout`, {method: "POST", headers: token() ? {"Authorization": `Bearer ${token()}`} : {}});
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+}
+
+init();
+</script>
+</body>
+</html>

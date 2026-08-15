@@ -1,0 +1,5253 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/customer": {
+      "get": {
+        "operationId": "CustomerController_getAllCustomersByEnvironment",
+        "parameters": [
+          {
+            "name": "env",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "sandbox",
+                "production"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by customer type",
+            "schema": {
+              "enum": [
+                "physical",
+                "moral"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (80 results per page)",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "organization_id",
+            "required": false,
+            "in": "query",
+            "description": "SU only: lista clientes de otra organizacion. Usuarios no-SU que pasen este param obtienen 403.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated customer list (80 per page)"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customer endpoints"
+        ]
+      },
+      "post": {
+        "operationId": "CustomerController_createCustomer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A field of request body is bad or missing"
+          },
+          "401": {
+            "description": "Forbbiden. Token related"
+          },
+          "500": {
+            "description": "Something failed on server"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customer endpoints"
+        ]
+      }
+    },
+    "/customer/search": {
+      "get": {
+        "operationId": "CustomerController_searchCustomers",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "Search term — \"cus_…\" for exact ID, otherwise name search",
+            "schema": {
+              "example": "Juan",
+              "type": "string"
+            }
+          },
+          {
+            "name": "env",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "sandbox",
+                "production"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by customer type",
+            "schema": {
+              "enum": [
+                "physical",
+                "moral"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "organization_id",
+            "required": false,
+            "in": "query",
+            "description": "SU only: scope la busqueda a una organizacion especifica. Sin este param, SU busca en todas las orgs (comportamiento historico).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All matching results (no pagination). SU sees all orgs; other users only their org."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customer endpoints"
+        ]
+      }
+    },
+    "/customer/{id}": {
+      "get": {
+        "operationId": "CustomerController_getCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A field of request body is bad or missing"
+          },
+          "401": {
+            "description": "Forbbiden. Token related"
+          },
+          "500": {
+            "description": "Something failed on server"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customer endpoints"
+        ]
+      },
+      "patch": {
+        "operationId": "CustomerController_updateCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A field of request body is bad or missing"
+          },
+          "401": {
+            "description": "Forbbiden. Token related"
+          },
+          "500": {
+            "description": "Something failed on server"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customer endpoints"
+        ]
+      }
+    },
+    "/customer/{id}/logs": {
+      "get": {
+        "operationId": "CustomerController_getCustomerLogs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerLogDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Forbidden. Token related"
+          },
+          "500": {
+            "description": "Something failed on server"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Customer endpoints"
+        ]
+      }
+    },
+    "/app/status": {
+      "get": {
+        "operationId": "AppController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "App endpoints"
+        ]
+      }
+    },
+    "/app/curp/customer/{id}": {
+      "get": {
+        "operationId": "CurpController_getCustomerCurp",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CURP calculated from customer data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCurpResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "CURP Endpoints"
+        ]
+      }
+    },
+    "/app/curp/customer/{id}/validate": {
+      "get": {
+        "operationId": "CurpController_validateCustomerCurp",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CURP validated against RENAPO (async — result via webhook in production)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateCurpResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "CURP Endpoints"
+        ]
+      }
+    },
+    "/app/curp/customer/{id}/file": {
+      "get": {
+        "operationId": "CurpController_getCustomerCurpFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed URL to download the last CURP PDF (15 min TTL). Null if not validated yet."
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "CURP Endpoints"
+        ]
+      }
+    },
+    "/app/curp/customer/{id}/file/download": {
+      "get": {
+        "operationId": "CurpController_downloadCustomerCurpFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Streams the CURP PDF via MasterApi (avoids S3 CORS/content-type issues)."
+          },
+          "404": {
+            "description": "Customer has no CURP file yet."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "CURP Endpoints"
+        ]
+      }
+    },
+    "/app/curp": {
+      "post": {
+        "operationId": "CurpController_getCurp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCurpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "CURP calculated from provided data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCurpResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "CURP Endpoints"
+        ]
+      }
+    },
+    "/app/curp/validate": {
+      "post": {
+        "description": "Valida un CURP de 18 caracteres y devuelve los datos oficiales del titular.\n\nPor default opera de forma **asincrona** — la respuesta inmediata trae un `request_id` y el resultado final llega via webhook o se obtiene con `GET /dashboard/request/{request_id}`. Para esperar el resultado en la misma respuesta, pasa `sync: true` en el body (timeout interno 15s).\n\nCobra el precio de `validateCurp` (ver `/organization/tools-catalog`) cuando la consulta se ejecuta. Si el formato del CURP es invalido (validacion local), no se cobra.",
+        "operationId": "CurpController_validateCurp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateCurpDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Async (default): trae `request_id` para hacer polling o esperar webhook. Sync (`sync: true`): trae el resultado final.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateCurpResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Valida un CURP",
+        "tags": [
+          "CURP Endpoints"
+        ]
+      }
+    },
+    "/app/rfc/customer/{id}": {
+      "get": {
+        "operationId": "RfcController_getCustomerRfc",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RFC calculado a partir de los datos del customer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRfcResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "RFC Endpoints"
+        ]
+      }
+    },
+    "/app/rfc/customer/{id}/validate": {
+      "get": {
+        "operationId": "RfcController_validateCustomerRfc",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RFC del customer validado contra el SAT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateRfcResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "RFC Endpoints"
+        ]
+      }
+    },
+    "/app/rfc": {
+      "post": {
+        "operationId": "RfcController_getRfc",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCalculatedRfcDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "RFC calculado a partir de los datos enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRfcResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "RFC Endpoints"
+        ]
+      }
+    },
+    "/app/rfc/company": {
+      "post": {
+        "operationId": "RfcController_getCompanyRfc",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCalculatedCompanyRfcDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "RFC de persona moral calculado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRfcResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "RFC Endpoints"
+        ]
+      }
+    },
+    "/app/rfc/validate": {
+      "post": {
+        "operationId": "RfcController_validateRfc",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRfcDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "RFC validado: formato + registro en el padrón del SAT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateRfcResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "RFC Endpoints"
+        ]
+      }
+    },
+    "/app/blacklist/customer/{id}": {
+      "get": {
+        "operationId": "BlacklistController_checkCustomerBlacklist",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "birth_country",
+            "required": false,
+            "in": "query",
+            "description": "Pais de nacimiento ISO-2 opcional (MX, US, CN, ...). Util cuando el customer fue creado sin este campo. Si se proporciona y el customer no tiene `birth_country` previo, lo persistimos. Default backend \"MX\".",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "birth_place",
+            "required": false,
+            "in": "query",
+            "description": "Estado de nacimiento MX opcional (DF, JC, NL, ...). Solo aplica si birth_country=\"MX\". Si el customer no tiene `birth_place` previo y este param es valido, lo persistimos. Para extranjeros se ignora silenciosamente.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blacklist and international sanctions check",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlacklistResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Blacklist Endpoints"
+        ]
+      }
+    },
+    "/app/judicial/customer/{id}": {
+      "get": {
+        "operationId": "JudicialController_getCustomerJudicialRecords",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Judicial records search — persona fisica",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JudicialRecordsResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Judicial Endpoints"
+        ]
+      }
+    },
+    "/app/judicial-moral/customer/{id}": {
+      "get": {
+        "operationId": "JudicialController_getCustomerJudicialRecordsMoral",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Judicial records search — persona moral",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JudicialRecordsResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Judicial Endpoints"
+        ]
+      }
+    },
+    "/app/intel/customer/{id}": {
+      "post": {
+        "description": "Corre una busqueda OSINT basica sobre la huella digital publica de la persona — web, noticias e imagenes. Operacion asincrona: devuelve `request_id`, el resultado completo llega via webhook o polling.\n\nPara un analisis mas profundo con sintesis narrativa de perfil, usar `POST /app/intel-premium/customer/:id` — mismo contrato, cobra la tarifa Premium.",
+        "operationId": "IntelController_getCustomerIntelligence",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntelCustomerDataMetaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tier BASIC (solo búsqueda/Serper; campos enriquecidos vacíos). Sandbox: respuesta completa. Producción: async — request_id + webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OsintResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Intel basico (huella digital publica)",
+        "tags": [
+          "Intelligence Endpoints"
+        ]
+      }
+    },
+    "/app/intel-premium/customer/{id}": {
+      "post": {
+        "description": "Mismo flujo que `POST /app/intel/customer/:id` pero agrega una sintesis narrativa de perfil con deep research. Util cuando se necesita un dossier tipo background check, no solo resultados crudos.\n\nEl tool_type del log y la tarifa cobrada son `GetPersonIntelligencePremium` — separadas de la version basica para analytics y billing.",
+        "operationId": "IntelController_getCustomerIntelligencePremium",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntelCustomerDataMetaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tier PREMIUM (búsqueda + síntesis IA: summary/linkedin/work_history/companies/digital_footprint/sources + phone_lookup). Sandbox: respuesta completa. Producción: async — request_id + webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OsintResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Intel Premium (dossier narrativo + deep research)",
+        "tags": [
+          "Intelligence Endpoints"
+        ]
+      }
+    },
+    "/app/identity-verification/customer/{customerId}/create": {
+      "post": {
+        "operationId": "IdentityVerificationController_create",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Verification created — returns public URL for document upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityVerificationCreateResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Identity Verification"
+        ]
+      }
+    },
+    "/app/identity-verification/submit/{token}": {
+      "post": {
+        "operationId": "IdentityVerificationController_submit",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Verification submitted — processing async via worker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityVerificationSubmitResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found"
+          },
+          "410": {
+            "description": "Token expired"
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Identity Verification"
+        ]
+      }
+    },
+    "/app/identity-verification/status/{requestId}": {
+      "get": {
+        "description": "Returns the latest verification snapshot for the request. Use `verification.status` for the verdict (verified | partial | rejected | failed | pending | processing) and `verification.overall_confidence` [0..1] for the score. The `checks[]` array lists every individual check with passed/confidence/details. Critical fail → status=rejected no matter the score.",
+        "operationId": "IdentityVerificationController_getStatus",
+        "parameters": [
+          {
+            "name": "requestId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification status + extracted data + checks"
+          },
+          "404": {
+            "description": "Verification not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get verification verdict + extracted data",
+        "tags": [
+          "Identity Verification"
+        ]
+      }
+    },
+    "/app/identity-verification/signed-url": {
+      "get": {
+        "operationId": "IdentityVerificationController_getSignedUrl",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed URL returned"
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Identity Verification"
+        ]
+      }
+    },
+    "/app/identity-verification/customer/{customerId}/files": {
+      "get": {
+        "operationId": "IdentityVerificationController_getCustomerFiles",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed URLs for all verification photos (10 min TTL)"
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer has no submitted verification yet"
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Identity Verification"
+        ]
+      }
+    },
+    "/app/identity-verification/customer/{customerId}/files/{slot}/download": {
+      "get": {
+        "operationId": "IdentityVerificationController_downloadCustomerFile",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slot",
+            "required": true,
+            "in": "path",
+            "description": "Photo slot: ine_front | ine_back | passport_image | selfie | liveness_frame_<i>",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Streams the photo image (image/jpeg)"
+          },
+          "404": {
+            "description": "Customer or slot not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Identity Verification"
+        ]
+      }
+    },
+    "/app/ine-extraction/customer/{customerId}": {
+      "post": {
+        "operationId": "IneExtractionController_submit",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Multipart upload with INE front + back images.",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ine_front",
+                  "ine_back"
+                ],
+                "properties": {
+                  "ine_front": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "ine_back": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "min_ocr_confidence": {
+                    "type": "number",
+                    "description": "Optional. Threshold (0..1) below which we skip the listanominal scrape. Default 0.5. Send 0 to disable.",
+                    "example": 0.5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job enqueued. Final result via webhook + GET /status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IneExtractionCreateResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer not found"
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "INE Extraction"
+        ]
+      }
+    },
+    "/app/ine-extraction/status/{requestId}": {
+      "get": {
+        "description": "Returns the LogRequest snapshot. Inspect `response.extract` for OCR and `response.listanominal` for the listanominal validation result. `status` reflects the overall flow: pending → processing → success | completed | error.",
+        "operationId": "IneExtractionController_getStatus",
+        "parameters": [
+          {
+            "name": "requestId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Extraction status + extracted data + listanominal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IneExtractionResultDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Extraction not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get extraction status + OCR data + listanominal result",
+        "tags": [
+          "INE Extraction"
+        ]
+      }
+    },
+    "/app/phone-lookup/customer/{id}": {
+      "get": {
+        "operationId": "PhoneLookupController_checkCustomerPhone",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Phone number validation and carrier lookup",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneLookupResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Phone Lookup Endpoints"
+        ]
+      }
+    },
+    "/app/email-lookup/customer/{id}": {
+      "get": {
+        "operationId": "EmailLookupController_checkCustomerEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sandbox: full email lookup response. Production: async — returns request_id, result delivered via webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailLookupResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida (falló la validación del body/params).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": [
+                    "rfc must be a valid RFC (12–13 characters)"
+                  ],
+                  "error": "Bad Request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado — API key o token inválido/ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Unauthorized",
+                  "error": "Unauthorized"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Créditos insuficientes para ejecutar la herramienta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 402,
+                  "message": "Insufficient credits",
+                  "error": "Payment Required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno o del proveedor externo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDTO"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Internal server error",
+                  "error": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Email Lookup Endpoints"
+        ]
+      }
+    },
+    "/app/risk/customer/{id}": {
+      "get": {
+        "operationId": "RiskController_getCustomerRiskProfile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer risk profile with all signals"
+          },
+          "401": {
+            "description": "Forbidden. Token related"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Risk Engine"
+        ]
+      }
+    },
+    "/app/risk/customer/{id}/signals": {
+      "get": {
+        "operationId": "RiskController_getCustomerRiskSignals",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Individual risk signals for a customer"
+          },
+          "401": {
+            "description": "Forbidden. Token related"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Risk Engine"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Singula Api",
+    "description": "Singula Api — public endpoints",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "singula-public",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "cus_lzk9m4ab3f9c2d1e",
+            "description": "Customer unique id",
+            "uniqueItems": true
+          },
+          "organization_id": {
+            "type": "string",
+            "example": "385f5e46-a5cb-44b2-81c0-0f8b1ceb393f",
+            "description": "Organization unique id"
+          },
+          "custom_id": {
+            "type": "string",
+            "example": "String",
+            "description": "Soft id"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "physical",
+              "moral"
+            ],
+            "example": "physical",
+            "description": "Customer type (physical = persona fisica, moral = empresa)"
+          },
+          "name": {
+            "type": "string",
+            "example": "String",
+            "description": "Customer name (persona fisica) or commercial name (persona moral)"
+          },
+          "legal_name": {
+            "type": "string",
+            "example": "String",
+            "description": "Legal name / razon social (only for persona moral)",
+            "nullable": true
+          },
+          "last_name": {
+            "type": "string",
+            "example": "String",
+            "description": "Customer lastName"
+          },
+          "mothers_last_name": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer mothersLastName"
+          },
+          "gender": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer gender (H: Hombre, M: Mujer, X: Otro)",
+            "enum": [
+              "H",
+              "M",
+              "X"
+            ]
+          },
+          "birth_day": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer birth day"
+          },
+          "birth_month": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer birth month"
+          },
+          "birth_year": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer birth year"
+          },
+          "birth_place": {
+            "type": "string",
+            "example": "DF",
+            "description": "Estado de nacimiento (solo si birth_country es 'MX'). Para extranjeros queda null.",
+            "enum": [
+              "AS",
+              "BC",
+              "BS",
+              "CC",
+              "CL",
+              "CM",
+              "CS",
+              "CH",
+              "DF",
+              "DG",
+              "GT",
+              "GR",
+              "HG",
+              "JC",
+              "MC",
+              "NE",
+              "MN",
+              "MS",
+              "NT",
+              "NL",
+              "OC",
+              "PL",
+              "QT",
+              "QR",
+              "SP",
+              "SL",
+              "SR",
+              "TC",
+              "TS",
+              "TL",
+              "VZ",
+              "YN",
+              "ZS"
+            ],
+            "nullable": true
+          },
+          "birth_country": {
+            "type": "string",
+            "example": "MX",
+            "description": "Pais de nacimiento (ISO-2). Default 'MX'. Para extranjeros (CN, US, etc), birth_place queda null.",
+            "nullable": true
+          },
+          "curp": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer CURP"
+          },
+          "rfc": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer RFC"
+          },
+          "nss": {
+            "type": "string",
+            "example": "string",
+            "description": "Customer NSS"
+          },
+          "env": {
+            "type": "string",
+            "enum": [
+              "sandbox",
+              "production"
+            ],
+            "example": "sandbox",
+            "description": "Customer env (sandbox, production)"
+          },
+          "risk": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "example": "low",
+            "description": "The user risk (low, medium, high)",
+            "uniqueItems": true
+          },
+          "curp_validation": {
+            "type": "object",
+            "description": "Resultado del ultimo match CURP (persona RENAPO vs customer en BD)",
+            "nullable": true
+          },
+          "curp_file_s3_key": {
+            "type": "string",
+            "description": "S3 key del ultimo PDF oficial de CURP descargado. Se firma bajo demanda.",
+            "example": "curp/{org}/{customer}/{request_id}.pdf",
+            "nullable": true
+          },
+          "curp_file_s3_bucket": {
+            "type": "string",
+            "description": "Bucket donde vive el CURP PDF (por si cambiara entre servicios).",
+            "nullable": true
+          },
+          "datameta": {
+            "type": "object",
+            "example": {
+              "empresa": "ACME",
+              "cargo": "Director",
+              "ciudad": "Guadalajara",
+              "estado": "JAL"
+            },
+            "description": "Optional enrichment metadata (professional context, contact hints)",
+            "nullable": true
+          },
+          "created": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-02-10 00:38:09",
+            "description": "Created datetime"
+          },
+          "modified": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-02-10 00:38:09",
+            "description": "Modified datetime"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "custom_id",
+          "type",
+          "name",
+          "legal_name",
+          "last_name",
+          "mothers_last_name",
+          "gender",
+          "birth_day",
+          "birth_month",
+          "birth_year",
+          "birth_place",
+          "birth_country",
+          "curp",
+          "rfc",
+          "nss",
+          "env",
+          "risk",
+          "created",
+          "modified"
+        ]
+      },
+      "CustomerLogDTO": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "664f1a2b3c4d5e6f7a8b9c0d"
+          },
+          "customer_id": {
+            "type": "string",
+            "example": "customer-uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "example": "org-uuid"
+          },
+          "request_date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "tool_type": {
+            "type": "string",
+            "enum": [
+              "getCurp",
+              "validateCurp",
+              "getRfc",
+              "getCompanyRfc",
+              "validateRfc",
+              "getNss",
+              "getJudicialRecordsOfPerson",
+              "checkBlacklist",
+              "getPersonIntelligence",
+              "getPersonIntelligencePremium",
+              "identityVerification",
+              "getJudicialRecordsMoral",
+              "checkEmail",
+              "checkPhone",
+              "sendDocument",
+              "ineExtraction"
+            ],
+            "example": "getCurp"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "success",
+              "completed",
+              "internalError",
+              "error",
+              "pending"
+            ],
+            "example": "success"
+          },
+          "from": {
+            "type": "string",
+            "enum": [
+              "web",
+              "api"
+            ],
+            "example": "api"
+          },
+          "env": {
+            "type": "string",
+            "enum": [
+              "sandbox",
+              "production"
+            ],
+            "example": "production"
+          },
+          "completed_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-15T10:30:05.000Z",
+            "nullable": true
+          },
+          "error_message": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-15T10:30:05.000Z"
+          }
+        },
+        "required": [
+          "_id",
+          "customer_id",
+          "organization_id",
+          "request_date",
+          "tool_type",
+          "status",
+          "from",
+          "env",
+          "completed_at",
+          "error_message",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CustomerDataMetaDTO": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "example": "Acme Corp"
+          },
+          "job_title": {
+            "type": "string",
+            "example": "CTO"
+          },
+          "city": {
+            "type": "string",
+            "example": "CDMX"
+          },
+          "email": {
+            "type": "string",
+            "example": "maria.lopez@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "5551234567"
+          },
+          "address": {
+            "type": "string",
+            "example": "Av. Reforma 123, CDMX"
+          },
+          "nationality": {
+            "type": "string",
+            "example": "Mexicana"
+          }
+        }
+      },
+      "CreateCustomerDTO": {
+        "type": "object",
+        "properties": {
+          "custom_id": {
+            "type": "string",
+            "example": "string",
+            "description": "Soft id"
+          },
+          "type": {
+            "type": "string",
+            "example": "physical",
+            "description": "Customer type (physical or moral)",
+            "enum": [
+              "physical",
+              "moral"
+            ],
+            "default": "physical"
+          },
+          "name": {
+            "type": "string",
+            "example": "string",
+            "description": "Person's name or business trade name"
+          },
+          "legal_name": {
+            "type": "string",
+            "example": "string",
+            "description": "Legal name (required for moral customers)"
+          },
+          "last_name": {
+            "type": "string",
+            "example": "string",
+            "description": "Person's last name"
+          },
+          "mothers_last_name": {
+            "type": "string",
+            "example": "Garcia",
+            "description": "Apellido materno. Opcional — los extranjeros pueden no tenerlo. Si se omite, el customer queda sin este campo y el CURP se genera con 'X' como placeholder."
+          },
+          "gender": {
+            "type": "string",
+            "example": "string",
+            "description": "Person's genre (H: Hombre, M: Mujer, X: Otro)",
+            "enum": [
+              "H",
+              "M",
+              "X"
+            ]
+          },
+          "birth_day": {
+            "type": "string",
+            "example": "string",
+            "description": "Person birth day"
+          },
+          "birth_month": {
+            "type": "string",
+            "example": "string",
+            "description": "Person birth month"
+          },
+          "birth_year": {
+            "type": "string",
+            "example": "string",
+            "description": "Person birth year"
+          },
+          "birth_place": {
+            "type": "string",
+            "example": "DF",
+            "description": "Estado de nacimiento. Solo aplica si `birth_country` es 'MX' (default). Si `birth_country` es otro pais (US, CN, etc), este campo se ignora y queda null. 'CDMX' / 'Ciudad de Mexico' / 'D.F.' auto-normaliza a 'DF'. Si se omite siendo MX, el CURP usa 'NE' como default RENAPO.",
+            "enum": [
+              "AS",
+              "BC",
+              "BS",
+              "CC",
+              "CL",
+              "CM",
+              "CS",
+              "CH",
+              "DF",
+              "DG",
+              "GT",
+              "GR",
+              "HG",
+              "JC",
+              "MC",
+              "NE",
+              "MN",
+              "MS",
+              "NT",
+              "NL",
+              "OC",
+              "PL",
+              "QT",
+              "QR",
+              "SP",
+              "SL",
+              "SR",
+              "TC",
+              "TS",
+              "TL",
+              "VZ",
+              "YN",
+              "ZS"
+            ]
+          },
+          "birth_country": {
+            "type": "string",
+            "example": "MX",
+            "description": "Pais de nacimiento en formato ISO-2 (MX, US, CN, etc). Default 'MX'. Si se omite o se manda 'MX', el cliente se trata como mexicano y se espera (opcional) `birth_place`. Cualquier otro codigo marca al cliente como extranjero — `birth_place` se persiste como null automaticamente.",
+            "default": "MX"
+          },
+          "env": {
+            "type": "string",
+            "example": "sandbox",
+            "description": "Env",
+            "enum": [
+              "sandbox",
+              "production"
+            ]
+          },
+          "organization_id": {
+            "type": "string",
+            "example": "string",
+            "description": "Organization id"
+          },
+          "curp": {
+            "type": "string",
+            "example": "PEGJ900101HJCRZN01",
+            "description": "CURP de 18 caracteres del titular (solo customers fisicos). Si lo pasas, queda guardado en el customer y disponible para validaciones posteriores."
+          },
+          "validate_request_id": {
+            "type": "string",
+            "example": "65f4ab12cd...",
+            "description": "Si pasas el `request_id` de un `POST /app/curp/validate` previo (status `success`, misma org, mismo CURP), el log se linkea retroactivamente al customer recien creado y se corre el match — sin cobro adicional. Util cuando validaste primero y despues decides crear el customer manualmente."
+          },
+          "datameta": {
+            "description": "Metadata — company, job_title, city, email, phone, address, nationality. All optional.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerDataMetaDTO"
+              }
+            ]
+          }
+        },
+        "required": [
+          "custom_id",
+          "name",
+          "last_name",
+          "gender",
+          "birth_day",
+          "birth_month",
+          "birth_year",
+          "env",
+          "organization_id"
+        ]
+      },
+      "UpdateCustomerDTO": {
+        "type": "object",
+        "properties": {
+          "custom_id": {
+            "type": "string",
+            "example": "EXT-001",
+            "description": "Customer custom id"
+          },
+          "legal_name": {
+            "type": "string",
+            "example": "Acme SA de CV",
+            "description": "Legal name (for moral customers)"
+          },
+          "name": {
+            "type": "string",
+            "example": "Maria",
+            "description": "Customer name"
+          },
+          "last_name": {
+            "type": "string",
+            "example": "Lopez",
+            "description": "Customer last name"
+          },
+          "mothers_last_name": {
+            "type": "string",
+            "example": "Garcia",
+            "description": "Customer mothers last name"
+          },
+          "gender": {
+            "type": "string",
+            "example": "H",
+            "description": "Gender (H / M / X)",
+            "enum": [
+              "H",
+              "M",
+              "X"
+            ]
+          },
+          "birth_day": {
+            "type": "string",
+            "example": "05",
+            "description": "Birth day (DD)"
+          },
+          "birth_month": {
+            "type": "string",
+            "example": "07",
+            "description": "Birth month (MM)"
+          },
+          "birth_year": {
+            "type": "string",
+            "example": "1994",
+            "description": "Birth year (YYYY)"
+          },
+          "birth_place": {
+            "type": "string",
+            "example": "DF",
+            "description": "Estado de nacimiento (solo si birth_country='MX'). 'CDMX', 'Ciudad de Mexico', 'D.F.' auto-normaliza a 'DF'. Si birth_country pasa a otro pais, este campo se ignora y queda null.",
+            "enum": [
+              "AS",
+              "BC",
+              "BS",
+              "CC",
+              "CL",
+              "CM",
+              "CS",
+              "CH",
+              "DF",
+              "DG",
+              "GT",
+              "GR",
+              "HG",
+              "JC",
+              "MC",
+              "NE",
+              "MN",
+              "MS",
+              "NT",
+              "NL",
+              "OC",
+              "PL",
+              "QT",
+              "QR",
+              "SP",
+              "SL",
+              "SR",
+              "TC",
+              "TS",
+              "TL",
+              "VZ",
+              "YN",
+              "ZS"
+            ]
+          },
+          "birth_country": {
+            "type": "string",
+            "example": "MX",
+            "description": "Pais de nacimiento (ISO-2). Cambiar a un pais != 'MX' fuerza birth_place a null automaticamente."
+          },
+          "curp": {
+            "type": "string",
+            "example": "LOGM900101HDFRRA01",
+            "description": "CURP"
+          },
+          "rfc": {
+            "type": "string",
+            "example": "LOGM900101XX1",
+            "description": "RFC"
+          },
+          "nss": {
+            "type": "string",
+            "example": "12345678901",
+            "description": "NSS"
+          },
+          "datameta": {
+            "description": "Metadata — company, job_title, city, email, phone, address, nationality. All optional. Merged into existing datameta.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerDataMetaDTO"
+              }
+            ]
+          }
+        }
+      },
+      "GetCurpResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "type": "string",
+            "example": "LOGM900101HDFRRA01",
+            "description": "Calculated CURP"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      },
+      "ErrorResponseDTO": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 402,
+            "description": "Código HTTP del error."
+          },
+          "message": {
+            "type": "object",
+            "example": "Insufficient credits",
+            "description": "Mensaje de error. String en la mayoría de los casos; ARRAY de strings en errores de validación (400), uno por campo inválido."
+          },
+          "error": {
+            "type": "string",
+            "example": "Payment Required",
+            "description": "Nombre del error HTTP."
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "error"
+        ]
+      },
+      "CurpPersonaDTO": {
+        "type": "object",
+        "properties": {
+          "CURP": {
+            "type": "string",
+            "example": "LOGM900101HDFRRA01"
+          },
+          "nombres": {
+            "type": "string",
+            "example": "MARIA"
+          },
+          "apellidoPaterno": {
+            "type": "string",
+            "example": "LOPEZ"
+          },
+          "apellidoMaterno": {
+            "type": "string",
+            "example": "GARCIA"
+          },
+          "sexo": {
+            "type": "string",
+            "example": "M"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "example": "01/01/1990"
+          },
+          "nacionalidad": {
+            "type": "string",
+            "example": "MEX"
+          },
+          "docProbatorio": {
+            "type": "number",
+            "example": 1
+          },
+          "statusCurp": {
+            "type": "string",
+            "example": "RCN"
+          },
+          "entidad": {
+            "type": "string",
+            "example": "DF"
+          }
+        },
+        "required": [
+          "CURP",
+          "nombres",
+          "apellidoPaterno",
+          "apellidoMaterno",
+          "sexo",
+          "fechaNacimiento",
+          "nacionalidad"
+        ]
+      },
+      "ValidateCurpDataDTO": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "CURP validado correctamente."
+          },
+          "persona": {
+            "$ref": "#/components/schemas/CurpPersonaDTO"
+          },
+          "file": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "match": {
+            "type": "object",
+            "description": "Comparación persona-RENAPO vs el customer en nuestra BD. Presente SOLO al validar un customer existente (/customer/:id/validate). Shape: { confidence, passed, fields{...}, validated_at }."
+          }
+        },
+        "required": [
+          "message",
+          "persona"
+        ]
+      },
+      "ValidateCurpResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ValidateCurpDataDTO"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      },
+      "GetCurpDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Juan",
+            "description": "Person's name"
+          },
+          "last_name": {
+            "type": "string",
+            "example": "Perez",
+            "description": "Person's last name (apellido paterno)"
+          },
+          "mothers_last_name": {
+            "type": "string",
+            "example": "Garcia",
+            "description": "Person's mothers last name (apellido materno). Optional — leave empty if not applicable."
+          },
+          "gender": {
+            "type": "string",
+            "example": "H",
+            "description": "Person's gender (H: Hombre, M: Mujer, X: No binario)",
+            "enum": [
+              "H",
+              "M",
+              "X"
+            ]
+          },
+          "birth_day": {
+            "type": "string",
+            "example": "01",
+            "description": "Person birth day (1 or 2 digits, e.g. 1 or 01–31)"
+          },
+          "birth_month": {
+            "type": "string",
+            "example": "01",
+            "description": "Person birth month (1 or 2 digits, e.g. 1 or 01–12)"
+          },
+          "birth_year": {
+            "type": "string",
+            "example": "1990",
+            "description": "Person birth year (4 digits)"
+          },
+          "birth_place": {
+            "type": "string",
+            "example": "JC",
+            "description": "Lugar de nacimiento. Opcional — extranjeros pueden omitirlo y el CURP se calcula con 'NE' (Nacido en el Extranjero) por default. 'CDMX' / 'Ciudad de Mexico' / 'Distrito Federal' / 'D.F.' se auto-normalizan a 'DF'.",
+            "enum": [
+              "AS",
+              "BC",
+              "BS",
+              "CC",
+              "CL",
+              "CM",
+              "CS",
+              "CH",
+              "DF",
+              "DG",
+              "GT",
+              "GR",
+              "HG",
+              "JC",
+              "MC",
+              "NE",
+              "MN",
+              "MS",
+              "NT",
+              "NL",
+              "OC",
+              "PL",
+              "QT",
+              "QR",
+              "SP",
+              "SL",
+              "SR",
+              "TC",
+              "TS",
+              "TL",
+              "VZ",
+              "YN",
+              "ZS"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "last_name",
+          "gender",
+          "birth_day",
+          "birth_month",
+          "birth_year"
+        ]
+      },
+      "ValidateCurpDTO": {
+        "type": "object",
+        "properties": {
+          "curp": {
+            "type": "string",
+            "example": "PEGJ900101HJCRZN01",
+            "description": "CURP de 18 caracteres"
+          },
+          "create_customer": {
+            "type": "boolean",
+            "description": "Si true, cuando la validacion complete se crea automaticamente un Customer con los datos retornados (nombre, apellidos, fecha de nacimiento, genero, CURP). El customer_id aparece en la respuesta.",
+            "default": false
+          },
+          "sync": {
+            "type": "boolean",
+            "description": "Si true, espera el resultado final antes de responder en lugar de operar de forma asincrona (timeout interno 15s). Default false.",
+            "default": false
+          }
+        },
+        "required": [
+          "curp"
+        ]
+      },
+      "GetRfcResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "type": "string",
+            "example": "LOGM900101XX1",
+            "description": "Calculated RFC"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      },
+      "ValidateRfcDataDTO": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "RFC válido, y susceptible de recibir facturas.",
+            "description": "Texto literal del veredicto del SAT."
+          },
+          "isValid": {
+            "type": "boolean",
+            "example": true,
+            "description": "true si el RFC es válido/existe en el padrón del SAT."
+          },
+          "registered": {
+            "type": "boolean",
+            "example": true,
+            "description": "true si el RFC está registrado en el padrón de contribuyentes del SAT."
+          }
+        },
+        "required": [
+          "message",
+          "isValid",
+          "registered"
+        ]
+      },
+      "ValidateRfcResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ValidateRfcDataDTO"
+          },
+          "status": {
+            "type": "string",
+            "example": "success",
+            "enum": [
+              "success",
+              "completed"
+            ],
+            "description": "success = RFC registrado; completed = RFC no registrado (consulta exitosa, sin hallazgo)."
+          }
+        },
+        "required": [
+          "request_id",
+          "data",
+          "status"
+        ]
+      },
+      "GetCalculatedRfcDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Juan",
+            "description": "Person's name"
+          },
+          "last_name": {
+            "type": "string",
+            "example": "Perez",
+            "description": "Person's last name (apellido paterno)"
+          },
+          "mothers_last_name": {
+            "type": "string",
+            "example": "Garcia",
+            "description": "Person's mothers last name (apellido materno). Optional — leave empty if not applicable."
+          },
+          "birth_day": {
+            "type": "string",
+            "example": "01",
+            "description": "Person birth day (1 or 2 digits, e.g. 1 or 01–31)"
+          },
+          "birth_month": {
+            "type": "string",
+            "example": "01",
+            "description": "Person birth month (1 or 2 digits, e.g. 1 or 01–12)"
+          },
+          "birth_year": {
+            "type": "string",
+            "example": "1990",
+            "description": "Person birth year (4 digits)"
+          }
+        },
+        "required": [
+          "name",
+          "last_name",
+          "birth_day",
+          "birth_month",
+          "birth_year"
+        ]
+      },
+      "GetCalculatedCompanyRfcDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Singula SA de CV",
+            "description": "Company name"
+          },
+          "registrationDay": {
+            "type": "string",
+            "example": "01",
+            "description": "Company registration day (1 or 2 digits, e.g. 1 or 01–31)"
+          },
+          "registrationMonth": {
+            "type": "string",
+            "example": "01",
+            "description": "Company registration month (1 or 2 digits, e.g. 1 or 01–12)"
+          },
+          "registrationYear": {
+            "type": "string",
+            "example": "2020",
+            "description": "Company registration year (4 digits)"
+          }
+        },
+        "required": [
+          "name",
+          "registrationDay",
+          "registrationMonth",
+          "registrationYear"
+        ]
+      },
+      "ValidateRfcDTO": {
+        "type": "object",
+        "properties": {
+          "rfc": {
+            "type": "string",
+            "example": "PEGJ900101XXX",
+            "description": "Person's RFC (13 characters for personas físicas, 12 for personas morales)"
+          }
+        },
+        "required": [
+          "rfc"
+        ]
+      },
+      "BlacklistRiskSummaryDTO": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "example": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low",
+              "clear"
+            ]
+          },
+          "best_certainty": {
+            "type": "number",
+            "example": 78.5
+          },
+          "best_match": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "categories_found": {
+            "example": [
+              "sanctions",
+              "pep"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tier_breakdown": {
+            "type": "object",
+            "example": {
+              "definitive": 0,
+              "strong": 1,
+              "possible": 2,
+              "weak": 5,
+              "no_match": 50
+            }
+          }
+        },
+        "required": [
+          "level",
+          "best_certainty",
+          "best_match",
+          "categories_found",
+          "tier_breakdown"
+        ]
+      },
+      "BlacklistDisambiguationDTO": {
+        "type": "object",
+        "properties": {
+          "homonym_count": {
+            "type": "number",
+            "example": 3
+          },
+          "strong_homonyms": {
+            "type": "number",
+            "example": 1
+          },
+          "by_country": {
+            "example": [
+              {
+                "key": "CN",
+                "count": 12
+              }
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "warning": {
+            "type": "string",
+            "example": "Multiple homonyms detected"
+          }
+        },
+        "required": [
+          "homonym_count",
+          "strong_homonyms",
+          "by_country"
+        ]
+      },
+      "BlacklistDataDTO": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "example": "Juan Perez"
+          },
+          "query_attributes": {
+            "type": "object",
+            "example": {
+              "country": "MX",
+              "dob": "1990"
+            }
+          },
+          "has_disambiguators": {
+            "type": "boolean",
+            "example": false
+          },
+          "total": {
+            "type": "number",
+            "example": 87616
+          },
+          "pool_examined": {
+            "type": "number",
+            "example": 200
+          },
+          "risk_summary": {
+            "$ref": "#/components/schemas/BlacklistRiskSummaryDTO"
+          },
+          "disambiguation": {
+            "$ref": "#/components/schemas/BlacklistDisambiguationDTO"
+          },
+          "groups": {
+            "type": "object",
+            "description": "Las 9 categorias canonicas siempre presentes (vacias o con resultados): sanctions, criminal, pep, debarment, fiscal, export_control, state_owned, adverse_media, other",
+            "example": {
+              "sanctions": {
+                "label": "...",
+                "icon": "🚫",
+                "relevant_count": 0,
+                "weak_count": 0,
+                "results": []
+              }
+            }
+          },
+          "checked_at": {
+            "type": "string",
+            "example": "2026-05-08T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "query",
+          "query_attributes",
+          "has_disambiguators",
+          "total",
+          "pool_examined",
+          "risk_summary",
+          "disambiguation",
+          "groups",
+          "checked_at"
+        ]
+      },
+      "BlacklistResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "$ref": "#/components/schemas/BlacklistDataDTO"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      },
+      "JudicialFiltersAppliedDTO": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "example": "persona_fisica"
+          },
+          "tipo_resolved": {
+            "type": "string",
+            "example": "person"
+          },
+          "entidad": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "estado_residencia": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          }
+        },
+        "required": [
+          "tipo",
+          "tipo_resolved"
+        ]
+      },
+      "JudicialSummaryMessageDTO": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Encontramos persona: Erick Cetina Echegoyen (2 casos)"
+          },
+          "type": {
+            "type": "string",
+            "example": "found_one"
+          }
+        },
+        "required": [
+          "message",
+          "type"
+        ]
+      },
+      "JudicialRangoFechasDTO": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "string",
+            "example": "2021-08-12"
+          },
+          "max": {
+            "type": "string",
+            "example": "2021-09-27"
+          }
+        },
+        "required": [
+          "min",
+          "max"
+        ]
+      },
+      "JudicialContraparteDTO": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "example": "Contraparte X"
+          },
+          "veces": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "nombre",
+          "veces"
+        ]
+      },
+      "JudicialCategoriaDTO": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "example": "MERCANTIL_EJECUTIVO"
+          },
+          "label": {
+            "type": "string",
+            "example": "Mercantil ejecutivo"
+          },
+          "icon": {
+            "type": "string",
+            "example": "⚡"
+          },
+          "rama": {
+            "type": "string",
+            "example": "Mercantil"
+          }
+        },
+        "required": [
+          "codigo",
+          "label",
+          "icon",
+          "rama"
+        ]
+      },
+      "JudicialEstadoCasoDTO": {
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string",
+            "example": "DESCONOCIDO"
+          },
+          "label": {
+            "type": "string",
+            "example": "Sin determinar"
+          },
+          "color": {
+            "type": "string",
+            "example": "gray"
+          },
+          "grupo": {
+            "type": "string",
+            "example": "OTROS"
+          },
+          "evento_decisivo": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          }
+        },
+        "required": [
+          "estado",
+          "label",
+          "color",
+          "grupo"
+        ]
+      },
+      "JudicialAcuerdoDTO": {
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "example": "2021-08-12"
+          },
+          "tipo_evento": {
+            "type": "string",
+            "example": "TRAMITE"
+          },
+          "evento_label": {
+            "type": "string",
+            "example": "Trámite"
+          },
+          "evento_icon": {
+            "type": "string",
+            "example": "📌"
+          },
+          "evento_clave": {
+            "type": "boolean",
+            "example": false
+          },
+          "todos_eventos": {
+            "example": [],
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "texto_raw": {
+            "type": "string",
+            "example": "Texto del acuerdo..."
+          },
+          "texto_limpio": {
+            "type": "string",
+            "example": "Texto del acuerdo..."
+          },
+          "was_corrected": {
+            "type": "boolean",
+            "example": false
+          },
+          "fuente_confidence": {
+            "type": "number",
+            "example": 0.65
+          },
+          "fecha_promocion": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "doc_id": {
+            "type": "string",
+            "example": "eba9d824e4cdf603"
+          }
+        },
+        "required": [
+          "fecha",
+          "tipo_evento",
+          "evento_label",
+          "evento_icon",
+          "evento_clave",
+          "todos_eventos",
+          "texto_raw",
+          "texto_limpio",
+          "was_corrected",
+          "fuente_confidence",
+          "doc_id"
+        ]
+      },
+      "JudicialExpedienteDTO": {
+        "type": "object",
+        "properties": {
+          "expediente_id": {
+            "type": "string",
+            "example": "39c10757"
+          },
+          "expediente": {
+            "type": "string",
+            "example": "689/2019"
+          },
+          "juzgado": {
+            "type": "string",
+            "example": "JUZGADOS DE LO CIVIL"
+          },
+          "entidad": {
+            "type": "string",
+            "example": "Ciudad de México"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/JudicialCategoriaDTO"
+          },
+          "actor": {
+            "type": "string",
+            "example": "Lecompte de Los Ríos Laura Jimena"
+          },
+          "demandado": {
+            "type": "string",
+            "example": "Cetina Echecoyen Erick"
+          },
+          "estado_caso": {
+            "$ref": "#/components/schemas/JudicialEstadoCasoDTO"
+          },
+          "primer_acuerdo": {
+            "type": "string",
+            "example": "2021-08-12"
+          },
+          "ultimo_acuerdo": {
+            "type": "string",
+            "example": "2021-09-27"
+          },
+          "duracion_dias": {
+            "type": "number",
+            "example": 46
+          },
+          "num_acuerdos": {
+            "type": "number",
+            "example": 4
+          },
+          "tab": {
+            "type": "string",
+            "example": ""
+          },
+          "juzgado_codigo": {
+            "type": "string",
+            "example": ""
+          },
+          "acuerdos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JudicialAcuerdoDTO"
+            }
+          }
+        },
+        "required": [
+          "expediente_id",
+          "expediente",
+          "juzgado",
+          "entidad",
+          "categoria",
+          "actor",
+          "demandado",
+          "estado_caso",
+          "primer_acuerdo",
+          "ultimo_acuerdo",
+          "duracion_dias",
+          "num_acuerdos",
+          "tab",
+          "juzgado_codigo",
+          "acuerdos"
+        ]
+      },
+      "JudicialPersonaExactaDTO": {
+        "type": "object",
+        "properties": {
+          "person_id": {
+            "type": "string",
+            "example": "p_4a1f7e8f"
+          },
+          "match_type": {
+            "type": "string",
+            "example": "perfect"
+          },
+          "match_label": {
+            "type": "string",
+            "example": "Coincidencia exacta"
+          },
+          "is_entity": {
+            "type": "boolean",
+            "example": false
+          },
+          "missing_tokens": {
+            "example": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "match_warning": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "nombre_canonico": {
+            "type": "string",
+            "example": "Erick Cetina Echegoyen"
+          },
+          "aliases_vistos": {
+            "example": [
+              "Cetina Echecoyen Erick"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name_signature": {
+            "example": [
+              "CETINA",
+              "ECHEGOYEN",
+              "ERICK"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total_casos": {
+            "type": "number",
+            "example": 2
+          },
+          "total_acuerdos": {
+            "type": "number",
+            "example": 5
+          },
+          "rango_fechas": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JudicialRangoFechasDTO"
+              }
+            ]
+          },
+          "entidades": {
+            "type": "object",
+            "example": {
+              "Ciudad de México": 2
+            }
+          },
+          "categorias": {
+            "type": "object",
+            "example": {
+              "MERCANTIL_EJECUTIVO": 2
+            }
+          },
+          "top_contrapartes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JudicialContraparteDTO"
+            }
+          },
+          "geo_signal": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "expedientes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JudicialExpedienteDTO"
+            }
+          },
+          "is_homonym": {
+            "type": "boolean",
+            "example": false
+          },
+          "homonym_count": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "person_id",
+          "match_type",
+          "match_label",
+          "is_entity",
+          "missing_tokens",
+          "nombre_canonico",
+          "aliases_vistos",
+          "name_signature",
+          "total_casos",
+          "total_acuerdos",
+          "entidades",
+          "categorias",
+          "top_contrapartes",
+          "expedientes",
+          "is_homonym",
+          "homonym_count"
+        ]
+      },
+      "JudicialRegistroExcluidoDTO": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "example": "NOMBRE SIMILAR"
+          },
+          "veces": {
+            "type": "number",
+            "example": 23
+          }
+        },
+        "required": [
+          "nombre",
+          "veces"
+        ]
+      },
+      "JudicialEstadisticaCategoriaDTO": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "example": "MERCANTIL_EJECUTIVO"
+          },
+          "label": {
+            "type": "string",
+            "example": "Mercantil ejecutivo"
+          },
+          "icon": {
+            "type": "string",
+            "example": "⚡"
+          },
+          "rama": {
+            "type": "string",
+            "example": "Mercantil"
+          },
+          "casos": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "codigo",
+          "label",
+          "icon",
+          "rama",
+          "casos"
+        ]
+      },
+      "JudicialEstadisticasGlobalesDTO": {
+        "type": "object",
+        "properties": {
+          "por_categoria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JudicialEstadisticaCategoriaDTO"
+            }
+          },
+          "por_entidad": {
+            "type": "object",
+            "example": {
+              "Ciudad de México": 2
+            }
+          },
+          "personas_exactas_count": {
+            "type": "number",
+            "example": 1
+          },
+          "coincidencias_parciales_count": {
+            "type": "number",
+            "example": 0
+          },
+          "registros_excluidos": {
+            "type": "number",
+            "example": 90
+          }
+        },
+        "required": [
+          "por_categoria",
+          "por_entidad",
+          "personas_exactas_count",
+          "coincidencias_parciales_count",
+          "registros_excluidos"
+        ]
+      },
+      "JudicialIntelligenceResponseDTO": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "example": "ERICK CETINA ECHEGOYEN"
+          },
+          "total_records": {
+            "type": "number",
+            "example": 2491105
+          },
+          "fetched_records": {
+            "type": "number",
+            "example": 200
+          },
+          "relevant_records": {
+            "type": "number",
+            "example": 200
+          },
+          "discarded_low_score": {
+            "type": "number",
+            "example": 0
+          },
+          "score_top": {
+            "type": "number",
+            "example": 93.12
+          },
+          "score_threshold": {
+            "type": "number",
+            "example": 23.28
+          },
+          "search_ms": {
+            "type": "number",
+            "example": 3216
+          },
+          "filters_applied": {
+            "$ref": "#/components/schemas/JudicialFiltersAppliedDTO"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/JudicialSummaryMessageDTO"
+          },
+          "personas_exactas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JudicialPersonaExactaDTO"
+            }
+          },
+          "coincidencias_parciales": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JudicialPersonaExactaDTO"
+            }
+          },
+          "registros_excluidos_similares": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JudicialRegistroExcluidoDTO"
+            }
+          },
+          "estadisticas_globales": {
+            "$ref": "#/components/schemas/JudicialEstadisticasGlobalesDTO"
+          }
+        },
+        "required": [
+          "query",
+          "total_records",
+          "fetched_records",
+          "relevant_records",
+          "discarded_low_score",
+          "score_top",
+          "score_threshold",
+          "search_ms",
+          "filters_applied",
+          "summary",
+          "personas_exactas",
+          "coincidencias_parciales",
+          "registros_excluidos_similares",
+          "estadisticas_globales"
+        ]
+      },
+      "JudicialRecordsDataDTO": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "clean",
+            "enum": [
+              "records_found",
+              "clean"
+            ]
+          },
+          "total_records": {
+            "type": "number",
+            "example": 0
+          },
+          "risk_level": {
+            "type": "string",
+            "example": "none",
+            "enum": [
+              "high",
+              "medium",
+              "none"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "example": "No se encontraron registros judiciales relevantes."
+          },
+          "sources_checked": {
+            "example": [
+              "Boletin Judicial — Inteligencia de personas"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "checked_at": {
+            "type": "string",
+            "example": "2026-04-16T12:00:00.000Z"
+          },
+          "intelligence": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JudicialIntelligenceResponseDTO"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "total_records",
+          "risk_level",
+          "summary",
+          "sources_checked",
+          "checked_at"
+        ]
+      },
+      "JudicialRecordsResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "$ref": "#/components/schemas/JudicialRecordsDataDTO"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      },
+      "IntelCustomerDataMetaDto": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "example": "ACME S.A. de C.V.",
+            "description": "Company name"
+          },
+          "job_title": {
+            "type": "string",
+            "example": "Gerente de Ventas",
+            "description": "Job title"
+          },
+          "city": {
+            "type": "string",
+            "example": "Guadalajara",
+            "description": "Ciudad de residencia. Mejora la desambiguacion de homonimos en news."
+          },
+          "state": {
+            "type": "string",
+            "example": "Jalisco",
+            "description": "Estado o region. Mejora la desambiguacion de homonimos en news."
+          },
+          "country": {
+            "type": "string",
+            "example": "MX",
+            "description": "Codigo de pais ISO-2 (MX, AR, US, ...). Default semantico: MX."
+          },
+          "email": {
+            "type": "string",
+            "example": "juan@example.com",
+            "description": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "example": "3312345678",
+            "description": "Phone number"
+          },
+          "address": {
+            "type": "string",
+            "example": "Calle Reforma 123, Col. Centro",
+            "description": "Address"
+          },
+          "nationality": {
+            "type": "string",
+            "example": "Mexicana",
+            "description": "Person's nationality. Optional."
+          }
+        }
+      },
+      "OsintNewsDTO": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Nota de ejemplo"
+          },
+          "source": {
+            "type": "string",
+            "example": "El Universal"
+          },
+          "date": {
+            "type": "string",
+            "example": "10 ene 2026",
+            "nullable": true
+          },
+          "date_utc": {
+            "type": "string",
+            "example": "2026-01-10T00:00:00.000Z",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "example": "https://example.com/nota"
+          },
+          "snippet": {
+            "type": "string",
+            "example": "Resumen…",
+            "nullable": true
+          },
+          "sentiment": {
+            "type": "string",
+            "example": "neutral",
+            "enum": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          },
+          "relevance_score": {
+            "type": "number",
+            "example": 0.5,
+            "description": "0..1 — relevancia vs los atributos de la query."
+          },
+          "matches_query": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "position",
+          "title",
+          "source",
+          "url",
+          "sentiment",
+          "relevance_score",
+          "matches_query"
+        ]
+      },
+      "OsintLinkedinDTO": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://linkedin.com/in/dev-user",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "example": "Developer",
+            "nullable": true
+          },
+          "company": {
+            "type": "string",
+            "example": "Empresa Demo",
+            "nullable": true
+          },
+          "photo_url": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          }
+        }
+      },
+      "OsintDataDTO": {
+        "type": "object",
+        "properties": {
+          "tier": {
+            "type": "string",
+            "example": "premium",
+            "enum": [
+              "basic",
+              "premium"
+            ],
+            "description": "basic = /app/intel; premium = /app/intel-premium."
+          },
+          "web_results": {
+            "example": [
+              {
+                "title": "Perfil",
+                "url": "https://example.com",
+                "snippet": "…",
+                "domain": "example.com"
+              }
+            ],
+            "description": "Resultados web generales.",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "news": {
+            "description": "Noticias con sentimiento + score de relevancia.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OsintNewsDTO"
+            }
+          },
+          "images": {
+            "example": [
+              {
+                "url": "https://example.com/i.jpg",
+                "source": "https://example.com",
+                "title": "Foto",
+                "domain": "example.com"
+              }
+            ],
+            "description": "Imágenes encontradas.",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "linkedin_profiles": {
+            "example": [
+              {
+                "title": "LinkedIn",
+                "url": "https://linkedin.com/in/x",
+                "snippet": "…"
+              }
+            ],
+            "description": "Perfiles de LinkedIn detectados.",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "social_profiles": {
+            "example": [
+              {
+                "title": "IG",
+                "url": "https://instagram.com/x",
+                "snippet": null,
+                "platform": "instagram"
+              }
+            ],
+            "description": "Perfiles en otras redes.",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "knowledge_graph": {
+            "type": "object",
+            "nullable": true,
+            "description": "Knowledge graph de Google si existe."
+          },
+          "summary": {
+            "type": "string",
+            "example": "Síntesis narrativa del perfil.",
+            "nullable": true,
+            "description": "Solo premium."
+          },
+          "linkedin": {
+            "nullable": true,
+            "description": "Solo premium.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OsintLinkedinDTO"
+              }
+            ]
+          },
+          "work_history": {
+            "description": "Solo premium ([] en basic).",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "education": {
+            "description": "Solo premium ([] en basic).",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "companies": {
+            "description": "Solo premium ([] en basic).",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "digital_footprint": {
+            "type": "string",
+            "example": "medium",
+            "enum": [
+              "none",
+              "low",
+              "medium",
+              "high"
+            ],
+            "nullable": true,
+            "description": "Solo premium (null en basic)."
+          },
+          "sources": {
+            "description": "Citas/fuentes de la síntesis IA. Solo premium ([] en basic).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "phone_lookup": {
+            "type": "object",
+            "nullable": true,
+            "description": "Lookup de teléfono. Presente SOLO en premium cuando se pasó un teléfono (object o null). Ausente en basic."
+          }
+        },
+        "required": [
+          "tier",
+          "web_results",
+          "news",
+          "images",
+          "linkedin_profiles",
+          "social_profiles",
+          "work_history",
+          "education",
+          "companies",
+          "sources"
+        ]
+      },
+      "OsintResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "description": "Objeto vacío ({}) en async hasta que el webhook completa.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OsintDataDTO"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "example": "success",
+            "description": "Presente en sandbox/sync."
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      },
+      "IdentityVerificationCreateResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "verification_token": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "verification_url": {
+            "type": "string",
+            "example": "https://app.singula.mx/verify/a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "expires_at": {
+            "type": "string",
+            "example": "2026-04-17T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "request_id",
+          "verification_token",
+          "verification_url",
+          "expires_at"
+        ]
+      },
+      "IdentityVerificationSubmitResponseDTO": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "processing"
+          },
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          }
+        },
+        "required": [
+          "status",
+          "request_id"
+        ]
+      },
+      "IneExtractionCreateResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8",
+            "description": "LogRequest id. Poll /status or wait for webhook."
+          },
+          "status": {
+            "type": "string",
+            "example": "processing",
+            "description": "Always \"processing\" — final state delivered via webhook."
+          }
+        },
+        "required": [
+          "request_id",
+          "status"
+        ]
+      },
+      "IdentityVerificationCheckDTO": {
+        "type": "object",
+        "properties": {
+          "check_name": {
+            "type": "string",
+            "example": "curp_validation"
+          },
+          "passed": {
+            "type": "boolean",
+            "example": true
+          },
+          "confidence": {
+            "type": "number",
+            "example": 0.98
+          }
+        },
+        "required": [
+          "check_name",
+          "passed",
+          "confidence"
+        ]
+      },
+      "IneListaNominalResultDTO": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "example": "vigente",
+            "enum": [
+              "vigente",
+              "dada_de_baja",
+              "no_encontrada",
+              "duplicada_o_robada",
+              "datos_no_coinciden",
+              "maintenance",
+              "unknown",
+              "unsupported_model",
+              "missing_fields",
+              "bad_field_format",
+              "low_confidence",
+              "inconsistent_data",
+              "scraping_error"
+            ],
+            "description": "Listanominal validation outcome. INE verdicts: vigente / dada_de_baja / no_encontrada / duplicada_o_robada / datos_no_coinciden. Pre-flight gate skips: unsupported_model / missing_fields / bad_field_format / low_confidence / inconsistent_data (no Bright Data spend on these). maintenance = INE site temporarily unavailable — billed because OCR + validations did run; client should retry later. scraping_error is an infrastructure failure (not billed)."
+          },
+          "baja_reason": {
+            "type": "string",
+            "example": "duplicado",
+            "nullable": true,
+            "enum": [
+              "duplicado",
+              "defuncion",
+              "cancelacion_tramite",
+              "perdida_nacionalidad",
+              "documentacion_apocrifa",
+              "suspension_derechos",
+              "domicilio_irregular",
+              "datos_irregulares",
+              "vencimiento",
+              "no_recogida"
+            ],
+            "description": "Specific cause when outcome is `dada_de_baja`. Maps to the official INE FAQ catalog of removal reasons. null when the response page did not surface a reason. Undefined for other outcomes."
+          },
+          "model_used": {
+            "type": "string",
+            "example": "G",
+            "nullable": true,
+            "description": "Inferred INE/IFE credential model (A/B/C/D/E/F/G/H)."
+          },
+          "submit_group": {
+            "type": "string",
+            "example": "E",
+            "nullable": true,
+            "description": "Submit group on the listanominal form (C/D/E)."
+          },
+          "message": {
+            "type": "string",
+            "example": "Tu credencial es vigente",
+            "description": "Human-readable summary."
+          },
+          "queried_at": {
+            "type": "string",
+            "example": "2026-05-18T18:30:12Z"
+          },
+          "duration_ms": {
+            "type": "number",
+            "example": 28341,
+            "nullable": true,
+            "description": "End-to-end Bright Data round-trip duration. Null when gate-rejected."
+          }
+        },
+        "required": [
+          "outcome",
+          "baja_reason",
+          "model_used",
+          "submit_group",
+          "message",
+          "queried_at",
+          "duration_ms"
+        ]
+      },
+      "IneExtractionResultDTO": {
+        "type": "object",
+        "properties": {
+          "document_type": {
+            "type": "string",
+            "example": "INE"
+          },
+          "ine_model": {
+            "type": "string",
+            "example": "G",
+            "nullable": true,
+            "description": "Inferred credential model. Models A/B are legacy IFE (not validatable). C/D are 2008-2014. E/F/G/H are 2014+. \"unknown\" → OCR too ambiguous to classify."
+          },
+          "extracted_data": {
+            "type": "object",
+            "example": {
+              "nombre": "MARIA",
+              "apellido_paterno": "LOPEZ",
+              "curp": "LOGM900101HDFRRA01"
+            },
+            "description": "Raw OCR fields."
+          },
+          "checks": {
+            "description": "Internal validation checks (CURP format, MRZ check digits, etc).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityVerificationCheckDTO"
+            }
+          },
+          "listanominal": {
+            "nullable": true,
+            "description": "Listanominal step — null only when the worker never reached this stage.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IneListaNominalResultDTO"
+              }
+            ]
+          }
+        },
+        "required": [
+          "document_type",
+          "ine_model",
+          "extracted_data",
+          "checks",
+          "listanominal"
+        ]
+      },
+      "PhoneLookupDataDTO": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+525512345678"
+          },
+          "valid": {
+            "type": "boolean",
+            "example": true
+          },
+          "country": {
+            "type": "string",
+            "example": "MX",
+            "nullable": true
+          },
+          "country_name": {
+            "type": "string",
+            "example": "Mexico",
+            "nullable": true
+          },
+          "carrier": {
+            "type": "string",
+            "example": "Telcel",
+            "nullable": true
+          },
+          "line_type": {
+            "type": "string",
+            "example": "mobile",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "example": "Mexico City",
+            "nullable": true
+          },
+          "checked_at": {
+            "type": "string",
+            "example": "2026-04-16T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "phone",
+          "valid",
+          "checked_at"
+        ]
+      },
+      "PhoneLookupResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PhoneLookupDataDTO"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      },
+      "EmailLookupPlatformDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "instagram"
+          },
+          "exists": {
+            "type": "boolean",
+            "example": true
+          },
+          "url": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "exists"
+        ]
+      },
+      "EmailLookupDataDTO": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "maria@example.com"
+          },
+          "total_found": {
+            "type": "number",
+            "example": 3
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailLookupPlatformDTO"
+            }
+          },
+          "total_checked": {
+            "type": "number",
+            "example": 4
+          },
+          "checked_at": {
+            "type": "string",
+            "example": "2026-04-16T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "email",
+          "total_found",
+          "platforms",
+          "total_checked",
+          "checked_at"
+        ]
+      },
+      "EmailLookupResponseDTO": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "example": "6622f8a1c1d2e3f4a5b6c7d8"
+          },
+          "data": {
+            "$ref": "#/components/schemas/EmailLookupDataDTO"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "overall_ok": true,
+  "total_size_gb": 21.476,
+  "total_rows": 341910157,
+  "bases": [
+    {
+      "name": "padron",
+      "ok": true,
+      "size_gb": 6.163,
+      "rows": 88402547,
+      "tables": [
+        "padron"
+      ]
+    },
+    {
+      "name": "telcel",
+      "ok": true,
+      "size_gb": 2.015,
+      "rows": 19270776,
+      "tables": [
+        "telcel",
+        "telcel_valid"
+      ]
+    },
+    {
+      "name": "att",
+      "ok": true,
+      "size_gb": 0.071,
+      "rows": 2097145,
+      "tables": [
+        "att",
+        "att_valid"
+      ]
+    },
+    {
+      "name": "empleadores",
+      "ok": true,
+      "size_gb": 0.046,
+      "rows": 161933,
+      "tables": [
+        "empleadores"
+      ]
+    },
+    {
+      "name": "imss_asegurados",
+      "ok": true,
+      "size_gb": 3.505,
+      "rows": 114708984,
+      "tables": [
+        "imss_2025",
+        "imss_valid"
+      ]
+    },
+    {
+      "name": "imss_segmentacion",
+      "ok": true,
+      "size_gb": 6.444,
+      "rows": 47283869,
+      "tables": [
+        "imss_personas",
+        "imss_personas_valid"
+      ]
+    },
+    {
+      "name": "repuve",
+      "ok": true,
+      "size_gb": 0.213,
+      "rows": 3491163,
+      "tables": [
+        "repuve",
+        "repuve_valid"
+      ]
+    },
+    {
+      "name": "fotos",
+      "ok": true,
+      "size_gb": 0.004,
+      "rows": 14943,
+      "tables": [
+        "fotos",
+        "resumen"
+      ]
+    },
+    {
+      "name": "cfe",
+      "ok": true,
+      "size_gb": 2.956,
+      "rows": 66003291,
+      "tables": [
+        "medidores"
+      ]
+    },
+    {
+      "name": "auth",
+      "ok": true,
+      "size_gb": 0.0,
+      "rows": 880,
+      "tables": [
+        "users",
+        "sqlite_sequence",
+        "credentials",
+        "challenges",
+        "sessions",
+        "activity_log"
+      ]
+    },
+    {
+      "name": "geo",
+      "ok": true,
+      "size_gb": 0.042,
+      "rows": 319586,
+      "tables": [
+        "cp",
+        "manzanas",
+        "sqlite_sequence",
+        "municipios",
+        "ageb_urbana"
+      ]
+    },
+    {
+      "name": "sepomex",
+      "ok": true,
+      "size_gb": 0.017,
+      "rows": 155040,
+      "tables": [
+        "cp"
+      ]
+    }
+  ]
+}
