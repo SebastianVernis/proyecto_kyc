@@ -620,6 +620,183 @@ button.primary:focus-visible {
   box-shadow: 0 4px 12px -2px rgba(79,140,255,0.25) !important;
 }
 
+/* ==== Panel Domicilio: override del layout grid heredado de main ==== */
+/* main tiene grid-template-columns: 280px 1fr (sidebar para filtros Padrón).
+   El panel de Domicilio NO tiene sidebar — necesita su propio layout. */
+#panel-domicilio {
+  display: none;
+  height: auto;
+  min-height: calc(100vh - 95px);
+  grid-template-columns: 1fr;
+  padding: 24px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+#panel-domicilio.active {
+  display: grid;
+  gap: 16px;
+}
+#panel-domicilio h2.dom-title {
+  color: var(--accent2);
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+#panel-domicilio .dom-subtitle {
+  color: var(--muted);
+  font-size: 12px;
+  margin: -8px 0 0;
+}
+#panel-domicilio .dom-form {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+#panel-domicilio .dom-form .field { margin-bottom: 0; }
+
+/* Acciones: ancho fijo, alineadas a la derecha, alineadas al baseline de los inputs */
+#panel-domicilio .dom-form .dom-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  justify-content: flex-end;
+  align-items: stretch;
+  min-height: 44px;            /* mismo alto que .field input (línea 187) */
+  padding-top: 18px;           /* deja aire arriba; alinea con baseline del input */
+  border-top: 1px solid var(--border);  /* separador sutil entre filtros y acciones */
+}
+/* Override del width:100% global de .btn (línea 196) — flex controla el ancho */
+#panel-domicilio .dom-form .dom-actions .btn {
+  margin-top: 0;
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 200px;
+  min-height: 44px;
+}
+#panel-domicilio .dom-form .dom-actions .btn.secondary {
+  flex: 0 1 auto;
+  min-width: 140px;
+  width: auto !important;
+}
+
+/* Checkbox alineado al baseline de los inputs (.field input tiene min-height: 44px) */
+#panel-domicilio .dom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;          /* ocupa toda la fila del grid */
+  min-height: 44px;             /* mismo que .field input */
+  padding: 0 4px 8px 4px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+#panel-domicilio .dom-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin: 0;
+}
+#panel-domicilio .dom-checkbox span { line-height: 1; }
+
+#panel-domicilio .dom-results {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+#panel-domicilio .dom-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+#panel-domicilio .dom-kpi {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+}
+#panel-domicilio .dom-kpi .label {
+  font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+#panel-domicilio .dom-kpi .value {
+  font-size: 22px; font-weight: 700; margin-top: 2px; color: var(--accent2);
+}
+#panel-domicilio .dom-kpi.zero .value { color: var(--muted); }
+#panel-domicilio .dom-kpi.zero { opacity: 0.55; }
+#panel-domicilio .dom-section { margin-top: 18px; }
+#panel-domicilio .dom-section h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent2);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#panel-domicilio .dom-section h3 .count {
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+#panel-domicilio .dom-table-wrap { overflow-x: auto; }
+#panel-domicilio .nucleo-chip {
+  display: inline-block;
+  background: var(--panel2);
+  padding: 3px 10px;
+  border-radius: 10px;
+  margin: 2px 4px 2px 0;
+  font-size: 11.5px;
+  border: 1px solid var(--border);
+}
+#panel-domicilio .nucleo-chip .count { color: var(--accent2); font-weight: 600; margin-left: 4px; }
+#panel-domicilio .sepomex-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+}
+#panel-domicilio .sepomex-card .label {
+  font-size: 10px;
+  color: var(--accent2);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 4px;
+}
+#panel-domicilio .dom-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid var(--error);
+  padding: 10px 14px;
+  border-radius: 4px;
+  color: var(--error);
+  font-size: 13px;
+}
+#panel-domicilio .dom-status {
+  color: var(--muted);
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+}
+
 /* ==== Scrollbars estilizadas — Chrome / Edge / Safari ==== */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -665,30 +842,47 @@ aside, main, .modal, [style*="overflow"] { scrollbar-width: thin; scrollbar-colo
 </div>
 
 <main class="tab-panel" id="panel-domicilio" hidden>
-  <h2 style="color:var(--accent2);margin-top:24px">Búsqueda por Domicilio — CFE + INE</h2>
-  <p style="color:var(--muted);font-size:12px">Combina padrón INE (88M con dirección) y CFE (65M con dirección). Al menos CP o calle.</p>
-  <form id="form-domicilio" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;padding:14px;background:var(--panel2);border-radius:8px">
-    <label>CP
-      <input type="text" name="cp" placeholder="5 dígitos" pattern="\d{5}" maxlength="5" style="width:100%;padding:6px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px">
+  <h2 class="dom-title">📍 Búsqueda por Domicilio</h2>
+  <p class="dom-subtitle">Cruza Padrón INE (88M) + CFE (66M) + 5 bases adicionales (Telcel, ATT, REPUVE, IMSS, ISSSTE). Mínimo CP o calle.</p>
+
+  <form id="form-domicilio" class="dom-form" autocomplete="off">
+    <div class="field">
+      <label for="dom-cp">CP</label>
+      <input type="text" id="dom-cp" name="cp" placeholder="10200" pattern="\d{5}" maxlength="5" inputmode="numeric">
+      <div class="hint">5 dígitos · opcional si pasás calle</div>
+    </div>
+    <div class="field">
+      <label for="dom-calle">Calle</label>
+      <input type="text" id="dom-calle" name="calle" placeholder="VISTA DEL ATARDECER">
+      <div class="hint">Sin "Calle" / "Av." (se normaliza)</div>
+    </div>
+    <div class="field">
+      <label for="dom-colonia">Colonia</label>
+      <input type="text" id="dom-colonia" name="colonia" placeholder="LOMAS DE VISTABELLA">
+    </div>
+    <div class="field">
+      <label for="dom-ext">Exterior</label>
+      <input type="text" id="dom-ext" name="ext" placeholder="159" maxlength="8">
+    </div>
+    <div class="field">
+      <label for="dom-mun">Municipio (opcional)</label>
+      <input type="text" id="dom-mun" name="mun" placeholder="MAGDALENA CONTRERAS">
+    </div>
+    <div class="field">
+      <label for="dom-limit">Límite</label>
+      <input type="number" id="dom-limit" name="limit" value="50" min="1" max="500">
+    </div>
+    <label class="dom-checkbox">
+      <input type="checkbox" id="dom-exact" name="exact" value="1">
+      Exacto
     </label>
-    <label>Calle
-      <input type="text" name="calle" placeholder="VISTA DEL ATARDECER" style="width:100%;padding:6px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px">
-    </label>
-    <label>Colonia
-      <input type="text" name="colonia" placeholder="LOMAS DE VISTABELLA" style="width:100%;padding:6px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px">
-    </label>
-    <label>Exterior
-      <input type="text" name="ext" placeholder="159" style="width:100%;padding:6px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px">
-    </label>
-    <label style="display:flex;align-items:center;gap:6px;margin-top:20px">
-      <input type="checkbox" name="exact" value="1"> Exacto
-    </label>
-    <label>Limit
-      <input type="number" name="limit" value="50" min="1" max="500" style="width:100%;padding:6px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px">
-    </label>
-    <button type="submit" style="grid-column:1/-1;padding:8px;background:var(--accent);color:#000;border:none;border-radius:4px;font-weight:600;cursor:pointer">Buscar</button>
+    <div class="dom-actions">
+      <button type="submit" class="btn" id="dom-submit">🔍 Buscar en 7+ bases</button>
+      <button type="button" class="btn secondary" id="dom-clear">Limpiar</button>
+    </div>
   </form>
-  <div id="domicilio-results" style="margin-top:14px"></div>
+
+  <div id="domicilio-results" class="dom-results"></div>
 </main>
 
 <main class="tab-panel active" id="panel-padron">
@@ -1205,8 +1399,158 @@ document.querySelectorAll(".tab").forEach(tab => {
   });
 });
 
-/* ==== Form domicilio (CFE+INE) ==== */
+/* ==== Form domicilio (CFE + INE + 5 bases extendidas) ==== */
 const formDom = document.getElementById("form-domicilio");
+const domResults = document.getElementById("domicilio-results");
+
+function domClear() {
+  if (!formDom) return;
+  formDom.reset();
+  document.getElementById("dom-limit").value = 50;
+  if (domResults) domResults.innerHTML = "";
+}
+
+const domClearBtn = document.getElementById("dom-clear");
+if (domClearBtn) domClearBtn.addEventListener("click", domClear);
+
+// Columnas a renderizar por base (en orden)
+// Deben matchear exactamente lo que devuelve backend/servir.py:_handle_direccion_buscar
+const DOM_COLS = {
+  personas: ["curp", "nombre", "paterno", "materno", "calle", "ext", "colonia", "cp", "sexo", "fecnac"],
+  cfe:      ["numero_servicio", "nombre", "division", "cp", "direccion", "colonia", "agencia_nom"],
+  telcel:   ["nombre1", "nombre2", "rfc", "telefono", "domicilio", "numero", "interior", "colonia", "ciudad", "estado", "cp"],
+  att:      ["nombre", "paterno", "materno", "rfc", "telefono_fijo", "celular", "direccion", "exterior", "colonia", "municipio", "estado"],
+  repuve:   ["nombre", "rfc", "placa", "marca", "modelo", "color", "telefono", "direccion"],
+  imss:     ["asegurado", "nss", "curp", "patron", "domicilio", "cp", "ciudad_estado", "giro", "sueldo"],
+  issste:   ["paterno", "materno", "nombres", "cargo", "sueldo", "ramo", "entidad"],
+};
+const DOM_TITLES = {
+  personas: "Padrón INE",
+  cfe:      "CFE (medidores)",
+  telcel:   "Telcel",
+  att:      "ATT",
+  repuve:   "REPUVE",
+  imss:     "IMSS Asegurados",
+  issste:   "ISSSTE",
+};
+
+function domFormatNum(n) {
+  if (n === null || n === undefined) return "—";
+  return Number(n).toLocaleString("es-MX");
+}
+
+function domRenderTable(rows, cols) {
+  if (!rows || !rows.length) return "";
+  let html = '<div class="dom-table-wrap"><table><thead><tr>';
+  for (const c of cols) html += `<th>${c}</th>`;
+  html += "</tr></thead><tbody>";
+  for (const r of rows) {
+    html += "<tr>";
+    for (const c of cols) {
+      const v = r[c];
+      html += `<td>${esc(v === null || v === undefined ? "" : v)}</td>`;
+    }
+    html += "</tr>";
+  }
+  html += "</tbody></table></div>";
+  return html;
+}
+
+function domRenderBase(key, rows, total) {
+  const cols = DOM_COLS[key];
+  if (!cols) return "";
+  // Mostrar la sección siempre que el backend haya buscado (incluso si 0)
+  if (!rows || !rows.length) {
+    return `<div class="dom-section"><h3>${DOM_TITLES[key]}<span class="count">0</span></h3>` +
+      `<div class="dom-status">Sin coincidencias en ${DOM_TITLES[key]}.</div></div>`;
+  }
+  const shown = Math.min(rows.length, total || rows.length);
+  return `<div class="dom-section"><h3>${DOM_TITLES[key]}<span class="count">${domFormatNum(total || rows.length)}</span></h3>` +
+    domRenderTable(rows, cols) +
+    (total && rows.length < total ? `<div class="dom-status">Mostrando ${rows.length} de ${domFormatNum(total)}.</div>` : "") +
+    `</div>`;
+}
+
+function domRender(d) {
+  const t = d.totales || {};
+  const kpis = [
+    {k: "padron", l: "INE",     v: t.padron || 0, color: "var(--accent)"},
+    {k: "cfe",    l: "CFE",     v: t.cfe || 0,    color: "var(--warn)"},
+    {k: "telcel", l: "Telcel",  v: t.telcel || 0, color: "var(--accent2)"},
+    {k: "att",    l: "ATT",     v: t.att || 0,    color: "#9b87f5"},
+    {k: "repuve", l: "REPUVE",  v: t.repuve || 0, color: "#ec4899"},
+    {k: "imss",   l: "IMSS",    v: t.imss || 0,   color: "#14b8a6"},
+    {k: "issste", l: "ISSSTE",  v: t.issste || 0, color: "#f97316"},
+  ];
+
+  // Header con normalización y filtros aplicados
+  let html = "";
+  const norm = d.normalizado || {};
+  const filtros = d.filtros || {};
+  const normChips = [];
+  if (norm.cp) normChips.push(`<span class="nucleo-chip">CP <strong>${esc(norm.cp)}</strong></span>`);
+  if (norm.calle) normChips.push(`<span class="nucleo-chip">calle <strong>${esc(norm.calle)}</strong></span>`);
+  if (norm.colonia) normChips.push(`<span class="nucleo-chip">colonia <strong>${esc(norm.colonia)}</strong></span>`);
+  if (normChips.length) {
+    html += `<div class="dom-section" style="margin-top:0"><div class="muted" style="font-size:11px;color:var(--muted);margin-bottom:4px">Búsqueda normalizada:</div>${normChips.join("")}</div>`;
+  }
+
+  // SEPOMEX (si existe)
+  if (d.sepomex) {
+    const s = d.sepomex;
+    html += `<div class="sepomex-card" style="margin-bottom:14px">`;
+    html += `<div class="label">📮 SEPOMEX</div>`;
+    html += `<div><strong>${esc(s.colonia || "—")}</strong> · CP ${esc(s.cp || "—")}`;
+    if (s.tipo) html += ` · <span style="color:var(--muted)">${esc(s.tipo)}</span>`;
+    html += `</div>`;
+    if (s.municipio || s.estado) {
+      html += `<div style="color:var(--muted);font-size:12px">${esc(s.municipio || "")}, ${esc(s.estado || "")}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // KPIs (siempre, aunque sean 0)
+  html += `<div class="dom-kpis">`;
+  for (const k of kpis) {
+    const zero = k.v === 0 ? " zero" : "";
+    html += `<div class="dom-kpi${zero}" style="border-top:3px solid ${k.color}"><div class="label">${k.l}</div><div class="value">${domFormatNum(k.v)}</div></div>`;
+  }
+  html += `</div>`;
+
+  // Núcleo familiar (si hay padrón)
+  if (d.nucleo_familiar && (d.nucleo_familiar.paternos?.length || d.nucleo_familiar.maternos?.length)) {
+    const nf = d.nucleo_familiar;
+    let chips = "";
+    if (nf.paternos?.length) {
+      chips += `<div style="margin-top:6px"><strong style="font-size:11px;color:var(--muted);text-transform:uppercase">Paternos:</strong> `;
+      chips += nf.paternos.map(p => `<span class="nucleo-chip">${esc(p.apellido)}<span class="count">${p.count}</span></span>`).join("");
+      chips += `</div>`;
+    }
+    if (nf.maternos?.length) {
+      chips += `<div style="margin-top:6px"><strong style="font-size:11px;color:var(--muted);text-transform:uppercase">Maternos:</strong> `;
+      chips += nf.maternos.map(p => `<span class="nucleo-chip">${esc(p.apellido)}<span class="count">${p.count}</span></span>`).join("");
+      chips += `</div>`;
+    }
+    html += `<div class="dom-section"><h3>Núcleo familiar</h3>${chips}</div>`;
+  }
+
+  // Tablas por base
+  html += domRenderBase("personas", d.personas, t.padron);
+  html += domRenderBase("cfe",      d.cfe,      t.cfe);
+  html += domRenderBase("telcel",   d.telcel,   t.telcel);
+  html += domRenderBase("att",      d.att,      t.att);
+  html += domRenderBase("repuve",   d.repuve,   t.repuve);
+  html += domRenderBase("imss",     d.imss,     t.imss);
+  html += domRenderBase("issste",   d.issste,   t.issste);
+
+  // Errores parciales (CFE, etc.)
+  if (d.cfe_error) {
+    html += `<div class="dom-error">⚠️ CFE: ${esc(d.cfe_error)}</div>`;
+  }
+
+  return html;
+}
+
 if (formDom) {
   formDom.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1216,12 +1560,14 @@ if (formDom) {
       if (v !== "" && v !== null) body[k] = v;
     }
     if (!body.cp && !body.calle) {
-      document.getElementById("domicilio-results").innerHTML =
-        '<div style="color:var(--warn);padding:8px">Ingresá al menos CP o calle.</div>';
+      domResults.innerHTML = '<div class="dom-error">Ingresá al menos CP o calle.</div>';
       return;
     }
-    const out = document.getElementById("domicilio-results");
-    out.innerHTML = '<div style="color:var(--muted)">Buscando…</div>';
+    domResults.innerHTML = '<div class="dom-status"><span class="spinner"></span>Buscando en 7+ bases…</div>';
+    const submit = document.getElementById("dom-submit");
+    submit.disabled = true;
+    const originalLabel = submit.innerHTML;
+    submit.innerHTML = '<span class="spinner"></span>Buscando…';
     try {
       const token = localStorage.getItem("session_token");
       const r = await fetch("/api/direccion/buscar", {
@@ -1234,40 +1580,15 @@ if (formDom) {
       });
       const d = await r.json();
       if (d.error) {
-        out.innerHTML = `<div style="color:var(--error);padding:8px">${esc(d.error)}</div>`;
+        domResults.innerHTML = `<div class="dom-error">${esc(d.error)}</div>`;
         return;
       }
-      let html = `<div style="margin:8px 0;font-size:13px;color:var(--muted)">`;
-      html += `<strong style="color:var(--accent2)">INE:</strong> ${d.total_encontrado} matches — `;
-      html += `<strong style="color:var(--accent2)">CFE:</strong> ${d.total_cfe} matches`;
-      html += `</div>`;
-      // INE table
-      if (d.personas && d.personas.length) {
-        html += `<h3 style="color:var(--accent2);margin-top:18px">Padrón INE</h3>`;
-        html += `<div style="overflow-x:auto"><table><thead><tr>`;
-        const icols = ["curp","paterno","materno","nombre","calle","ext","colonia","cp","sexo"];
-        icols.forEach(c => html += `<th>${c}</th>`);
-        html += `</tr></thead><tbody>`;
-        for (const p of d.personas) {
-          html += `<tr>${icols.map(c => `<td>${esc(p[c] == null ? "" : p[c])}</td>`).join("")}</tr>`;
-        }
-        html += `</tbody></table></div>`;
-      }
-      // CFE table
-      if (d.cfe && d.cfe.length) {
-        html += `<h3 style="color:var(--accent2);margin-top:18px">CFE (medidores)</h3>`;
-        html += `<div style="overflow-x:auto"><table><thead><tr>`;
-        const ccols = ["numero_servicio","nombre","direccion","colonia","cp","agencia_nom"];
-        ccols.forEach(c => html += `<th>${c}</th>`);
-        html += `</tr></thead><tbody>`;
-        for (const c of d.cfe) {
-          html += `<tr>${ccols.map(k => `<td>${esc(c[k] == null ? "" : c[k])}</td>`).join("")}</tr>`;
-        }
-        html += `</tbody></table></div>`;
-      }
-      out.innerHTML = html;
+      domResults.innerHTML = domRender(d);
     } catch (ex) {
-      out.innerHTML = `<div style="color:var(--error);padding:8px">Error: ${esc(String(ex))}</div>`;
+      domResults.innerHTML = `<div class="dom-error">Error: ${esc(String(ex))}</div>`;
+    } finally {
+      submit.disabled = false;
+      submit.innerHTML = originalLabel;
     }
   });
 }
