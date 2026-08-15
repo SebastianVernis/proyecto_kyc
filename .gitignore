@@ -1,0 +1,4 @@
+bases/*
+*.env*
+*/__pycache__/*
+_backups/*
