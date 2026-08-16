@@ -43,6 +43,7 @@ auth.ensure_default_admin()
 
 # === SEPOMEX + Marco Geoestadístico INEGI (mismo SQLite) ===============
 GEO_DB = ROOT / "geo.db"
+SEPOMEX_DB = ROOT.parent / "bases" / "sepomex.db"
 INEGI_BASE = Path("/root/proyecto_kyc/inegi/15_mexico/conjunto_de_datos")
 _sepomex = None
 _inegi = None
@@ -50,7 +51,7 @@ def get_sepomex():
     global _sepomex
     if _sepomex is None:
         import sqlite3
-        _sepomex = sqlite3.connect(str(GEO_DB), check_same_thread=False)
+        _sepomex = sqlite3.connect(str(SEPOMEX_DB), check_same_thread=False)
         _sepomex.row_factory = sqlite3.Row
     return _sepomex
 def get_inegi():
@@ -326,9 +327,6 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/cfe_coordenadas.html":
             self._serve_html_protected("cfe_coordenadas.html")
             return
-        if path == "/buscar_direccion.html":
-            self._serve_html_protected("buscar_direccion.html")
-            return
         if path == "/issste.html":
             self._serve_html_protected("issste.html")
             return
@@ -564,6 +562,15 @@ class Handler(BaseHTTPRequestHandler):
             if not session: return
             self._handle_familia_progenitores()
             return
+        # 2026-08-15: /api/v1/sujeto/resolver_desde_hint — hint→curp.
+        # Inverso de _enriquecer_bases_externas: dado un hit de una base
+        # sin CURP (CFE, Telcel, ATT, REPUVE, ISSSTE), encuentra la CURP
+        # más probable en el padrón. Cascada: RFC > NSS > nombre+extras.
+        if path == "/api/v1/sujeto/resolver_desde_hint":
+            session = self._require_session()
+            if not session: return
+            self._handle_sujeto_resolver_desde_hint()
+            return
         # /api/v1/sujeto/enriquecido — cruce con 6 bases externas.
         # Acepta: curp, rfc, nss, nombre, paterno, materno, fecnac (cualquier
         # subconjunto no-vacío). Si no hay curp, el xwalk cae a rfc → nombre
@@ -593,6 +600,13 @@ class Handler(BaseHTTPRequestHandler):
                 curp=curp, rfc=rfc, nss=nss,
                 nombre=nombre, paterno=paterno, materno=materno, fecnac=fecnac,
             )
+            return
+        # /api/v1/direccion/buscar (GET) — el frontend (buscar.html) llama este
+        # path por GET con querystring; el handler ya soporta command == "GET".
+        # Antes solo estaba ruteado bajo do_POST en /api/direccion/buscar, así
+        # que el GET caía en el 404 "not found". Aceptamos ambos paths.
+        if path in ("/api/v1/direccion/buscar", "/api/direccion/buscar"):
+            self._handle_direccion_buscar()
             return
         self._json(404, {"error": "not found", "path": path})
 
@@ -2172,13 +2186,20 @@ class Handler(BaseHTTPRequestHandler):
                 cmd += [f"--{k}", v]
         os.unlink(tmp_path)
 
+        # Guardar padrón local ANTES del subprocess (es más rápido y completo)
+        padron_local = result["padron"]
+
         try:
-            # ejecutar con timeout de 3 minutos
+            # Timeout debe quedar por DEBAJO del timeout de origen del túnel
+            # Cloudflare (~100s): si el subprocess corre 180s la conexión se
+            # cae y el navegador recibe un 502 HTML -> JSON.parse falla en el
+            # frontend. Con 45s devolvemos el padrón local + lo que alcanzó a
+            # traer osint.py, en lugar de un 502.
             cp = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=180,
+                timeout=45,
                 cwd=str(ROOT),
             )
             # leer el JSON de salida
@@ -2193,16 +2214,17 @@ class Handler(BaseHTTPRequestHandler):
                     if k in full:
                         result[k] = full[k]
                 # usar padrón local (más rápido) si existe
-                if result["padron"]:
-                    result["padron"] = result["padron"]
+                if padron_local:
+                    result["padron"] = padron_local
             os.unlink(out_path)
         except subprocess.TimeoutExpired:
             result["osint_error"] = "timeout ejecutando osint.py (180s)"
         except Exception as e:
             result["osint_error"] = f"error ejecutando osint.py: {e}"
 
-        # síntesis (si osint.py no la llenó, calcular una básica)
-        if not result["sintesis"]:
+        # síntesis: si osint.py no la llenó (clave ausente), calcular una básica
+        # Si osint.py devuelve sintesis: {} (dict vacío), eso cuenta como "llenado"
+        if "sintesis" not in result:
             s = {
                 "total_padron": len(result.get("padron") or []),
                 "total_brechas": len(result.get("brechas_filtradas") or []),
@@ -7296,6 +7318,257 @@ class Handler(BaseHTTPRequestHandler):
             )
         except Exception:
             pass
+        self._json(200, result)
+
+    # 2026-08-15: resolver_desde_hint — dado un hit de una base que NO trae
+    # CURP (CFE, Telcel, ATT, REPUVE, ISSSTE), intenta encontrar la CURP
+    # más probable en el padrón usando los datos disponibles.
+    #
+    # Cascada de matching (espejo de _enriquecer_bases_externas pero al revés:
+    # hint→curp en lugar de curp→bases):
+    #   1) RFC (si viene del hit, ej ATT/Telcel/Empleadores)
+    #      → xwalk en imss_s por rfc_clean → curp_clean
+    #   2) RFC + (nombre+paterno+materno|fecnac) si hay match ambiguo
+    #   3) NSS (si viene del hit, ej IMSS Asegurado)
+    #      → xwalk en imss_a por nss_clean → curp_raw
+    #   4) nombre + paterno + materno + fecnac (todos requeridos si no hay
+    #      clave primaria)
+    #   5) nombre + paterno + materno + (cp|calle|colonia) si no hay fecnac
+    #   6) nombre + paterno + fecnac + (cp|calle|colonia)
+    #
+    # Devuelve {ok: bool, curp?: str, score: float, candidates: [...],
+    # estrategia: str, error?: str}.
+    #
+    # Si ok=True, el front abre sujeto.html?curp=X.
+    # Si ok=False, el front abre sujeto.html?hint=...&source=... para
+    # que el operador termine de resolver manualmente.
+    def _handle_sujeto_resolver_desde_hint(self):
+        import urllib.parse as _up
+        qs = _up.parse_qs(_up.urlparse(self.path).query)
+        curp    = (qs.get("curp",    [""])[0] or "").upper().strip() or None
+        rfc     = (qs.get("rfc",     [""])[0] or "").upper().strip() or None
+        nss     = (qs.get("nss",     [""])[0] or "").strip() or None
+        nombre  = (qs.get("nombre",  [""])[0] or "").strip().upper() or None
+        paterno = (qs.get("paterno", [""])[0] or "").strip().upper() or None
+        materno = (qs.get("materno", [""])[0] or "").strip().upper() or None
+        fecnac  = (qs.get("fecnac",  [""])[0] or "").strip() or None
+        cp      = (qs.get("cp",      [""])[0] or "").strip() or None
+        calle   = (qs.get("calle",   [""])[0] or "").strip().upper() or None
+        colonia = (qs.get("colonia", [""])[0] or "").strip().upper() or None
+        source  = (qs.get("source",  [""])[0] or "").strip().lower() or None
+
+        # Si ya viene CURP, devolver inmediatamente (caso trivial).
+        if curp and len(curp) == 18:
+            self._json(200, {"ok": True, "curp": curp.upper(),
+                             "score": 1.0, "estrategia": "curp_directa",
+                             "candidates": [], "source": source})
+            return
+
+        # Validación mínima ANTES de tocar la BD.
+        if not any([rfc, nss, nombre, paterno]):
+            self._json(400, {"error": "se requiere al menos "
+                                      "(curp) o (rfc) o (nss) o "
+                                      "(nombre+paterno)"})
+            return
+
+        try:
+            con = duckdb.connect(self.db_path, read_only=True)
+        except Exception as ex:
+            self._json(500, {"error": f"error abriendo padrón: {ex}"})
+            return
+        ext_con = _init_extended_con()
+
+        result = {"ok": False, "curp": None, "score": 0.0,
+                  "candidates": [], "estrategia": None,
+                  "source": source, "hints_used": {k: v for k, v in {
+                      "rfc": rfc, "nss": nss, "nombre": nombre,
+                      "paterno": paterno, "materno": materno,
+                      "fecnac": fecnac, "cp": cp, "calle": calle,
+                      "colonia": colonia}.items() if v}}
+
+        # ==========================================================
+        # Estrategia 1: RFC solo (xwalk imss_s/rfc → curp).
+        # Si hay RFC >= 13 (PM12/PF13) es match casi único; si es
+        # 10 chars puede haber varios homónimos (match ambiguo).
+        # ==========================================================
+        if rfc:
+            try:
+                if ext_con is not None:
+                    curps = [r[0] for r in ext_con.execute("""
+                        SELECT DISTINCT curp_clean FROM b_imss_s.main.imss_personas
+                        WHERE rfc_clean = ? AND curp_clean IS NOT NULL
+                          AND LENGTH(curp_clean) = 18
+                    """, [rfc]).fetchall()]
+                else:
+                    curps = []
+            except Exception:
+                curps = []
+            if len(curps) == 1:
+                result.update({"ok": True, "curp": curps[0], "score": 0.95,
+                               "estrategia": "rfc_xwalk_imss_s"})
+                self._json(200, result)
+                return
+            elif len(curps) > 1:
+                # Ambigüedad por RFC de 10 chars. Pasa a estrategia 2.
+                result["candidates"] = curps[:5]
+                # Si tenemos nombre+apellidos para desambiguar, lo intentamos.
+                if paterno and materno and nombre:
+                    try:
+                        placeholders = ",".join(["?"] * len(curps))
+                        rows = con.execute(f"""
+                            SELECT curp, nombre, paterno, materno, fecnac
+                            FROM padron
+                            WHERE curp IN ({placeholders})
+                              AND upper(paterno) = ? AND upper(materno) = ?
+                              AND upper(nombre)  = ?
+                        """, curps + [paterno, materno, nombre]).fetchall()
+                    except Exception:
+                        rows = []
+                    if len(rows) == 1:
+                        result.update({"ok": True, "curp": rows[0][0],
+                                       "score": 0.98,
+                                       "estrategia": "rfc_xwalk_imss_s+nombre"})
+                        self._json(200, result)
+                        return
+                    if rows:
+                        result["candidates"] = [r[0] for r in rows[:5]]
+                        result["score"] = 0.6
+                        result["estrategia"] = "rfc_xwalk_imss_s+ambiguo"
+                        self._json(200, result)
+                        return
+
+        # ==========================================================
+        # Estrategia 3: NSS solo (xwalk imss_a por nss_clean).
+        # ==========================================================
+        if nss:
+            try:
+                if ext_con is not None:
+                    curps = [r[0] for r in ext_con.execute("""
+                        SELECT DISTINCT curp_clean FROM b_imss_a.main.imss_2025
+                        WHERE nss_clean = ? AND curp_clean IS NOT NULL
+                          AND LENGTH(curp_clean) = 18
+                        LIMIT 5
+                    """, [nss]).fetchall()]
+                else:
+                    curps = []
+            except Exception:
+                curps = []
+            if len(curps) == 1:
+                result.update({"ok": True, "curp": curps[0], "score": 0.93,
+                               "estrategia": "nss_xwalk_imss_a"})
+                self._json(200, result)
+                return
+            elif len(curps) > 1:
+                result["candidates"] = curps
+                result["estrategia"] = "nss_xwalk_imss_a+ambiguo"
+                # Si tenemos nombre+apellidos, desambiguar
+                if paterno and materno:
+                    placeholders = ",".join(["?"] * len(curps))
+                    rows = con.execute(f"""
+                        SELECT curp FROM padron
+                        WHERE curp IN ({placeholders})
+                          AND upper(paterno) = ? AND upper(materno) = ?
+                    """, curps + [paterno, materno]).fetchall()
+                    if len(rows) == 1:
+                        result.update({"ok": True, "curp": rows[0][0],
+                                       "score": 0.97,
+                                       "estrategia": "nss_xwalk_imss_a+apellidos"})
+                        self._json(200, result)
+                        return
+
+        # ==========================================================
+        # Estrategia 4-6: padrón directo por nombre + datos secundarios.
+        # Mínimo: nombre + paterno + (materno O fecnac) + al menos un
+        # dato secundario extra (fecnac, cp, calle, colonia).
+        # Si llegamos aquí SIN (nombre+paterno), significa que tampoco hubo
+        # match por RFC/NSS — pero los datos secundarios (cp/calle/colonia)
+        # no sirven sin nombre+paterno para padrón. Devolvemos 400.
+        # (La validación de "ningún parámetro" ya se hizo arriba.)
+        if not (nombre and paterno):
+            self._json(400, {"error": "sin match por RFC/NSS; se requiere "
+                                      "(nombre+paterno) + al menos un dato "
+                                      "secundario (materno, fecnac, cp, "
+                                      "calle o colonia)"})
+            return
+
+        where = ["upper(paterno) = ?"]
+        params = [paterno]
+        if materno:
+            where.append("upper(materno) = ?")
+            params.append(materno)
+        if nombre:
+            # 2026-08-15: padrón guarda un solo nombre; muchos registros
+            # tienen nombres compuestos (Maria Guadalupe). Coincidencia
+            # "starts with" para tolerar compuestos.
+            where.append("upper(nombre) LIKE ?")
+            params.append(f"{nombre}%")
+        extras = 0
+        if fecnac:
+            where.append("fecnac = ?")
+            params.append(fecnac)
+            extras += 1
+        if cp:
+            where.append("cp = ?")
+            params.append(cp)
+            extras += 1
+        if calle:
+            where.append("upper(calle) LIKE ?")
+            params.append(f"%{calle}%")
+            extras += 1
+        if colonia:
+            where.append("upper(colonia) LIKE ?")
+            params.append(f"%{colonia}%")
+            extras += 1
+
+        # Si NO hay ningún dato secundario y NO hay materno, score muy bajo.
+        # La política del usuario: RFC/CURP/NSS primero; si no hay, dos
+        # datos secundarios (nombre+fechadenac, o nombre+domicilio).
+        if extras == 0 and not materno:
+            result["error"] = ("datos insuficientes: con sólo (nombre+paterno) "
+                               "hay miles de homónimos; se requiere al menos "
+                               "(materno, fecnac, cp, calle o colonia)")
+            self._json(200, result)
+            return
+
+        sql = f"SELECT curp, nombre, paterno, materno, fecnac, cp, calle, colonia " \
+              f"FROM padron WHERE {' AND '.join(where)} LIMIT 10"
+        try:
+            rows = con.execute(sql, params).fetchall()
+        except Exception as ex:
+            self._json(500, {"error": f"query padrón: {str(ex)[:200]}"})
+            return
+        cols = ["curp", "nombre", "paterno", "materno", "fecnac",
+                "cp", "calle", "colonia"]
+        candidates = [dict(zip(cols, r)) for r in rows]
+
+        # Score: 1 match único con extras >= 1 → muy probable.
+        if len(candidates) == 1 and extras >= 1:
+            score = 0.85 + 0.05 * min(extras, 3)
+            result.update({"ok": True, "curp": candidates[0]["curp"],
+                           "score": min(score, 0.99),
+                           "estrategia": "padron_nombre+extras"})
+            self._json(200, result)
+            return
+        if len(candidates) >= 1 and extras >= 2:
+            # Score medio: hubo más de un match pero los extras son fuertes.
+            result.update({"ok": True, "curp": candidates[0]["curp"],
+                           "score": 0.75,
+                           "estrategia": "padron_nombre+extras_multiples",
+                           "candidates": [c["curp"] for c in candidates[:5]]})
+            self._json(200, result)
+            return
+        if candidates:
+            # Hubo matches pero no suficientes extras. Mostramos candidatos
+            # para que el operador decida.
+            result["candidates"] = [c["curp"] for c in candidates[:5]]
+            result["estrategia"] = "padron_nombre_sin_extras"
+            result["score"] = 0.4
+            self._json(200, result)
+            return
+
+        # Sin matches.
+        result["error"] = "sin coincidencias en padrón"
+        result["estrategia"] = "sin_match"
         self._json(200, result)
 
     # 2026-08-05: cruce con las 6 bases externas (att, empleadores, repuve,
