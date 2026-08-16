@@ -11,10 +11,12 @@ Uso:
 """
 from __future__ import annotations
 import sys, glob, os
+from pathlib import Path
 import duckdb
 
-INDEX_MAIN = "/root/proyecto_kyc/bases/match_index.duckdb"
-MKIDX_GLOB = "/root/proyecto_kyc/bases/mkidx_*.duckdb"
+_BASES_DIR = Path(__file__).resolve().parent.parent / "bases"
+INDEX_MAIN = str(_BASES_DIR / "match_index.duckdb")
+MKIDX_GLOB = str(_BASES_DIR / "mkidx_*.duckdb")
 
 # niveles de clave, de más estricto a más laxo (los cruzables entre bases)
 NIVELES = ["k_via_ext", "k_col_via_ext", "k_via_cp", "k_col_via"]
@@ -29,7 +31,7 @@ def _conectar():
     con = duckdb.connect(":memory:")
     con.execute("SET memory_limit='4GB'; SET threads=4;")
     # permitir derrame a disco en los joins grandes (66M x 88M) en vez de OOM
-    con.execute("SET temp_directory='/root/proyecto_kyc/bases/_duckdb_tmp';")
+    con.execute(f"SET temp_directory='{_BASES_DIR / '_duckdb_tmp'}';")
     con.execute("SET preserve_insertion_order=false;")
     bases = {}
     # match_index.duckdb (bases chicas ya materializadas juntas)

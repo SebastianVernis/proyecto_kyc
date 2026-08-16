@@ -13,36 +13,39 @@ Uso:
 """
 from __future__ import annotations
 import sys, time
+from pathlib import Path
 import duckdb
 
-sys.path.insert(0, "/root/proyecto_kyc/backend")
+_BACKEND = Path(__file__).resolve().parent
+_BASES_DIR = _BACKEND.parent / "bases"
+sys.path.insert(0, str(_BACKEND))
 import normalizar_direccion as N
 
-INDEX_DB = "/root/proyecto_kyc/bases/match_index.duckdb"
+INDEX_DB = str(_BASES_DIR / "match_index.duckdb")
 
 # base -> (ruta, tabla, [columnas necesarias], adapter)
 BASES = {
-    "padron": ("/root/proyecto_kyc/bases/padron.duckdb", "main.padron",
+    "padron": (str(_BASES_DIR / "padron.duckdb"), "main.padron",
                ["calle", "int", "ext", "colonia", "cp", "e", "d", "m", "s", "l", "mza", "nac"],
                lambda r: N.from_padron(r)),
-    "cfe": ("/root/proyecto_kyc/bases/cfe.duckdb", "main.medidores",
+    "cfe": (str(_BASES_DIR / "cfe.duckdb"), "main.medidores",
             ["direccion", "calle_adicional_1", "calle_adicional_2", "colonia", "cp"],
             lambda r: N.from_cfe(r)),
-    "telcel": ("/root/proyecto_kyc/bases/telcel.duckdb", "main.telcel",
+    "telcel": (str(_BASES_DIR / "telcel.duckdb"), "main.telcel",
                ["domicilio", "numero", "interior", "colonia", "ciudad", "edo", "cp"],
                lambda r: N.from_telcel(r)),
-    "att": ("/root/proyecto_kyc/bases/att.duckdb", "main.att",
+    "att": (str(_BASES_DIR / "att.duckdb"), "main.att",
             ["direccion", "exterior", "interior", "colonia", "municipio", "estado"],
             lambda r: N.from_att(r)),
-    "empleadores": ("/root/proyecto_kyc/bases/empleadores.duckdb", "main.empleadores",
+    "empleadores": (str(_BASES_DIR / "empleadores.duckdb"), "main.empleadores",
                     ["ubicacion.calle", "ubicacion.numero_exterior", "ubicacion.numero_interior",
                      "ubicacion.colonia", "ubicacion.municipio", "ubicacion.entidad",
                      "ubicacion.codigopostal"],
                     lambda r: N.from_empleadores(r)),
-    "imss_patron": ("/root/proyecto_kyc/bases/imss_asegurados.duckdb", "main.imss_2025",
+    "imss_patron": (str(_BASES_DIR / "imss_asegurados.duckdb"), "main.imss_2025",
                     ["domicilio_patron", "ciudad_estado", "cp5"],
                     lambda r: N.from_imss_patron(r)),
-    "repuve": ("/root/proyecto_kyc/bases/repuve.duckdb", "main.repuve",
+    "repuve": (str(_BASES_DIR / "repuve.duckdb"), "main.repuve",
                ["dir_prop_fix"],
                lambda r: N.from_repuve(r)),
 }
@@ -123,7 +126,7 @@ def main(argv):
     threads = _os.environ.get("MK_THREADS", "2")  # y MK_THREADS=4
     con = duckdb.connect(out)
     con.execute(f"SET memory_limit='{mem}'; SET threads={threads};")
-    con.execute("SET temp_directory='/root/proyecto_kyc/bases/_duckdb_tmp';")
+    con.execute(f"SET temp_directory='{_BASES_DIR / '_duckdb_tmp'}';")
     con.execute("SET preserve_insertion_order=false;")
     for base in targets:
         if base not in BASES:
