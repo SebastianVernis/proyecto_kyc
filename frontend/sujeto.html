@@ -836,6 +836,25 @@ const API_URL = (() => {
 /* ==== Estado ==== */
 const params = new URLSearchParams(location.search);
 const CURP = params.get("curp");
+// 2026-08-15: modo "hint" — el operador llegó aquí desde el buscador
+// universal con un hit de CFE/Telcel/ATT/REPUVE/ISSSTE (bases sin CURP).
+// El front ya intentó auto-resolver; si no encontró match probable,
+// abrimos sujeto.html con los hints pre-llenados para que el operador
+// los confirme o ajuste, y pulse "Resolver CURP".
+const HINT_MODE = !CURP && (params.get("hint_nombre") || params.get("hint_paterno")
+                            || params.get("hint_rfc") || params.get("hint_nss"));
+const HINT_SOURCE = params.get("source") || "desconocida";
+const HINTS = {
+  nombre:  params.get("hint_nombre")  || "",
+  paterno: params.get("hint_paterno") || "",
+  materno: params.get("hint_materno") || "",
+  fecnac:  params.get("hint_fecnac")  || "",
+  cp:      params.get("hint_cp")      || "",
+  calle:   params.get("hint_calle")   || "",
+  colonia: params.get("hint_colonia") || "",
+  rfc:     params.get("hint_rfc")     || "",
+  nss:     params.get("hint_nss")     || "",
+};
 
 const state = {
   sujeto: null,        // datos del padrón + RFC calculado
@@ -866,7 +885,13 @@ async function loadSujeto() {
     return;
   }
   if (!CURP) {
-    setStatus("error", "Falta parámetro ?curp=...");
+    if (HINT_MODE) {
+      // 2026-08-15: modo hint — pintar formulario de resolución con
+      // los hints pre-llenados; el operador confirma y resuelve.
+      renderHintMode();
+      return;
+    }
+    setStatus("error", "Falta parámetro ?curp=... (o ?hint_nombre=...)");
     return;
   }
   setStatus("running", `Cargando sujeto ${CURP}...`);
@@ -934,6 +959,175 @@ async function loadSujeto() {
     );
   } catch (e) {
     setStatus("error", `Error cargando sujeto: ${e.message}`);
+  }
+}
+
+// 2026-08-15: renderHintMode — pinta el formulario de resolución cuando
+// el operador llega desde el buscador universal con un hit sin CURP.
+// Los hints vienen pre-llenados desde la fila que clickeó; el operador
+// puede ajustarlos y pulsar "Resolver CURP" para que el backend haga
+// la cascada RFC > NSS > nombre+extras.
+function renderHintMode() {
+  document.title = `Resolviendo sujeto (${HINT_SOURCE}) — Investigación`;
+  // Ocultar título + secciones que requieren CURP real
+  const titulo = document.getElementById("sujeto-titulo");
+  if (titulo) titulo.textContent = `Creando sujeto desde ${HINT_SOURCE.toUpperCase()}`;
+  const curpEl = document.getElementById("sujeto-curp");
+  if (curpEl) {
+    curpEl.textContent = "—";
+    curpEl.style.color = "var(--warn)";
+  }
+  // Pintar el card con los hints + botón resolver
+  const main = document.querySelector("main");
+  if (!main) return;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.id = "hint-resolver-card";
+  card.innerHTML = `
+    <div class="title">🧩 Resolver identidad · fuente: <span class="badge source">${esc(HINT_SOURCE)}</span></div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+      El buscador universal encontró este registro en <strong>${esc(HINT_SOURCE)}</strong>
+      pero no pudo asignar una CURP automáticamente. Confirmá o ajustá los datos
+      y pulsá <strong>Resolver CURP</strong> para que el backend busque la CURP
+      más probable (cascada: RFC → NSS → nombre + datos secundarios).
+    </p>
+    <div class="hint-grid">
+      <label><span>Nombre</span><input id="hint-nombre"  value="${esc(HINTS.nombre)}"></label>
+      <label><span>Paterno</span><input id="hint-paterno" value="${esc(HINTS.paterno)}"></label>
+      <label><span>Materno</span><input id="hint-materno" value="${esc(HINTS.materno)}"></label>
+      <label><span>F. nacimiento</span><input id="hint-fecnac" placeholder="YYYY-MM-DD" value="${esc(HINTS.fecnac)}"></label>
+      <label><span>RFC</span><input id="hint-rfc" placeholder="AISR750901DT5" value="${esc(HINTS.rfc)}"></label>
+      <label><span>NSS</span><input id="hint-nss" placeholder="12345678901" value="${esc(HINTS.nss)}"></label>
+      <label><span>CP</span><input id="hint-cp" placeholder="10200" value="${esc(HINTS.cp)}"></label>
+      <label><span>Calle</span><input id="hint-calle" value="${esc(HINTS.calle)}"></label>
+      <label><span>Colonia</span><input id="hint-colonia" value="${esc(HINTS.colonia)}"></label>
+    </div>
+    <div id="hint-result" style="margin-top:14px"></div>
+    <div style="margin-top:14px;display:flex;gap:10px">
+      <button class="btn primary" id="btn-resolver">� Resolver CURP</button>
+      <button class="btn secondary" id="btn-volver">← Volver al buscador</button>
+    </div>
+  `;
+  // Insertar el card al principio del main
+  main.insertBefore(card, main.firstChild);
+
+  // Estilos inline (no agrego CSS nuevos para mantener diff pequeño)
+  const style = document.createElement("style");
+  style.textContent = `
+    #hint-resolver-card .hint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    #hint-resolver-card .hint-grid label {
+      display: flex; flex-direction: column; gap: 4px; font-size: 11px;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    #hint-resolver-card .hint-grid input {
+      background: var(--panel2); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 10px; border-radius: 4px;
+      font-size: 13px; font-family: inherit; text-transform: uppercase;
+    }
+    #hint-resolver-card .hint-grid input:focus {
+      outline: none; border-color: var(--accent);
+    }
+    #hint-resolver-card .btn.primary {
+      background: var(--accent); color: #fff; border: none;
+      padding: 10px 18px; border-radius: 4px; cursor: pointer;
+      font-size: 13px; font-weight: 600;
+    }
+    #hint-resolver-card .btn.secondary {
+      background: var(--panel2); color: var(--text);
+      border: 1px solid var(--border); padding: 10px 18px;
+      border-radius: 4px; cursor: pointer; font-size: 13px;
+    }
+    #hint-resolver-card .badge.source {
+      background: var(--warn); color: #000; padding: 2px 8px;
+      border-radius: 10px; font-size: 10px; margin-left: 4px;
+    }
+    #hint-result .cand {
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 10px 14px; margin-top: 8px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    #hint-result .cand button {
+      background: var(--accent2); color: #000; border: none;
+      padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Wire up
+  document.getElementById("btn-volver").addEventListener("click", () => {
+    history.length > 1 ? history.back() : (location.href = "/buscar.html");
+  });
+  document.getElementById("btn-resolver").addEventListener("click", resolverDesdeHints);
+  setStatus("running",
+    `Modo hint activo — fuente: ${HINT_SOURCE}. Pulsá "Resolver CURP" para buscar.`);
+}
+
+async function resolverDesdeHints() {
+  const token = localStorage.getItem("session_token");
+  const get = id => document.getElementById(id).value.trim();
+  const qs = new URLSearchParams();
+  if (get("hint-nombre"))  qs.set("nombre",  get("hint-nombre"));
+  if (get("hint-paterno")) qs.set("paterno", get("hint-paterno"));
+  if (get("hint-materno")) qs.set("materno", get("hint-materno"));
+  if (get("hint-fecnac"))  qs.set("fecnac",  get("hint-fecnac"));
+  if (get("hint-rfc"))     qs.set("rfc",     get("hint-rfc"));
+  if (get("hint-nss"))     qs.set("nss",     get("hint-nss"));
+  if (get("hint-cp"))      qs.set("cp",      get("hint-cp"));
+  if (get("hint-calle"))   qs.set("calle",   get("hint-calle"));
+  if (get("hint-colonia")) qs.set("colonia", get("hint-colonia"));
+  qs.set("source", HINT_SOURCE);
+  if (![...qs.keys()].some(k => !["source"].includes(k))) {
+    document.getElementById("hint-result").innerHTML =
+      '<div class="error-msg">Necesitás al menos un dato para resolver.</div>';
+    return;
+  }
+  const btn = document.getElementById("btn-resolver");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Resolviendo...';
+  const resultEl = document.getElementById("hint-result");
+  resultEl.innerHTML = '<div style="padding:14px;color:var(--muted)"><span class="spinner"></span>Buscando CURP en padrón...</div>';
+  try {
+    const r = await fetch(`${API_URL}/api/v1/sujeto/resolver_desde_hint?${qs}`, {
+      headers: token ? {"Authorization": `Bearer ${token}`} : {},
+    });
+    const data = await r.json();
+    if (data.ok && data.curp) {
+      // Match único → redirigir a la ficha del sujeto
+      resultEl.innerHTML = `<div class="error-msg" style="background:rgba(110,231,183,0.1);border-color:var(--accent2);color:var(--accent2)">
+        ✓ Match encontrado (estrategia: <strong>${esc(data.estrategia)}</strong>,
+        score: <strong>${data.score.toFixed(2)}</strong>) — abriendo ficha...
+      </div>`;
+      setTimeout(() => {
+        location.href = `/sujeto.html?curp=${encodeURIComponent(data.curp)}`;
+      }, 800);
+      return;
+    }
+    // No match único → mostrar candidatos o mensaje de error
+    let html = "";
+    if (data.candidates && data.candidates.length) {
+      html = `<div style="margin-top:8px">
+        <div style="color:var(--warn);margin-bottom:6px">⚠ Candidatos posibles (${data.candidates.length}):</div>`;
+      for (const c of data.candidates) {
+        html += `<div class="cand">
+          <code style="font-family:monospace;color:var(--accent2)">${esc(c)}</code>
+          <button onclick="location.href='/sujeto.html?curp=${encodeURIComponent(c)}'">Abrir ficha</button>
+        </div>`;
+      }
+      html += "</div>";
+    } else {
+      html = `<div class="error-msg">
+        ✗ Sin match probable${data.error ? ` — ${esc(data.error)}` : ""}.
+        Ajustá los datos (materno, fecnac, CP) y volvé a intentar, o creá el sujeto manualmente.
+      </div>`;
+    }
+    resultEl.innerHTML = html;
+  } catch (e) {
+    resultEl.innerHTML = `<div class="error-msg">Error: ${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.innerHTML = '🔍 Resolver CURP';
   }
 }
 
