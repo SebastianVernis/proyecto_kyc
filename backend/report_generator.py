@@ -355,7 +355,26 @@ def _nl2p(text: str) -> str:
 
 
 def _build_direccion(sujeto: dict) -> str:
-    """Construye dirección legible desde datos del padrón."""
+    """Construye dirección legible desde datos del padrón.
+
+    Usa el layout canónico de normalizar_direccion (tipos de vialidad y
+    asentamiento expandidos, municipio resuelto desde claves INE); si el
+    normalizador no produce nada, cae al armado manual original.
+    """
+    try:
+        import normalizar_direccion as N
+        canon = N.normalizar_direccion(
+            calle=sujeto.get("calle"), ext=sujeto.get("ext"),
+            int_=sujeto.get("interior") or sujeto.get("int"),
+            colonia=sujeto.get("colonia"), cp=sujeto.get("cp"),
+            municipio=sujeto.get("municipio_nombre"),
+            entidad=sujeto.get("estado_nombre"),
+            e=sujeto.get("e"), m=sujeto.get("m"),
+        )
+        if canon.get("direccion_completa"):
+            return canon["direccion_completa"]
+    except Exception:
+        pass
     partes = []
     calle = (sujeto.get("calle") or "").strip()
     ext = str(sujeto.get("ext") or "").strip()

@@ -31,6 +31,7 @@ import duckdb
 from providers.singula import SingulaClient
 import auth
 import audit
+import normalizar_direccion as _norm_dir
 from webauthn.helpers import options_to_json, options_to_json_dict
 import urllib.request
 import urllib.parse
@@ -1367,12 +1368,23 @@ class Handler(BaseHTTPRequestHandler):
         sql_count = f"SELECT COUNT(*) FROM padron {where_sql}"
         total = con.execute(sql_count, params).fetchone()[0]
 
-        cols = ["curp", "nombre", "paterno", "materno", "calle", "ext", "colonia", "cp", "sexo", "fecnac", "mza"]
+        cols = ["curp", "nombre", "paterno", "materno", "calle", '"int"', "ext",
+                "colonia", "cp", "sexo", "fecnac", "mza", "e", "m"]
+        keys = [c.strip('"') for c in cols]
         sql_rows = f"SELECT {', '.join(cols)} FROM padron {where_sql} ORDER BY paterno, materno, nombre LIMIT ? OFFSET ?"
         rows = con.execute(sql_rows, params + [limit, offset]).fetchall()
-        personas = [dict(zip(cols, r)) for r in rows]
+        personas = [dict(zip(keys, r)) for r in rows]
         for p in personas:
             p["source"] = "ine"
+            # layout canónico (mejor tipo de vialidad/asentamiento, municipio
+            # resuelto desde claves INE) para que el frontend muestre limpio
+            try:
+                canon = _norm_dir.from_padron(p)
+                p["direccion_normalizada"] = canon["direccion_completa"]
+                p["municipio"] = canon["municipio"]
+                p["entidad"] = canon["entidad"]
+            except Exception:
+                p["direccion_normalizada"] = None
 
         # === CFE (api.cfe_medidor) ===
         cfe_resultados = []
