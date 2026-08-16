@@ -54,6 +54,21 @@ VIALIDAD = {
     "CALZADA": "CALZADA",
 }
 
+# Marcadores rurales que aparecen como prefijo de CALLE en el padrón rural
+# (HGO/OAX/CHIS/VER: "LOC EL SAUCITO", "EJIDO LA PALMA"). Subconjunto de
+# ASENTAMIENTO inequívoco como marcador — VILLA/COL/CD quedan fuera porque
+# encabezan nombres reales de calle.
+VIA_RURAL = {
+    "LOC": "LOCALIDAD",
+    "EJ": "EJIDO", "EJIDO": "EJIDO",
+    "RIA": "RANCHERIA", "RANCHERIA": "RANCHERIA",
+    "RCHO": "RANCHO", "RANCHO": "RANCHO",
+    "BARR": "BARRIO", "BARRIO": "BARRIO",
+    "PJE": "PARAJE", "PARAJE": "PARAJE",
+    "CTON": "CANTON", "CANTON": "CANTON",
+    "PBLO": "PUEBLO", "POB": "PUEBLO", "POBLADO": "PUEBLO",
+}
+
 ASENTAMIENTO = {
     "COL": "COLONIA", "COLONIA": "COLONIA",
     "FRACC": "FRACCIONAMIENTO", "FRAC": "FRACCIONAMIENTO",
@@ -287,6 +302,10 @@ def normalizar_direccion(
     flags: list[str] = []
 
     tv, tvd, nv = _split_tipo(calle, VIALIDAD)
+    if tv is None:
+        tv, tvd, nv = _split_tipo(calle, VIA_RURAL)
+        if tv:
+            flags.append("via_rural")
     ta, tad, na = _split_tipo(colonia, ASENTAMIENTO)
     num_ext, num_ext_alfa = _clean_ext(ext)
     num_int = _clean_str(int_)
