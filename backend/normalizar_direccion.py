@@ -24,7 +24,9 @@ API principal:
     from_padron(row_dict)          -> dict canónico (adapter del padrón)
 """
 from __future__ import annotations
+import json
 import re
+from pathlib import Path
 from typing import Optional
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -127,6 +129,23 @@ ESTADO_ABREV = {
 }
 # nombre completo (sin acentos) -> clave
 _ENTIDAD_REV = {v: k for k, v in ENTIDAD.items()}
+
+# catálogo (e, m) INE -> nombre de municipio, derivado del padrón + SEPOMEX
+# (generar_catalogo_municipios.py). Carga perezosa: {} si el json no existe.
+_MUNICIPIOS: Optional[dict] = None
+
+
+def _municipio_ine(ent_clave, cve_mun) -> Optional[str]:
+    global _MUNICIPIOS
+    if _MUNICIPIOS is None:
+        ruta = Path(__file__).resolve().parent.parent / "bases" / "catalogo_municipios_ine.json"
+        try:
+            _MUNICIPIOS = json.loads(ruta.read_text(encoding="utf-8"))
+        except OSError:
+            _MUNICIPIOS = {}
+    if ent_clave and cve_mun:
+        return _MUNICIPIOS.get(f"{ent_clave}|{cve_mun}")
+    return None
 
 
 def _resolver_entidad(valor):
@@ -305,7 +324,7 @@ def normalizar_direccion(
         piezas.append(" ".join(p for p in (tad, na) if p))
     if cp_ok:
         piezas.append(f"CP {cp_ok}")
-    loc = _clean_str(municipio)
+    loc = _clean_str(municipio) or _municipio_ine(ent_clave, _geo_int(m))
     if loc:
         piezas.append(loc)
     if entidad_nom:
