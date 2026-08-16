@@ -273,14 +273,14 @@ aside, main, .modal, [style*="overflow"] { scrollbar-width: thin; scrollbar-colo
 
 <script>
 const API_URL = (() => {
+  // El backend (servir.py) sirve este mismo HTML, así que la API vive en el
+  // mismo origen que la página — salvo cuando se abre el archivo localmente
+  // (file://) o en desarrollo directo contra localhost.
   const h = location.hostname;
-  if (h.endsWith(".trycloudflare.com") || h.endsWith(".pages.dev") ||
-      h.endsWith(".workers.dev") || h === "cuartodepazsearch.com" ||
-      h.endsWith(".cuartodepazsearch.com") ||
-      h.endsWith(".cuartodepaz.org")) {
-    return `${location.protocol}//${location.host}`;
+  if (location.protocol === "file:" || h === "" || h === "localhost" || h === "127.0.0.1") {
+    return "http://localhost:8765";
   }
-  return "http://localhost:8765";
+  return `${location.protocol}//${location.host}`;
 })();
 const $ = id => document.getElementById(id);
 
