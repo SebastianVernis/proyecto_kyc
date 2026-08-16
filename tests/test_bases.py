@@ -11,7 +11,7 @@ from pathlib import Path
 
 import duckdb
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 BASES = PROY / "bases"
 
 # (name, filename, kind, expected_tables, expected_min_rows)
@@ -50,7 +50,9 @@ class TestBasesLayout(unittest.TestCase):
         duckdbs = sorted(BASES.glob("*.duckdb"))
         names = {d.name for d in duckdbs}
         expected_duckdbs = {info[0] for info in EXPECTED.values() if info[1] == "duckdb"}
-        extra = names - expected_duckdbs
+        # los índices de match derivados (materializar_claves.py) son legítimos
+        extra = {n for n in names - expected_duckdbs
+                 if not n.startswith("mkidx_") and n != "match_index.duckdb"}
         self.assertEqual(extra, set(), f"duckdb inesperados: {extra}")
 
     def test_no_hay_db_sqlite_extranos(self):

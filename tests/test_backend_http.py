@@ -19,9 +19,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 BACKEND = PROY / "backend"
-VENV = "/root/ine_server/.venv/bin/python"
+VENV = sys.executable
 
 
 def _http_get(url, timeout=4):

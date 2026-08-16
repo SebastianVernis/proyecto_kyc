@@ -76,7 +76,9 @@ class Config:
         # /root/proyecto_kyc/backend/) se rompía a "/root/bases/padron.duckdb"
         # (inexistente). Resolver a absoluto desde el directorio del proyecto,
         # NO desde el cwd del proceso.
-        _padron_default = "/root/proyecto_kyc/bases/padron.duckdb"
+        _padron_default = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "bases", "padron.duckdb")
         _padron_raw = _get("PADRON_DB_PATH", _padron_default)
         if not os.path.isabs(_padron_raw):
             # El .env está escrito relativo al directorio del backend

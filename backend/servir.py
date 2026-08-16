@@ -44,7 +44,7 @@ auth.ensure_default_admin()
 # === SEPOMEX + Marco Geoestadístico INEGI (mismo SQLite) ===============
 GEO_DB = ROOT / "geo.db"
 SEPOMEX_DB = ROOT.parent / "bases" / "sepomex.db"
-INEGI_BASE = Path("/root/proyecto_kyc/inegi/15_mexico/conjunto_de_datos")
+INEGI_BASE = ROOT.parent / "inegi" / "15_mexico" / "conjunto_de_datos"
 _sepomex = None
 _inegi = None
 def get_sepomex():
@@ -9668,17 +9668,17 @@ def _run_validation(validation_id, curp, query, sujeto, rfc):
 #   - telcel          2.1 GB    9,709,461 filas  PK rfc_clean (PF13/PM12/PF10/PM10)
 EXTENDED_DBS = {
     # alias      ruta                                                    tabla principal
-    "b_att":     ("/root/proyecto_kyc/bases/att.duckdb",                  "main.att"),
-    "b_emp":     ("/root/proyecto_kyc/bases/empleadores.duckdb",          "main.empleadores"),
-    "b_repuve":  ("/root/proyecto_kyc/bases/repuve.duckdb",               "main.repuve"),
-    "b_imss_a":  ("/root/proyecto_kyc/bases/imss_asegurados.duckdb",      "main.imss_2025"),
-    "b_imss_s":  ("/root/proyecto_kyc/bases/imss_segmentacion.duckdb",    "main.imss_personas"),
-    "b_telcel":  ("/root/proyecto_kyc/bases/telcel.duckdb",               "main.telcel"),
-    "b_cfe":     ("/root/proyecto_kyc/bases/cfe.duckdb",                  "main.medidores"),
-    "b_fotos":   ("/root/proyecto_kyc/bases/fotos.duckdb",                "main.fotos"),
+    "b_att":     (str(ROOT.parent / "bases" / "att.duckdb"),                  "main.att"),
+    "b_emp":     (str(ROOT.parent / "bases" / "empleadores.duckdb"),          "main.empleadores"),
+    "b_repuve":  (str(ROOT.parent / "bases" / "repuve.duckdb"),               "main.repuve"),
+    "b_imss_a":  (str(ROOT.parent / "bases" / "imss_asegurados.duckdb"),      "main.imss_2025"),
+    "b_imss_s":  (str(ROOT.parent / "bases" / "imss_segmentacion.duckdb"),    "main.imss_personas"),
+    "b_telcel":  (str(ROOT.parent / "bases" / "telcel.duckdb"),               "main.telcel"),
+    "b_cfe":     (str(ROOT.parent / "bases" / "cfe.duckdb"),                  "main.medidores"),
+    "b_fotos":   (str(ROOT.parent / "bases" / "fotos.duckdb"),                "main.fotos"),
     # 2026-08-13: padrón de empleados del ISSSTE con sueldo, ramo,
     # entidad, modalidad, sector, estado. 2.7M filas. Sin RFC/CURP/dirección.
-    "b_issste":  ("/root/proyecto_kyc/bases/issste.duckdb",               "main.empleados"),
+    "b_issste":  (str(ROOT.parent / "bases" / "issste.duckdb"),               "main.empleados"),
 }
 
 _extended_con = None  # conexión DuckDB in-memory con ATTACH + vistas api.*

@@ -11,7 +11,7 @@ import sys
 import unittest
 from pathlib import Path
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 BACKEND = PROY / "backend"
 
 # Paths a bases que las 13 vistas deben poder leer
@@ -62,8 +62,8 @@ class TestExtendedDBSConfig(unittest.TestCase):
         eds = self.servir.EXTENDED_DBS
         for alias, (path, _tbl) in eds.items():
             with self.subTest(alias=alias):
-                self.assertTrue(str(path).startswith("/root/proyecto_kyc/bases/"),
-                                f"{alias} path={path} no apunta a /root/proyecto_kyc/bases/")
+                self.assertTrue(str(path).startswith(str(PROY / "bases")),
+                                f"{alias} path={path} no apunta a {PROY / 'bases'}")
                 self.assertTrue(Path(path).exists(),
                                 f"{alias} archivo {path} no existe")
 

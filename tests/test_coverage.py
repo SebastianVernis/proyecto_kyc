@@ -28,9 +28,9 @@ import sys
 import unittest
 from pathlib import Path
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 BACKEND = PROY / "backend"
-VENV = "/root/ine_server/.venv/bin/python"
+VENV = sys.executable
 RUNNER = PROY / "tests" / "_coverage_runner.py"
 COVERAGE_DATA = Path("/tmp/.coverage-runner")
 HTML_DIR = Path("/tmp/hermes-coverage-html")

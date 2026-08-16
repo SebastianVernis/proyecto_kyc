@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROY))
 sys.path.insert(0, str(PROY / "backend"))
 

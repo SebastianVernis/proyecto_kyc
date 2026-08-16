@@ -8,11 +8,12 @@ NO contiene paths a:
   - /root/ine_server/Descargas MEGA  (viejo staging, borrado)
 """
 import os
+import sys
 import re
 import unittest
 from pathlib import Path
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 BACKEND = PROY / "backend"
 
 # Archivos a inspeccionar (excluir backups, snapshots, _backups, caches)
@@ -97,8 +98,8 @@ class TestPathMigration(unittest.TestCase):
         """El --db default de servir.py debe ser /root/proyecto_kyc/bases/padron.duckdb."""
         import subprocess
         r = subprocess.run(
-            ["/root/ine_server/.venv/bin/python", "-c",
-             "import sys; sys.path.insert(0, '/root/proyecto_kyc/backend'); "
+            [sys.executable, "-c",
+             f"import sys; sys.path.insert(0, {str(BACKEND)!r}); "
              "import servir; print(servir.ROOT.parent / 'bases' / 'padron.duckdb')"],
             capture_output=True, text=True, timeout=30,
         )

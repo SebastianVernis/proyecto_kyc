@@ -16,7 +16,7 @@ import urllib.request
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 BACKEND = PROY / "backend"
 sys.path.insert(0, str(BACKEND))
 sys.path.insert(0, str(PROY))
@@ -154,6 +154,8 @@ class TestGenerateMapsForAddresses(unittest.TestCase):
 
     def test_direccion_conocida_genera_mapa(self):
         """AVENIDA REFORMA 100, CUAUHTEMOC, CDMX → debe geocodificar y generar PNG."""
+        if not servir.INEGI_BASE.exists():
+            self.skipTest("shapefiles INEGI no presentes en este host")
         addr = {
             "titulo": "Test",
             "fuente": "padron",

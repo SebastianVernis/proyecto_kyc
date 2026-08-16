@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-PROY = Path("/root/proyecto_kyc")
+PROY = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROY / "backend"))
 
 # Importar servir AQUÍ (antes que cualquier otro test lo mockee) y
