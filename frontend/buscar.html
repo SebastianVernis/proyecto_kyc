@@ -852,6 +852,63 @@ async function doSearch() {
   });
   btn.disabled = false; btn.innerHTML = original;
   render(errores);
+  // Si la búsqueda fue por dirección y el padrón no trajo nada exacto,
+  // ofrecer candidatos fuzzy para que el usuario elija con cuál enriquecer.
+  if ((f.cp || f.calle) && !(state.rows["ine"] || []).length) {
+    fetchCandidatos(f);
+  }
+}
+
+/* ==== Candidatos fuzzy (decisión manual) ==== */
+async function fetchCandidatos(f) {
+  const qs = new URLSearchParams();
+  if (f.calle) qs.set("calle", f.calle);
+  if (f.ext) qs.set("ext", f.ext);
+  if (f.colonia) qs.set("colonia", f.colonia);
+  if (f.cp) qs.set("cp", f.cp);
+  qs.set("limit", "10");
+  let d;
+  try {
+    const r = await authedFetch(`${API_URL}/api/v1/direccion/candidatos?${qs}`);
+    d = await safeJson(r);
+  } catch { return; }
+  if (!d || d.error || !(d.candidatos || []).length) return;
+  const c = $("results-container");
+  const panel = document.createElement("div");
+  panel.className = "results-meta";
+  panel.style.cssText = "display:block;margin-top:12px";
+  const items = d.candidatos.map((cand, i) => {
+    const dir = [cand.via, cand.ext, cand.col, cand.cp, cand.entidad]
+      .filter(Boolean).join(" · ");
+    const nivel = cand.nivel.startsWith("exacto") ? "exacta" : `~${Math.round(cand.score * 100)}%`;
+    return `<button class="btn-candidato" data-i="${i}"
+      style="display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;
+             cursor:pointer;border:1px solid var(--border,#444);border-radius:6px;
+             background:transparent;color:var(--text,#eee)">
+      ${dir} &nbsp;<small>(${cand.n_personas} persona(s) · ${nivel})</small>
+    </button>`;
+  }).join("");
+  panel.innerHTML = `<div><b>Sin match exacto en el padrón.</b>
+    Opciones parecidas — elegí una para traer sus personas:</div>${items}`;
+  c.prepend(panel);
+  panel.querySelectorAll(".btn-candidato").forEach(b => {
+    b.onclick = () => aplicarCandidato(d.candidatos[Number(b.dataset.i)], panel);
+  });
+}
+
+async function aplicarCandidato(cand, panel) {
+  if (!(cand.refs || []).length) return;
+  let d;
+  try {
+    const r = await authedFetch(
+      `${API_URL}/api/v1/direccion/candidatos?refs=${cand.refs.join(",")}`);
+    d = await safeJson(r);
+  } catch { return; }
+  if (!d || !(d.personas || []).length) return;
+  for (const p of d.personas) p.source = "ine (candidato elegido)";
+  state.rows["ine"] = d.personas;
+  state.total["ine"] = cand.n_personas;
+  render([]);
 }
 
 function countEndpoints(f) {

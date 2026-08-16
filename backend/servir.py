@@ -493,6 +493,14 @@ class Handler(BaseHTTPRequestHandler):
             if not session: return
             self._handle_telcel_buscar()
             return
+        # /api/v1/direccion/candidatos?calle=..&ext=..&colonia=..&cp=.. —
+        # candidatos del padrón (exacto en cascada o fuzzy) para que el
+        # usuario decida con cuál enriquecer una dirección que no cruzó.
+        if path == "/api/v1/direccion/candidatos":
+            session = self._require_session()
+            if not session: return
+            self._handle_direccion_candidatos()
+            return
         # /api/v1/att/buscar?telefono=... — idem para ATT (1M de registros)
         if path == "/api/v1/att/buscar":
             session = self._require_session()
@@ -5422,6 +5430,48 @@ class Handler(BaseHTTPRequestHandler):
     # Búsqueda por número de teléfono en b_telcel. La base tiene números
     # VARCHAR padded con espacios (ej '5550983677   '). Normalizamos a
     # LIKE %x% sobre los últimos 7-10 dígitos para encontrar la línea.
+    def _handle_direccion_candidatos(self):
+        """Candidatos de domicilio en el padrón para decisión manual.
+
+        Query params: calle?, ext?, colonia?, cp?, municipio?, entidad?,
+        limit? (default 10, max 50), refs? (csv de rowids para traer las
+        personas de un candidato ya elegido).
+        """
+        import urllib.parse as _up
+        import fuzzy_direccion as F
+        qs = _up.parse_qs(_up.urlparse(self.path).query)
+
+        def g(k):
+            return (qs.get(k, [""])[0] or "").strip() or None
+
+        refs_csv = g("refs")
+        if refs_csv:
+            try:
+                refs = [int(r) for r in refs_csv.split(",")[:50]]
+            except ValueError:
+                self._json(400, {"error": "refs debe ser csv de enteros"})
+                return
+            self._json(200, {"personas": F.personas_de_refs(refs)})
+            return
+
+        if not (g("calle") or g("colonia") or g("cp")):
+            self._json(400, {"error": "se requiere calle, colonia o cp"})
+            return
+        try:
+            limit = max(1, min(int(g("limit") or 10), 50))
+        except ValueError:
+            limit = 10
+        try:
+            t0 = time.time()
+            res = F.candidatos(calle=g("calle"), ext=g("ext"),
+                               colonia=g("colonia"), cp=g("cp"),
+                               municipio=g("municipio"), entidad=g("entidad"),
+                               limit=limit)
+            res["elapsed_s"] = round(time.time() - t0, 3)
+            self._json(200, res)
+        except Exception as e:
+            self._json(500, {"error": f"candidatos: {str(e)[:200]}"})
+
     def _handle_telcel_buscar(self):
         import urllib.parse as _up
         qs = _up.parse_qs(_up.urlparse(self.path).query)
