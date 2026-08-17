@@ -300,6 +300,20 @@ footer {
 
   <section>
     <h2>1. Coordenadas GPS</h2>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Pega coordenadas o link de Google Maps</label>
+      <div style="display:flex;gap:8px;">
+        <input id="pega" type="text" style="flex:1;"
+          placeholder="16.8114722, -99.8446944  ·  o  https://maps.app.goo.gl/…  ·  o  DMS">
+        <button class="secondary" id="interpretar" style="white-space:nowrap;">📥 Interpretar</button>
+      </div>
+      <div class="help">
+        Acepta un par decimal <b>de corrido</b> (<code>lat, lon</code>), coordenadas <b>DMS</b>,
+        o un <b>link de Google Maps</b> (incluye los cortos <code>maps.app.goo.gl</code>).
+        Se separan solas en latitud/longitud.
+      </div>
+      <div id="pega-msg" style="font-size:12px;margin-top:6px;"></div>
+    </div>
     <div class="form-grid">
       <div class="field">
         <label>Latitud (decimal)</label>
@@ -398,6 +412,93 @@ function dmsToDecimal(dms) {
   return {lat, lon};
 }
 
+// Parser client-side: par decimal / DMS / URL de Google Maps completa.
+// Los links cortos (maps.app.goo.gl/goo.gl) no se pueden seguir desde el
+// navegador (CORS) → se resuelven en el backend (/api/v1/geo/parse).
+const DEC = "[-+]?\\d{1,3}(?:\\.\\d+)?";
+function coordsFromUrl(t) {
+  let m = t.match(new RegExp(`@(${DEC}),(${DEC})`));
+  if (m) return [+m[1], +m[2]];
+  m = t.match(new RegExp(`[?&](?:q|ll|query|center|destination|daddr|saddr|sll)=(?:loc:)?(${DEC}),(${DEC})`, "i"));
+  if (m) return [+m[1], +m[2]];
+  m = t.match(new RegExp(`!3d(${DEC})!4d(${DEC})`));
+  if (m) return [+m[1], +m[2]];
+  m = t.match(new RegExp(`/(?:place|dir)/(${DEC}),(${DEC})`));
+  if (m) return [+m[1], +m[2]];
+  return null;
+}
+function normalizarLatLon(lat, lon) {
+  if (Math.abs(lat) > 90 && Math.abs(lon) <= 90) { const t = lat; lat = lon; lon = t; }
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  return [lat, lon];
+}
+function parseLocal(text) {
+  const t = text.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) {
+    const c = coordsFromUrl(t);
+    return c ? {latlon: normalizarLatLon(c[0], c[1]), src: "url"} : {needsBackend: true};
+  }
+  if (/[°′"″]|[NSEW]\b/i.test(t)) {
+    const d = dmsToDecimal(t);
+    if (d) return {latlon: normalizarLatLon(d.lat, d.lon), src: "dms"};
+  }
+  const m = t.match(new RegExp(`(${DEC})\\s*[,;/ ]\\s*(${DEC})`));
+  if (m) return {latlon: normalizarLatLon(+m[1], +m[2]), src: "decimal"};
+  return null;
+}
+function setPegaMsg(text, ok) {
+  const el = document.getElementById("pega-msg");
+  el.textContent = text || "";
+  el.style.color = ok ? "var(--accent2)" : "var(--error)";
+}
+function aplicarLatLon(lat, lon, src) {
+  document.getElementById("lat").value = (+lat).toFixed(7).replace(/\.?0+$/, "");
+  document.getElementById("lon").value = (+lon).toFixed(7).replace(/\.?0+$/, "");
+  document.getElementById("dms").value = "";
+  setPegaMsg(`✅ ${lat}, ${lon}  (${src})`, true);
+}
+async function interpretarPega() {
+  const raw = document.getElementById("pega").value.trim();
+  if (!raw) { setPegaMsg("", true); return; }
+  const local = parseLocal(raw);
+  if (local && local.latlon) {
+    aplicarLatLon(local.latlon[0], local.latlon[1], local.src);
+    return;
+  }
+  // Coincidió un patrón pero quedó fuera de rango (latlon === null).
+  if (local && !local.needsBackend && "latlon" in local) {
+    setPegaMsg("⚠️ Coordenadas fuera de rango [-90,90] / [-180,180].", false);
+    return;
+  }
+  // No es URL y no matcheó nada → error local, sin ir al backend.
+  if (!/^https?:\/\//i.test(raw) && !(local && local.needsBackend)) {
+    setPegaMsg("❌ No reconocí coordenadas. Usa 'lat, lon', DMS o un link de Google Maps.", false);
+    return;
+  }
+  // URL (posible link corto) → resolver en el backend.
+  setPegaMsg("⏳ Resolviendo link…", true);
+  try {
+    const r = await authedFetch(`${API_URL}/api/v1/geo/parse?q=${encodeURIComponent(raw)}`);
+    const d = await r.json();
+    if (d.lat != null && d.lon != null) {
+      aplicarLatLon(d.lat, d.lon, d.source || "backend");
+    } else {
+      setPegaMsg(`❌ ${d.error || "no se reconoció"}${d.detail ? " — " + d.detail : ""}`, false);
+    }
+  } catch (e) {
+    setPegaMsg("❌ Error resolviendo: " + e.message, false);
+  }
+}
+document.getElementById("interpretar").addEventListener("click", interpretarPega);
+document.getElementById("pega").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); interpretarPega(); }
+});
+document.getElementById("pega").addEventListener("paste", () => {
+  // esperar a que el valor pegado esté en el input
+  setTimeout(interpretarPega, 0);
+});
+
 document.querySelectorAll("[data-sample]").forEach(btn => {
   btn.addEventListener("click", () => {
     const [lat, lon] = btn.dataset.sample.split(",");
@@ -426,6 +527,8 @@ document.getElementById("dms").addEventListener("change", (e) => {
 });
 
 document.getElementById("limpiar").addEventListener("click", () => {
+  document.getElementById("pega").value = "";
+  setPegaMsg("", true);
   document.getElementById("lat").value = "";
   document.getElementById("lon").value = "";
   document.getElementById("dms").value = "";

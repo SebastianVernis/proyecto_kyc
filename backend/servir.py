@@ -175,6 +175,160 @@ def validate_where(where: str, params: list) -> tuple[bool, str]:
     return True, ""
 
 
+# === Parseo de coordenadas / links de mapas =============================
+
+# Rango plausible para México (evita interpretar basura como coords válidas
+# cuando el input viene "de corrido"). Se sigue validando el rango global
+# [-90,90]/[-180,180] aguas abajo; esto solo desambigua el orden lat/lon.
+_DEC = r"[-+]?\d{1,3}(?:\.\d+)?"
+
+
+def _dms_to_decimal(dms: str):
+    """'16°48'41.3"N 99°50'40.9"W' → (16.81147, -99.84469) o None."""
+    m = re.search(
+        r"(\d+)[°:\s]+(\d+)[\'′:\s]+(\d+(?:\.\d+)?)[\"″\s]*([NSEW])"
+        r"[,;\s]+(\d+)[°:\s]+(\d+)[\'′:\s]+(\d+(?:\.\d+)?)[\"″\s]*([NSEW])",
+        dms, re.I)
+    if not m:
+        return None
+    d1, m1, s1, h1, d2, m2, s2, h2 = m.groups()
+    lat = int(d1) + int(m1) / 60 + float(s1) / 3600
+    lon = int(d2) + int(m2) / 60 + float(s2) / 3600
+    if h1.upper() == "S":
+        lat = -lat
+    if h2.upper() == "W":
+        lon = -lon
+    # Si el primer par trae E/W (orden lon,lat), intercambiar.
+    if h1.upper() in ("E", "W"):
+        lat, lon = lon, lat
+    return round(lat, 7), round(lon, 7)
+
+
+def _coords_from_maps_url(text: str):
+    """Extrae (lat, lon) de una URL de Google Maps (o texto que la contenga).
+    Cubre @lat,lon · q=/ll=/query=/center=/destination= · !3dLAT!4dLON ·
+    /place/LAT,LON. Devuelve (lat, lon, patrón) o None.
+    """
+    # 1) .../@LAT,LON,zoom  (el marcador del centro del mapa)
+    m = re.search(rf"@({_DEC}),({_DEC})", text)
+    if m:
+        return float(m.group(1)), float(m.group(2)), "url:@"
+    # 2) parámetros de query: q= ll= query= center= destination= (permite 'loc:')
+    m = re.search(
+        rf"[?&](?:q|ll|query|center|destination|daddr|saddr|sll)=(?:loc:)?"
+        rf"({_DEC}),({_DEC})", text, re.I)
+    if m:
+        return float(m.group(1)), float(m.group(2)), "url:q"
+    # 3) datos de lugar embebidos: !3dLAT!4dLON
+    m = re.search(rf"!3d({_DEC})!4d({_DEC})", text)
+    if m:
+        return float(m.group(1)), float(m.group(2)), "url:!3d"
+    # 4) /place/LAT,LON o /dir/LAT,LON
+    m = re.search(rf"/(?:place|dir)/({_DEC}),({_DEC})", text)
+    if m:
+        return float(m.group(1)), float(m.group(2)), "url:place"
+    return None
+
+
+def _expand_short_map_url(url: str, _depth: int = 0) -> str:
+    """Sigue los redirects de un link corto (maps.app.goo.gl, goo.gl/maps,
+    g.co) hasta la URL final de Google Maps. Devuelve la URL final (o la
+    original si no se pudo expandir). Solo para hosts de acortadores de mapas.
+    """
+    if _depth > 5:
+        return url
+    try:
+        host = (urlparse(url).hostname or "").lower()
+    except Exception:
+        return url
+    _SHORT = ("goo.gl", "maps.app.goo.gl", "g.co", "app.goo.gl")
+    if not any(host == s or host.endswith("." + s) for s in _SHORT):
+        return url
+    try:
+        req = urllib.request.Request(url, method="HEAD", headers={
+            "User-Agent": "Mozilla/5.0 (KYCSearch coord-resolver)",
+        })
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            final = resp.geturl()
+        # Algunos acortadores encadenan a otro acortador.
+        if final and final != url:
+            return _expand_short_map_url(final, _depth + 1)
+        return final or url
+    except Exception:
+        # HEAD a veces no está permitido → intentar GET (leer poco).
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (KYCSearch coord-resolver)",
+            })
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                final = resp.geturl()
+                body = resp.read(4096).decode("utf-8", "replace")
+            got = _coords_from_maps_url(final) or _coords_from_maps_url(body)
+            if got:
+                # Codificar como URL parseable aguas arriba.
+                return f"https://maps.google.com/?q={got[0]},{got[1]}"
+            if final and final != url:
+                return _expand_short_map_url(final, _depth + 1)
+        except Exception:
+            pass
+        return url
+
+
+def parse_coord_input(text: str, allow_network: bool = True) -> dict:
+    """Interpreta una entrada libre de coordenadas y devuelve
+    {'lat', 'lon', 'source'} o {'error'}.
+
+    Acepta:
+      - par decimal "de corrido": '16.81, -99.84' | '16.81 -99.84' | '16.81/-99.84'
+      - DMS: '16°48'41.3"N 99°50'40.9"W'
+      - link de Google Maps (completo o corto maps.app.goo.gl/goo.gl)
+    """
+    if not text or not text.strip():
+        return {"error": "entrada vacía"}
+    text = text.strip()
+
+    is_url = bool(re.match(r"https?://", text, re.I))
+    src = None
+    got = None
+
+    if is_url:
+        expanded = _expand_short_map_url(text) if allow_network else text
+        got = _coords_from_maps_url(expanded)
+        if got:
+            lat, lon = got[0], got[1]
+            src = got[2] + ("+expand" if expanded != text else "")
+        else:
+            return {"error": "no encontré coordenadas en el link",
+                    "detail": "¿es un link de Google Maps con ubicación?"}
+    else:
+        # DMS primero (tiene °/'/N/S/E/W, no se confunde con decimal)
+        if re.search(r"[°′\"″]|[NSEW]\b", text, re.I):
+            d = _dms_to_decimal(text)
+            if d:
+                lat, lon, src = d[0], d[1], "dms"
+        if src is None:
+            # par decimal separado por coma, espacio, ';' o '/'
+            m = re.search(rf"({_DEC})\s*[,;/ ]\s*({_DEC})", text)
+            if not m:
+                return {"error": "no reconocí coordenadas",
+                        "detail": "usa 'lat, lon', DMS, o un link de Google Maps"}
+            lat, lon, src = float(m.group(1)), float(m.group(2)), "decimal"
+
+    if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+        # Puede venir invertido (lon, lat). Intentar swap si eso lo arregla.
+        if -90 <= lon <= 90 and -180 <= lat <= 180:
+            lat, lon = lon, lat
+            src = (src or "") + "+swap"
+        else:
+            return {"error": "coordenadas fuera de rango",
+                    "detail": f"lat={lat}, lon={lon}"}
+
+    if abs(lat) < 0.0001 and abs(lon) < 0.0001:
+        return {"error": "coordenadas (0,0) no son válidas"}
+
+    return {"lat": round(lat, 7), "lon": round(lon, 7), "source": src}
+
+
 # === HTTP handler ========================================================
 
 
@@ -524,6 +678,15 @@ class Handler(BaseHTTPRequestHandler):
             session = self._require_session()
             if not session: return
             self._handle_cfe_coordenadas()
+            return
+        # /api/v1/geo/parse?q=<texto>
+        # Interpreta coordenadas de corrido / DMS / link de Google Maps
+        # (incluye expansión de links cortos maps.app.goo.gl/goo.gl que el
+        # navegador no puede seguir por CORS). Devuelve {lat, lon, source}.
+        if path == "/api/v1/geo/parse":
+            session = self._require_session()
+            if not session: return
+            self._handle_geo_parse()
             return
         # /api/v1/cfe/buscar_por_nombre?nombre=&paterno=&materno=&regex=&limit=
         # 2026-08-13: búsqueda regex/ LIKE por titular en api.cfe_medidor (66M filas).
@@ -5187,6 +5350,21 @@ class Handler(BaseHTTPRequestHandler):
     # Nominatim respeta la política de uso de OSM:
     #   - User-Agent identificable (KYCSearch/1.0 + contacto)
     #   - Rate limit: máx 1 req/seg (aplicado en este handler)
+    def _handle_geo_parse(self):
+        """GET /api/v1/geo/parse?q=<texto> → {lat, lon, source} | {error}.
+        Interpreta par decimal, DMS o link de Google Maps (expande cortos)."""
+        import urllib.parse as _up
+        qs = _up.parse_qs(_up.urlparse(self.path).query)
+        raw = (qs.get("q", [""])[0] or qs.get("url", [""])[0] or "").strip()
+        if not raw:
+            self._json(400, {"error": "falta parámetro q"})
+            return
+        res = parse_coord_input(raw)
+        if res.get("error"):
+            self._json(422, res)
+        else:
+            self._json(200, res)
+
     def _handle_cfe_coordenadas(self):
         import urllib.parse as _up
         import urllib.request as _urlreq
