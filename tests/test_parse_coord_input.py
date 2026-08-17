@@ -73,6 +73,15 @@ class TestGoogleMapsUrl(unittest.TestCase):
               allow_network=False)
         self.assertEqual((r["lat"], r["lon"]), (19.4326, -99.1332))
 
+    def test_pin_gana_sobre_centro(self):
+        # El @ es el CENTRO del mapa (desviado); !3d!4d es el pin real.
+        # Debe devolver el pin, no el centro.
+        url = ("https://www.google.com/maps/place/X/@19.4269,-99.1676,3a,75y/"
+               "data=!3m1!8m2!3d19.4200!4d-99.1700")
+        r = P(url, allow_network=False)
+        self.assertEqual((r["lat"], r["lon"]), (19.4200, -99.1700))
+        self.assertEqual(r["source"], "url:!3d")
+
     def test_url_sin_coords(self):
         r = P("https://www.google.com/maps/search/farmacia", allow_network=False)
         self.assertIn("error", r)

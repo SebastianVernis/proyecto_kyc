@@ -209,24 +209,27 @@ def _coords_from_maps_url(text: str):
     Cubre @lat,lon · q=/ll=/query=/center=/destination= · !3dLAT!4dLON ·
     /place/LAT,LON. Devuelve (lat, lon, patrón) o None.
     """
-    # 1) .../@LAT,LON,zoom  (el marcador del centro del mapa)
-    m = re.search(rf"@({_DEC}),({_DEC})", text)
+    # Orden de más exacto a menos: el pin real (!3d!4d) y las coords explícitas
+    # (q=/ll=) mandan sobre @, que es solo el CENTRO del encuadre del mapa y en
+    # links de lugar/street-view suele estar desviado del punto real.
+    # 1) datos de lugar embebidos: !3dLAT!4dLON (el pin exacto)
+    m = re.search(rf"!3d({_DEC})!4d({_DEC})", text)
     if m:
-        return float(m.group(1)), float(m.group(2)), "url:@"
+        return float(m.group(1)), float(m.group(2)), "url:!3d"
     # 2) parámetros de query: q= ll= query= center= destination= (permite 'loc:')
     m = re.search(
         rf"[?&](?:q|ll|query|center|destination|daddr|saddr|sll)=(?:loc:)?"
         rf"({_DEC}),({_DEC})", text, re.I)
     if m:
         return float(m.group(1)), float(m.group(2)), "url:q"
-    # 3) datos de lugar embebidos: !3dLAT!4dLON
-    m = re.search(rf"!3d({_DEC})!4d({_DEC})", text)
-    if m:
-        return float(m.group(1)), float(m.group(2)), "url:!3d"
-    # 4) /place/LAT,LON o /dir/LAT,LON
+    # 3) /place/LAT,LON o /dir/LAT,LON
     m = re.search(rf"/(?:place|dir)/({_DEC}),({_DEC})", text)
     if m:
         return float(m.group(1)), float(m.group(2)), "url:place"
+    # 4) .../@LAT,LON,zoom → centro del mapa (último recurso, puede desviarse)
+    m = re.search(rf"@({_DEC}),({_DEC})", text)
+    if m:
+        return float(m.group(1)), float(m.group(2)), "url:@"
     return None
 
 

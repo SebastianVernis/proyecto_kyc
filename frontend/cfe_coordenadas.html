@@ -417,13 +417,15 @@ function dmsToDecimal(dms) {
 // navegador (CORS) → se resuelven en el backend (/api/v1/geo/parse).
 const DEC = "[-+]?\\d{1,3}(?:\\.\\d+)?";
 function coordsFromUrl(t) {
-  let m = t.match(new RegExp(`@(${DEC}),(${DEC})`));
+  // Prioridad: pin real (!3d!4d) y coords explícitas (q=/ll=) sobre @, que es
+  // solo el centro del encuadre y en links de lugar suele estar desviado.
+  let m = t.match(new RegExp(`!3d(${DEC})!4d(${DEC})`));
   if (m) return [+m[1], +m[2]];
   m = t.match(new RegExp(`[?&](?:q|ll|query|center|destination|daddr|saddr|sll)=(?:loc:)?(${DEC}),(${DEC})`, "i"));
   if (m) return [+m[1], +m[2]];
-  m = t.match(new RegExp(`!3d(${DEC})!4d(${DEC})`));
-  if (m) return [+m[1], +m[2]];
   m = t.match(new RegExp(`/(?:place|dir)/(${DEC}),(${DEC})`));
+  if (m) return [+m[1], +m[2]];
+  m = t.match(new RegExp(`@(${DEC}),(${DEC})`));
   if (m) return [+m[1], +m[2]];
   return null;
 }
