@@ -549,7 +549,7 @@ const BASE_COLS = {
             "colonia", "cp"],
   att:     ["rfc", "nombres", "paterno", "materno", "telefono_fijo",
             "celular", "direccion", "colonia", "municipio"],
-  repuve:  ["rfc", "placa", "marca", "modelo", "color", "telefono"],
+  repuve:  ["rfc", "placa", "no_serie", "marca", "modelo", "color", "tipo", "uso", "propietario", "direccion"],
   imss:    ["curp", "nss", "asegurado", "patron", "domicilio", "cp",
             "ciudad_estado", "giro"],
   issste:  ["paterno", "materno", "nombres", "sexo", "cargo", "sueldo",
@@ -661,15 +661,42 @@ function decideEndpoints(f) {
   const calls = [];
   const lim = f.limit;
 
-  // 1. CURP exacta → padrón directo (ya existía)
+  // 1. CURP exacta → /api/sujeto (que ya hace fallback a CheckID si el
+  //    padrón no tiene al sujeto). Antes llamaba a /api/v1/persona/curp/
+  //    que solo consulta bases internas y devuelve found:false para CURPs
+  //    no registrados — el usuario veía "sin resultados" aunque CheckID
+  //    tuviera los datos fiscales completos.
   if (f.curp && f.curp.length === 18) {
     calls.push({
       key: "ine",
-      label: "Padrón INE (CURP exacta)",
-      url: `${API_URL}/api/v1/persona/curp/${encodeURIComponent(f.curp)}`,
-      map: d => ({rows: d.persona ? [d.persona] : (d.rows || []),
-                   count: d.total_encontrado || (d.persona ? 1 : 0),
-                   cols: d.persona ? Object.keys(d.persona) : null}),
+      label: "Padrón INE (CURP exacta + fallback CheckID)",
+      url: `${API_URL}/api/sujeto?curp=${encodeURIComponent(f.curp)}`,
+      map: d => {
+        // 2026-08-20: si viene del fallback CheckID (no en padrón),
+        // construir una fila mínima con la CURP y el RFC para que el
+        // usuario pueda hacer clic y abrir la ficha completa.
+        if (d.sujeto) {
+          const s = d.sujeto;
+          const ck = d.checkid || {};
+          const rfcPrincipal = (d.rfc && d.rfc.rfc) || ck.rfc || "";
+          return {
+            rows: [{
+              curp: s.curp,
+              nombre: s.nombre || (ck.razon_social || "").split(" ").slice(0, -2).join(" "),
+              paterno: s.paterno || (ck.razon_social || "").split(" ").slice(-2, -1)[0] || "",
+              materno: s.materno || (ck.razon_social || "").split(" ").slice(-1)[0] || "",
+              fecnac: s.fecnac || (ck.curp && ck.curp.fechaNacimientoText) || "",
+              cp: s.cp || (ck.codigo_postal && ck.codigo_postal.codigoPostal) || "",
+              rfc: rfcPrincipal,
+              fuente: s.fuente || "padron",
+              checkid_exitoso: !!ck.exitoso,
+            }],
+            count: 1,
+            cols: ["curp", "nombre", "paterno", "materno", "fecnac", "cp", "rfc", "fuente"],
+          };
+        }
+        return {rows: [], count: 0, cols: null};
+      },
     });
   }
   // 1b. NSS solo → resolver_desde_hint (busca CURP via IMSS Asegurados)

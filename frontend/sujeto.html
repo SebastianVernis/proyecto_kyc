@@ -103,6 +103,47 @@ h2 {
 .card .title .badge.error { background: var(--error); color: #fff; }
 .card .title .badge.accent { background: var(--accent); color: #fff; }
 
+/* 2026-08-20: banner de fallback cuando el sujeto se obtuvo vía CheckID
+   (no estaba en padrón). Color ámbar para distinguir del flujo normal. */
+.fallback-banner {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(245, 158, 11, 0.08));
+  border: 1px solid var(--warn);
+  border-left: 4px solid var(--warn);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.fallback-banner strong { color: var(--warn); font-size: 15px; }
+.fallback-banner p {
+  margin: 6px 0 10px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.fallback-banner .fallback-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.fallback-banner .fallback-field {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warn);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+}
+/* 2026-08-20: badge ámbar en el título cuando el sujeto es fallback */
+#sujeto-fuente-badge {
+  background: var(--warn);
+  color: #1f1300;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+
 .kv {
   display: grid;
   grid-template-columns: 160px 1fr;
@@ -601,6 +642,7 @@ aside, main, .modal, [style*="overflow"] { scrollbar-width: thin; scrollbar-colo
   <h1>
     <span id="sujeto-titulo">Cargando...</span>
     <span class="badge" id="sujeto-curp"></span>
+    <span class="badge" id="sujeto-fuente-badge" style="display:none"></span>
   </h1>
   <div class="actions">
     <a href="buscar.html" id="btn-back">← Volver al padrón</a>
@@ -610,6 +652,16 @@ aside, main, .modal, [style*="overflow"] { scrollbar-width: thin; scrollbar-colo
 </header>
 
 <main>
+  <!-- 2026-08-20: banner de aviso cuando el sujeto se obtuvo vía CheckID
+       fallback (no estaba en padrón). Indica que faltan campos del padrón. -->
+  <div id="fallback-banner" class="fallback-banner" style="display:none">
+    <strong>⚠️ Sujeto obtenido vía CheckID (fallback)</strong>
+    <p>La CURP no se encontró en el padrón INE. Los datos fiscales (RFC, CP fiscal,
+       régimen, lista 69B) vienen de CheckID/SAT. Faltan: calle, colonia, sección,
+       folio, año de registro. Verifica con búsqueda por nombre antes de aceptar.</p>
+    <div class="fallback-fields"></div>
+  </div>
+
   <!-- Status bar -->
   <div id="status" class="status-bar">
     <span class="spinner"></span>
@@ -865,6 +917,28 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+
+// 2026-08-20: helpers para que un error en un render individual no rompa
+// los demás. Cada sección ahora se ejecuta aislada; si una falla, las otras
+// siguen pintando y se muestra un badge de error visible.
+function safeRender(name, fn) {
+  try {
+    fn();
+    console.log(`[KYC] ${name} OK`);
+  } catch (e) {
+    console.error(`[KYC] ${name} ERROR:`, e);
+    setStatus("error", `${name} falló: ${e.message}`);
+  }
+}
+async function safeRenderAsync(name, fn) {
+  try {
+    await fn();
+    console.log(`[KYC] ${name} OK`);
+  } catch (e) {
+    console.error(`[KYC] ${name} ERROR:`, e);
+    setStatus("error", `${name} falló: ${e.message}`);
+  }
+}
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[c]));
@@ -896,9 +970,15 @@ async function loadSujeto() {
   setStatus("running", `Cargando sujeto ${CURP}...`);
   try {
     const r = await fetch(`${API_URL}/api/sujeto?curp=${encodeURIComponent(CURP)}`);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (!r.ok) {
+      const errText = await r.text().catch(() => "");
+      throw new Error(`HTTP ${r.status}: ${errText.slice(0, 200)}`);
+    }
     const data = await r.json();
+    console.log("[KYC] /api/sujeto respuesta top-level keys:", Object.keys(data));
+    console.log("[KYC] data.sujeto:", data.sujeto);
     if (data.error) throw new Error(data.error);
+    if (!data.sujeto) throw new Error("respuesta sin campo 'sujeto'");
 
     state.sujeto = data.sujeto;
     state.tlaloc_curp = data.tlaloc_curp;
@@ -913,6 +993,43 @@ async function loadSujeto() {
     // Título
     $("sujeto-titulo").textContent = data.sujeto.nombre_completo || "Sin nombre";
     $("sujeto-curp").textContent = CURP;
+
+    // 2026-08-20: badge en el título + banner de aviso cuando el sujeto
+    // viene de CheckID fallback (no estaba en padrón). Lista los campos
+    // del padrón que quedaron vacíos para que el operador sepa qué falta.
+    if (data.sujeto.fuente === "checkid-fallback") {
+      const fb = $("sujeto-fuente-badge");
+      if (fb) {
+        fb.textContent = "vía CheckID";
+        fb.style.display = "inline-block";
+        fb.title = "Esta CURP no está en el padrón INE. Los datos fiscales vienen de CheckID/SAT.";
+      }
+      const campos_padron = [
+        "calle", "int", "ext", "interior", "colonia", "estado", "estado_nombre",
+        "municipio", "municipio_nombre", "seccion", "mza", "folio",
+        "anio_reg", "credencial", "consec"
+      ];
+      const faltantes = campos_padron.filter(k => !data.sujeto[k] || data.sujeto[k] === "");
+      const banner = $("fallback-banner");
+      if (banner) {
+        banner.style.display = "block";
+        const cont = banner.querySelector(".fallback-fields");
+        if (cont && faltantes.length) {
+          cont.innerHTML = faltantes.map(f =>
+            `<span class="fallback-field">${esc(f)}</span>`
+          ).join("");
+        } else if (cont) {
+          cont.innerHTML = '<span style="color:var(--muted);font-size:12px">Todos los campos del padrón presentes (curioso — verificar)</span>';
+        }
+      }
+    } else {
+      // sujeto del padrón: ocultar badge y banner si quedaron visibles
+      const fb = $("sujeto-fuente-badge");
+      if (fb) fb.style.display = "none";
+      const banner = $("fallback-banner");
+      if (banner) banner.style.display = "none";
+    }
+
     document.title = `${data.sujeto.nombre_completo || CURP} — Investigación`;
 
     // 2026-08-13: link dinámico a issste con paterno+nombre prellenados
@@ -926,21 +1043,21 @@ async function loadSujeto() {
     }
 
     // Render padrón
-    renderPadron(data.sujeto);
+    safeRender("renderPadron", () => renderPadron(data.sujeto));
     // Validación SEPOMEX contra padrón
-    await renderSepomex(data.sujeto);
+    await safeRenderAsync("renderSepomex", () => renderSepomex(data.sujeto));
     // Mapa de la colonia
-    loadMap(data.sujeto);
+    safeRender("loadMap", () => loadMap(data.sujeto));
     // Render RFC
-    renderRfc(data);
+    safeRender("renderRfc", () => renderRfc(data));
     // Render CheckID
-    renderCheckId(data.checkid);
+    safeRender("renderCheckId", () => renderCheckId(data.checkid));
     // Render Redes Sociales (automático)
-    renderSocialMedia(data.social_media);
+    safeRender("renderSocialMedia", () => renderSocialMedia(data.social_media));
     // Render Tlaloc CURP
-    renderTlalocCurp(data.tlaloc_curp);
+    safeRender("renderTlalocCurp", () => renderTlalocCurp(data.tlaloc_curp));
     // Render Tlaloc RFC
-    renderTlalocRfc(data.tlaloc_rfc, data.sujeto.rfc);
+    safeRender("renderTlalocRfc", () => renderTlalocRfc(data.tlaloc_rfc, data.sujeto.rfc));
 
     // 2026-08-05: enriquecimiento lazy con las 6 bases externas.
     // No bloquea el render principal — corre en background y pinta
@@ -1895,7 +2012,7 @@ function renderBasesExternas(d) {
   // 6 sub-cards
   renderBaseCard("att",         "🏠 ATT",           d.att,         ["nombres","telefono_fijo","celular","direccion","colonia","municipio","estado"]);
   renderBaseCard("emp",         "🏢 Empleadores",   d.empleadores, ["razon_social","num_empleados","dom_calle","dom_municipio","dom_entidad","dom_cp"]);
-  renderBaseCard("repuve",      "🚗 REPUVE",        d.repuve,      ["placa","marca","modelo","color","propietario"]);
+  renderBaseCard("repuve",      "🚗 REPUVE",        d.repuve,      ["placa","no_serie","marca","modelo","color","tipo","uso","propietario","direccion_propietario","telefono_propietario"]);
   renderBaseCard("telcel",      "📱 Telcel",        d.telcel,      ["telefono","plan_actual","marca","modelo","estado_linea","titular_nombre1"]);
   renderBaseCard("imss-a",      "💼 IMSS Asegurados", d.imss_asegurado, ["registro_patron","empresa_nombre","empresa_giro","empresa_cp","sueldo"]);
   renderBaseCard("imss-s",      "🩺 IMSS Segmentación", d.imss_salud, ["edad","genero","ooad","unidad_medica","segmentacion_diabetes_mellitus","segmento_hipertension"]);
@@ -1909,9 +2026,13 @@ function renderBaseCard(prefix, label, b, previewFields) {
   const badgeEl = $(`${prefix}-badge`);
   const kvEl    = $(`kv-${prefix}`);
   if (!b || !badgeEl || !kvEl) return;
-  const total = b.total || 0;
-  const error = b.error || null;
+  // 2026-08-20: el endpoint devuelve `count` (filas devueltas) pero no
+  // siempre `total` (filas en la base). Antes el código asumía `total` y
+  // mostraba "0 registros" cuando solo había `count`. Fallback: si no hay
+  // `total`, usar `count` directamente.
   const count = b.count || 0;
+  const total = b.total != null ? b.total : count;
+  const error = b.error || null;
   const truncated = total > count;
 
   badgeEl.textContent = error ? "error" : (total === 0 ? "0" : (truncated ? `${count}/${total.toLocaleString()}` : total.toLocaleString()));

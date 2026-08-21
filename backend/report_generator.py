@@ -161,6 +161,22 @@ td.v { color: #1a1d24; font-weight: 500; }
 .network-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0;
 }
+
+/* 2026-08-20: sección 04d — listado REPUVE sin mapa */
+ul.repuve-list { list-style: none; padding: 0; margin: 8px 0 0; }
+li.repuve-item {
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #6366f1;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 10pt;
+}
+.repuve-vehiculo { font-size: 10.5pt; margin-bottom: 4px; }
+.repuve-vehiculo strong { color: #1f2937; }
+.repuve-direccion { color: #374151; margin: 2px 0; }
+.repuve-propietario { color: #6b7280; font-size: 9pt; margin-top: 2px; }
 .network-card {
   background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px;
   padding: 10px 12px; border-left: 3px solid #4f8cff;
@@ -401,13 +417,15 @@ def _build_direccion(sujeto: dict) -> str:
 
 
 def generate_subject_html(subject_data: dict, narrative: str = "",
-                          enrichment: dict = None,
+                          enrichment: Optional[dict] = None,
                           map_image_base64: Optional[str] = None,
                           map_location: Optional[dict] = None,
                           checkid_map_image_base64: Optional[str] = None,
                           checkid_map_location: Optional[dict] = None,
                           checkid_cp: str = "",
-                          extra_maps: Optional[list] = None) -> str:
+                          extra_maps: Optional[list] = None,
+                          repuve_addresses: Optional[list] = None,
+                          non_matched_addresses: Optional[list] = None) -> str:
     """Genera el reporte HTML completo de un sujeto.
 
     Args:
@@ -423,6 +441,12 @@ def generate_subject_html(subject_data: dict, narrative: str = "",
             cada uno con {titulo, fuente, direccion, cp, image_b64, lat, lon,
             display_name, geocode_source, metadata}. Cada uno se muestra en su
             propia sub-sección.
+        repuve_addresses: 2026-08-20: direcciones REPUVE que NO se geocodifican
+            (Nominatim no las resuelve bien); se muestran como listado sin mapa
+            en sección 04d para que igual aparezcan en el reporte.
+        non_matched_addresses: 2026-08-20: direcciones de CFE/ATT/TELCEL/etc.
+            cuyo titular NO coincide 100% con el nombre del sujeto. Se muestran
+            en la sección 04d junto con las REPUVE.
     """
     enrichment = enrichment or {}
     fecha = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -787,6 +811,70 @@ def generate_subject_html(subject_data: dict, narrative: str = "",
 </section>
 {''.join(maps_blocks)}
 """
+
+    # ===== PÁGINA 04d: DOMICILIOS SIN MAPA (LISTADO) =====
+    # 2026-08-20: dos tipos de direcciones van aquí en lugar de al mapa:
+    #   1) REPUVE — texto libre del padrón vehicular, Nominatim no geocodifica
+    #   2) Non-matched — direcciones de CFE/ATT/TELCEL/IMSS cuyo titular no
+    #      coincide 100% con el nombre del sujeto. Pueden ser familiares,
+    #      ex-parejas, vecinos, o simples homónimos en la misma calle.
+    # Mostramos todo en un listado compacto con badge de fuente para que
+    # el analista pueda decidir si investigar o descartar.
+    non_matched_addresses = non_matched_addresses or []
+    no_match_items_html = []
+    for a in non_matched_addresses:
+        meta = a.get("metadata", {}) or {}
+        fuente = a.get("fuente", "?")
+        titular = (meta.get("nombre_en_cfe") or meta.get("propietario")
+                   or meta.get("nombres") or meta.get("titular_nombre1")
+                   or meta.get("nombre") or "—")
+        extra_meta = ""
+        if meta.get("num_servicio"):
+            extra_meta = f" · num_serv {_esc(meta.get('num_servicio', ''))}"
+        if meta.get("telefono"):
+            extra_meta += f" · tel {_esc(meta.get('telefono', ''))}"
+        no_match_items_html.append(f"""
+<li class="repuve-item">
+  <div class="repuve-vehiculo">
+    <span class="badge fuente-{fuente}">{_esc(fuente.upper())}</span>
+    <strong>{_esc(titular)}</strong>{extra_meta}
+  </div>
+  <div class="repuve-direccion">📍 {_esc(a.get("direccion", "—"))}</div>
+</li>
+""")
+
+    repuve_items_html = []
+    if repuve_addresses:
+        for a in repuve_addresses:
+            meta = a.get("metadata", {}) or {}
+            repuve_items_html.append(f"""
+<li class="repuve-item">
+  <div class="repuve-vehiculo">
+    <span class="badge fuente-repuve">REPUVE</span>
+    <strong>Placa {_esc(meta.get("placa", "—"))}</strong> ·
+    {_esc(meta.get("vehiculo", "—"))}
+  </div>
+  <div class="repuve-direccion">📍 {_esc(a.get("direccion", "—"))}</div>
+  <div class="repuve-propietario">Propietario: {_esc(meta.get("propietario", "—"))}</div>
+</li>
+""")
+
+    if repuve_items_html or no_match_items_html:
+        total_count = len(repuve_items_html) + len(no_match_items_html)
+        repuve_section_html = f"""
+<section class="page">
+  <h2><span class="num">04d</span> Domicilios sin Mapa — Listado de Auditoría</h2>
+  <p class="section-intro">{total_count} dirección(es) recopilada(s) que no se geocodificaron en
+     el reporte. Razones: (a) direcciones del padrón vehicular (REPUVE) en formato libre que
+     Nominatim no resuelve, o (b) domicilios en CFE/ATT/TELCEL/IMSS donde el titular no coincide
+     100% con el nombre completo del sujeto (pueden ser familiares, ex-parejas, vecinos u homónimos).
+     Útil para confirmar residencia histórica del sujeto y detectar vínculos secundarios.</p>
+  {('<h3 style="margin-top:14px;color:#6366f1;font-size:11pt">🚗 Vehículos REPUVE</h3>' + chr(10) + '<ul class="repuve-list">' + ''.join(repuve_items_html) + '</ul>') if repuve_items_html else ''}
+  {('<h3 style="margin-top:14px;color:#6366f1;font-size:11pt">🏠 Otros domicilios no coincidentes</h3>' + chr(10) + '<ul class="repuve-list">' + ''.join(no_match_items_html) + '</ul>') if no_match_items_html else ''}
+</section>
+"""
+    else:
+        repuve_section_html = ""
 
     # ===== PÁGINA 5: IDENTIDAD OFICIAL (TLALOC) =====
     datos_id = fiscal.get("datos_identidad", {}) if isinstance(fiscal, dict) else {}
@@ -1317,6 +1405,7 @@ def generate_subject_html(subject_data: dict, narrative: str = "",
 {map_html}
 {checkid_map_html}
 {extra_maps_html}
+{repuve_section_html}
 {tlaloc_html}
 {checkid_html}
 {issste_html}

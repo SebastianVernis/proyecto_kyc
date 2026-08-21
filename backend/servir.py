@@ -505,14 +505,39 @@ class Handler(BaseHTTPRequestHandler):
             t0 = time.time()
             curp = m.group(1).upper()
             rows = self.db.by_curp(curp)
+            # 2026-08-20: fallback a CheckID si el padrón no tiene la CURP.
+            # Solo se dispara si hay créditos disponibles (ver _checkid_creditos_disponibles).
+            checkid_data = None
+            checkid_skipped = None
+            if not rows:
+                ck = _checkid_lookup(curp)
+                if ck is None:
+                    # Distinguir "no se consultó por falta de créditos" vs
+                    # "se consultó y devolvió error de negocio" requiere
+                    # checar el caché de créditos por separado.
+                    if _checkid_creditos_disponibles():
+                        # raro: había créditos pero get_full devolvió None por excepción
+                        checkid_skipped = "error en consulta CheckID"
+                    else:
+                        checkid_skipped = "sin créditos CheckID (umbral mínimo)"
+                else:
+                    checkid_data = ck
             self._audit(
                 session=session, action="view_curp",
                 endpoint=path, method="GET", status_code=200,
                 duration_ms=int((time.time() - t0) * 1000),
-                query_summary={"curp_prefix": curp[:4]},
+                query_summary={
+                    "curp_prefix": curp[:4],
+                    "checkid": "yes" if checkid_data else ("skipped" if checkid_skipped else "no"),
+                },
                 results_count=len(rows),
             )
-            self._json(200, {"rows": rows, "total": len(rows)})
+            payload = {"rows": rows, "total": len(rows)}
+            if checkid_data is not None:
+                payload["checkid"] = checkid_data
+            elif checkid_skipped is not None:
+                payload["checkid_skipped"] = checkid_skipped
+            self._json(200, payload)
             return
         if path == "/api/health":
             session = self._require_session()
@@ -706,6 +731,16 @@ class Handler(BaseHTTPRequestHandler):
             if not session: return
             self._handle_issste_buscar()
             return
+        # /api/v1/repuve/buscar?rfc=&placa=&nombre=&no_serie=&limit=
+        # 2026-08-20: búsqueda directa en api.repuve_de_persona (1.7M vehículos).
+        # Antes solo se llegaba a REPUVE indirectamente vía RFC en _handle_persona_rfc.
+        # Ahora soporta búsqueda por RFC, placa exacta, VIN (no_serie), o LIKE por
+        # nombre del propietario.
+        if path == "/api/v1/repuve/buscar":
+            session = self._require_session()
+            if not session: return
+            self._handle_repuve_buscar()
+            return
         # /api/v1/familia/mapa?paterno=&materno=&estado=&ciudad=&limit=
         # 2026-08-06: análisis de familia. Busca todas las personas con un
         # apellido dado en att+telcel+repuve, las agrupa por (estado, ciudad,
@@ -836,8 +871,19 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_rfc_calcular_completo()
         elif url.path == "/api/validar":
             self._handle_validar()
+        elif url.path == "/api/v1/rastreo/relacion":
+            self._handle_rastreo_relacion()
         else:
             self._json(404, {"error": "endpoint no existe"})
+
+    def _handle_rastreo_relacion(self):
+        """POST /api/v1/rastreo/relacion — Rastreo situacional + relación de hechos
+        y sujetos con análisis IA vía Ollama Cloud.
+
+        Ver backend/rastreo_relacion.py para documentación completa.
+        """
+        from rastreo_relacion import _handle_rastreo_relacion as _impl
+        _impl(self)
 
     def _handle_auth_register_options(self):
         body = self._read_json_body()
@@ -1302,9 +1348,14 @@ class Handler(BaseHTTPRequestHandler):
                 pass
 
         # CheckID
+        # 2026-08-20: cambio a fallback universal. Antes solo se consultaba
+        # CheckID para CURPs que sí estaban en el padrón; ahora se consultan
+        # TODAS las solicitadas (si hay créditos). Las que sí están en el
+        # padrón se enriquecen; las que no, reciben solo el bloque checkid
+        # como única fuente externa.
         checkid_data = {}
         checkid_errors = {}
-        if with_checkid and padron_by_curp:
+        if with_checkid:
             try:
                 cc = get_checkid_client()
             except Exception as ex:
@@ -1312,8 +1363,8 @@ class Handler(BaseHTTPRequestHandler):
                 checkid_errors["__init__"] = str(ex)
             if cc:
                 for curp in curps:
-                    if curp not in padron_by_curp:
-                        continue
+                    # 2026-08-20: sin guarda de padrón — consultar siempre,
+                    # pero respetando el límite de créditos de CheckID.
                     try:
                         resp = cc.busqueda_por_curp(curp)
                         checkid_data[curp] = resp
@@ -3393,7 +3444,15 @@ class Handler(BaseHTTPRequestHandler):
 
         Si `todo=1`, incluye `api.fuentes_por_rfc` agregado y un KPI resumen
         (total_registros_externos, vehiculos_count, lineas_count, etc.).
+
+        2026-08-20: si `?checkid=true` (default) y hay créditos disponibles,
+        agrega bloque `checkid` con RFC real / NSS / régimen / lista 69B,
+        incluso cuando las bases internas no encontraron al sujeto.
         """
+        # 2026-08-20: leer ?checkid= de query string; default True.
+        import urllib.parse as _up2
+        _qs = _up2.parse_qs(_up2.urlparse(self.path).query)
+        with_checkid_flag = _qs.get("checkid", ["true"])[0].lower() in ("1", "true", "yes", "on")
         con = _init_extended_con()
         curp = curp.strip().upper()
 
@@ -3585,6 +3644,20 @@ class Handler(BaseHTTPRequestHandler):
                 or att_rows or emp_rows or repuve_rows or telcel_rows
             ),
         }
+
+        # 2026-08-20: fallback a CheckID. Si las bases internas no encontraron
+        # nada (found=False) y hay créditos, consultar CheckID para no perder
+        # al sujeto. Si found=True pero los datos están incompletos, también
+        # consultar — CheckID trae RFC real, NSS, régimen fiscal y lista 69B
+        # que no existen en las otras bases.
+        if with_checkid_flag and _checkid_creditos_disponibles():
+            ck = _checkid_lookup(curp)
+            if ck is not None:
+                response["checkid"] = ck
+            else:
+                response["checkid_skipped"] = "sin créditos o error en CheckID"
+        elif with_checkid_flag:
+            response["checkid_skipped"] = "sin créditos CheckID (umbral mínimo)"
 
         if todo:
             # KPI agregados (sumas a través de las 6 bases)
@@ -3846,9 +3919,58 @@ class Handler(BaseHTTPRequestHandler):
             return
         rows = self.db.by_curp(curp)
         if not rows:
-            self._json(404, {"error": "sujeto no encontrado en padrón"})
-            return
-        row = rows[0]
+            # 2026-08-20: fallback a CheckID si la CURP no está en padrón.
+            # Antes abortaba con 404; ahora intenta construir un sujeto
+            # mínimo desde CheckID para que el reporte funcione igual.
+            ck = _checkid_lookup(curp)
+            if ck and ck.get("exitoso"):
+                curp_node = ck.get("curp") or {}
+                cp_node = ck.get("codigo_postal") or {}
+                cp_val = (cp_node.get("codigoPostal") if isinstance(cp_node, dict) else None) or ""
+                curp_val = (curp_node.get("curp") if isinstance(curp_node, dict) else None) or curp
+                fecnac = (curp_node.get("fechaNacimientoText") if isinstance(curp_node, dict) else None) or ""
+                razon = (ck.get("razon_social") or "").strip()
+                tokens = razon.split() if razon else []
+                n_v = p_v = m_v = ""
+                if len(tokens) >= 3:
+                    m_v = tokens[-1]
+                    i = len(tokens) - 2
+                    APELLIDO_PARTS = {"DE", "DE LA", "DE LOS", "DEL", "LA", "LAS", "LOS", "SAN", "SANTA", "VDA.", "Y"}
+                    while i >= 0 and tokens[i] in APELLIDO_PARTS:
+                        m_v = tokens[i] + " " + m_v
+                        i -= 1
+                    p_v = tokens[i]
+                    i -= 1
+                    while i >= 0 and tokens[i] in APELLIDO_PARTS:
+                        p_v = tokens[i] + " " + p_v
+                        i -= 1
+                    n_v = " ".join(tokens[:i+1])
+                elif len(tokens) == 2:
+                    p_v = tokens[0]; m_v = tokens[1]
+                elif len(tokens) == 1:
+                    n_v = tokens[0]
+                entidad_ck = (curp_node.get("entidad") if isinstance(curp_node, dict) else None) or ""
+                row = {
+                    "curp": curp_val or curp,
+                    "nombre": n_v, "paterno": p_v, "materno": m_v,
+                    "nombre_completo": razon,
+                    "fecnac": fecnac,
+                    "sexo": (curp_node.get("sexo") if isinstance(curp_node, dict) else None) or "",
+                    "cp": cp_val,
+                    "estado": "", "estado_nombre": entidad_ck,
+                    "municipio": "", "municipio_nombre": "",
+                    "folio": "", "credencial": "", "anio_reg": "", "seccion": "",
+                    "fuente": "checkid-fallback",
+                }
+            else:
+                self._json(404, {
+                    "error": "sujeto no encontrado en padrón",
+                    "checkid_intentado": True,
+                    "checkid_ok": bool(ck),
+                })
+                return
+        if rows:
+            row = rows[0]
         row["nombre_completo"] = f"{row.get('nombre', '')} {row.get('paterno', '')} {row.get('materno', '')}".strip()
         # Agregar nombres de estado y municipio
         e_num = row.get("e")
@@ -3923,9 +4045,13 @@ class Handler(BaseHTTPRequestHandler):
         # 2026-08-13: recolectar TODAS las direcciones en TODAS las bases
         # y generar un mapa individual por cada una.
         extra_maps = []
+        repuve_list = []
+        non_matched_list = []
         try:
-            addresses = _collect_addresses_for_sujeto(row, enrichment=enrichment)
-            extra_maps = _generate_maps_for_addresses(addresses, max_maps=25)
+            addresses, repuve_list = _collect_addresses_for_sujeto(row, enrichment=enrichment)
+            extra_maps, non_matched_list = _generate_maps_for_addresses(
+                addresses, max_maps=25, subject=row
+            )
         except Exception:
             extra_maps = []
 
@@ -3938,6 +4064,8 @@ class Handler(BaseHTTPRequestHandler):
                 checkid_map_location=checkid_map_location,
                 checkid_cp=checkid_cp,
                 extra_maps=extra_maps,
+                repuve_addresses=repuve_list,
+                non_matched_addresses=non_matched_list,
             )
             if path == "/api/report/html":
                 body = html.encode("utf-8")
@@ -4135,10 +4263,14 @@ class Handler(BaseHTTPRequestHandler):
             # 2026-08-13: recolectar TODAS las direcciones en TODAS las bases
             extra_maps = []
             try:
-                addresses = _collect_addresses_for_sujeto(sujeto, enrichment=enrichment)
-                extra_maps = _generate_maps_for_addresses(addresses, max_maps=25)
+                addresses, repuve_list = _collect_addresses_for_sujeto(sujeto, enrichment=enrichment)
+                extra_maps, non_matched_list = _generate_maps_for_addresses(
+                    addresses, max_maps=25, subject=sujeto
+                )
             except Exception:
                 extra_maps = []
+                non_matched_list = []
+                repuve_list = []
 
             html = generate_subject_html(sujeto, narrative=narrative, enrichment=enrichment,
                                          map_image_base64=map_b64,
@@ -4146,7 +4278,9 @@ class Handler(BaseHTTPRequestHandler):
                                          checkid_map_image_base64=checkid_map_b64,
                                          checkid_map_location=checkid_map_location,
                                          checkid_cp=checkid_cp,
-                                         extra_maps=extra_maps)
+                                         extra_maps=extra_maps,
+                                         repuve_addresses=repuve_list,
+                                         non_matched_addresses=non_matched_list)
             if out_format == "pdf":
                 pdf = generate_html_to_pdf(html)
                 self._send(200, pdf, "application/pdf")
@@ -4287,9 +4421,117 @@ class Handler(BaseHTTPRequestHandler):
 
             t0 = time.time()
             sujeto = _find_sujeto(curp)
+            checkid_fallback_data = None
             if not sujeto:
-                self._json(404, {"error": "curp no encontrada en padron"})
-                return
+                # 2026-08-20: fallback a CheckID antes de devolver 404.
+                # Si la CURP no está en padrón, intentamos obtener al menos
+                # RFC + datos fiscales de CheckID y construimos un sujeto
+                # mínimo para no perder al usuario.
+                ck = _checkid_lookup(curp)
+                if ck and ck.get("exitoso"):
+                    checkid_fallback_data = ck
+                    curp_node = ck.get("curp") or {}
+                    cp_node = ck.get("codigo_postal") or {}
+                    cp_val = (cp_node.get("codigoPostal") if isinstance(cp_node, dict) else None) or ""
+                    curp_val = (curp_node.get("curp") if isinstance(curp_node, dict) else None) or curp
+                    fecnac = (curp_node.get("fechaNacimientoText") if isinstance(curp_node, dict) else None) or ""
+                    # 2026-08-20: parsear razon_social en nombre/paterno/materno.
+                    # CheckID devuelve "MARIO ANTONIO DE LA ROSA GUTIERREZ" como
+                    # una sola cadena; el frontend espera campos separados.
+                    # Estrategia: detectar prefijos/particulas de apellidos
+                    # compuestos comunes en México (DE, DE LA, DE LOS, DEL,
+                    # LA, LAS, LOS, SAN, SANTA, VDA., Y).
+                    APELLIDO_PARTS = {"DE", "DE LA", "DE LOS", "DEL", "LA", "LAS", "LOS",
+                                       "SAN", "SANTA", "VDA.", "Y"}
+                    def _es_part_apellido(tokens, idx):
+                        # ¿El token actual + siguiente(s) forman parte del apellido?
+                        if idx >= len(tokens):
+                            return False
+                        t = tokens[idx]
+                        if t in APELLIDO_PARTS:
+                            return True
+                        # "DE LA" / "DE LOS" → mirar 2 tokens
+                        if idx + 1 < len(tokens):
+                            dos = t + " " + tokens[idx+1]
+                            if dos in APELLIDO_PARTS:
+                                return True
+                        return False
+
+                    razon = (ck.get("razon_social") or "").strip()
+                    tokens = razon.split() if razon else []
+                    nombre_v = ""
+                    paterno_v = ""
+                    materno_v = ""
+                    if len(tokens) >= 3:
+                        # apellidos compuestos: empezar a consumir desde el final
+                        # las 2 últimas palabras como materno, pero si la penúltima
+                        # es una partícula, expandir.
+                        # materno = último token siempre
+                        materno_v = tokens[-1]
+                        i = len(tokens) - 2  # penúltimo
+                        # consumir partículas hacia atrás
+                        while i >= 0 and _es_part_apellido(tokens, i):
+                            # partícula → unir al materno
+                            materno_v = tokens[i] + " " + materno_v
+                            i -= 1
+                            # si la partícula es de 2 palabras (DE LA), retroceder 1 más
+                            if i + 2 < len(tokens):
+                                # verificar si formaba par con la que acabamos de consumir
+                                pass
+                        # paterno = token en i
+                        paterno_v = tokens[i]
+                        i -= 1
+                        # consumir partículas hacia atrás (más raro en paterno, pero posible)
+                        while i >= 0 and _es_part_apellido(tokens, i):
+                            paterno_v = tokens[i] + " " + paterno_v
+                            i -= 1
+                        # nombre = todo lo anterior
+                        nombre_v = " ".join(tokens[:i+1])
+                    elif len(tokens) == 2:
+                        paterno_v = tokens[0]
+                        materno_v = tokens[1]
+                    elif len(tokens) == 1:
+                        nombre_v = tokens[0]
+                    # 2026-08-20: agregar estado_nombre desde CheckID. El nodo
+                    # "entidad" de CheckID devuelve "CHIAPAS" en texto; lo
+                    # mapeamos al código numérico para que el frontend lo use.
+                    entidad_ck = (curp_node.get("entidad") if isinstance(curp_node, dict) else None) or ""
+                    # ESTADOS (de sirv.py línea 85) tiene clave numérica→nombre;
+                    # invertimos localmente con keys en MAYÚSCULAS para
+                    # case-insensitive lookup (CheckID devuelve "CHIAPAS").
+                    _estados_inv = {v.upper(): k for k, v in ESTADOS.items() if isinstance(v, str)}
+                    e_num_ck = _estados_inv.get(entidad_ck.upper(), 0)
+                    sujeto = {
+                        "curp": curp_val or curp,
+                        "nombre": nombre_v,
+                        "paterno": paterno_v,
+                        "materno": materno_v,
+                        "nombre_completo": razon,
+                        "fecnac": fecnac,
+                        "sexo": (curp_node.get("sexo") if isinstance(curp_node, dict) else None) or "",
+                        "calle": "",
+                        "int": None,
+                        "ext": "",
+                        "colonia": "",
+                        "cp": cp_val,
+                        "estado": "",
+                        "estado_nombre": entidad_ck,
+                        "e": e_num_ck,
+                        "municipio": "",
+                        "folio": "",
+                        "credencial": "",
+                        "anio_reg": "",
+                        "seccion": "",
+                        "fuente": "checkid-fallback",
+                    }
+                else:
+                    self._json(404, {
+                        "error": "curp no encontrada en padron",
+                        "checkid_intentado": True,
+                        "checkid_ok": bool(ck),
+                        "sugerencia": "verifica que la CURP esté bien escrita o usa búsqueda por nombre en /buscar.html",
+                    })
+                    return
 
             # calcular RFC real con Singula
             # calcular RFC real con Singula
@@ -4299,21 +4541,28 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 sc = get_singula_client()
                 f = parse_fecnac(sujeto.get("fecnac"))
-                rfc_sat_raw = sc.get_rfc(
-                    name=sujeto.get("nombre", ""),
-                    last_name=sujeto.get("paterno", ""),
-                    mothers_last_name=sujeto.get("materno", ""),
-                    birth_day=f["day"],
-                    birth_month=f["month"],
-                    birth_year=f["year"],
-                    gender=sujeto.get("sexo", "H"),
-                )
+                # 2026-08-20: parse_fecnac devuelve None si fecnac está vacío
+                # (caso fallback CheckID sin fecha de nacimiento). Saltar Singula
+                # y dejar que CheckID provea el RFC.
+                if f is None:
+                    singula_err = "fecnac vacío (sujeto construido por fallback CheckID); saltando Singula RFC"
+                    rfc_sat_raw = None
+                else:
+                    rfc_sat_raw = sc.get_rfc(
+                        name=sujeto.get("nombre", ""),
+                        last_name=sujeto.get("paterno", ""),
+                        mothers_last_name=sujeto.get("materno", ""),
+                        birth_day=f["day"],
+                        birth_month=f["month"],
+                        birth_year=f["year"],
+                        gender=sujeto.get("sexo", "H"),
+                    )
                 if isinstance(rfc_sat_raw, dict) and "rfc" in rfc_sat_raw:
                     rfc_sat = rfc_sat_raw["rfc"]
                 elif isinstance(rfc_sat_raw, str):
                     rfc_sat = rfc_sat_raw
                 else:
-                    singula_err = rfc_sat_raw.get("error", "respuesta inesperada")
+                    singula_err = (rfc_sat_raw or {}).get("error", "respuesta inesperada") if isinstance(rfc_sat_raw, dict) else singula_err or "sin respuesta Singula"
             except Exception as e:
                 singula_err = str(e)
                 rfc_sat = None
@@ -4344,10 +4593,16 @@ class Handler(BaseHTTPRequestHandler):
             checkid_err = None
             checkid_rfc = None
             try:
-                cc = get_checkid_client()
-                # primero intentamos por CURP; si el plan no lo permite fallback por RFC
-                rfc_hint = rfc_sat if rfc_sat and len(rfc_sat) >= 13 else (rfc_local.get("rfc_10", "") if rfc_local else "")
-                checkid_resp = cc.get_full(curp, rfc_hint=rfc_hint)
+                # 2026-08-20: si ya hicimos fallback a CheckID arriba
+                # (porque el padrón no tenía al sujeto), reusamos esa respuesta
+                # en vez de gastar otro crédito.
+                if checkid_fallback_data is not None:
+                    checkid_resp = checkid_fallback_data
+                else:
+                    cc = get_checkid_client()
+                    # primero intentamos por CURP; si el plan no lo permite fallback por RFC
+                    rfc_hint = rfc_sat if rfc_sat and len(rfc_sat) >= 13 else (rfc_local.get("rfc_10", "") if rfc_local else "")
+                    checkid_resp = cc.get_full(curp, rfc_hint=rfc_hint)
                 if checkid_resp.get("exitoso"):
                     checkid_data = checkid_resp
                     checkid_rfc = checkid_resp.get("rfc")
@@ -4968,18 +5223,60 @@ class Handler(BaseHTTPRequestHandler):
                 if not curp:
                     self._json(400, {"error": "falta ?curp=..."})
                     return
-            
+
                 t0 = time.time()
                 sujeto = _find_sujeto(curp)
+                # 2026-08-20: fallback a CheckID si la CURP no está en padrón.
+                # Antes abortaba con 404; ahora intenta CheckID para no perder
+                # al sujeto en las verificaciones unificadas (CFE/ISSSTE/etc).
                 if not sujeto:
-                    self._json(404, {"error": "curp no encontrada en padron"})
-                    return
-            
+                    ck = _checkid_lookup(curp)
+                    if ck and ck.get("exitoso"):
+                        curp_node = ck.get("curp") or {}
+                        cp_node = ck.get("codigo_postal") or {}
+                        cp_val = (cp_node.get("codigoPostal") if isinstance(cp_node, dict) else None) or ""
+                        razon = (ck.get("razon_social") or "").strip()
+                        # parser simple para que CFE/ISSSTE tengan paterno/materno
+                        tokens = razon.split() if razon else []
+                        n_v = p_v = m_v = ""
+                        if len(tokens) >= 3:
+                            m_v = tokens[-1]
+                            i = len(tokens) - 2
+                            APELLIDO_PARTS = {"DE", "DE LA", "DE LOS", "DEL", "LA", "LAS", "LOS", "SAN", "SANTA", "VDA.", "Y"}
+                            while i >= 0 and tokens[i] in APELLIDO_PARTS:
+                                m_v = tokens[i] + " " + m_v
+                                i -= 1
+                            p_v = tokens[i]
+                            i -= 1
+                            while i >= 0 and tokens[i] in APELLIDO_PARTS:
+                                p_v = tokens[i] + " " + p_v
+                                i -= 1
+                            n_v = " ".join(tokens[:i+1])
+                        elif len(tokens) == 2:
+                            p_v = tokens[0]; m_v = tokens[1]
+                        elif len(tokens) == 1:
+                            n_v = tokens[0]
+                        sujeto = {
+                            "curp": curp,
+                            "nombre": n_v, "paterno": p_v, "materno": m_v,
+                            "fecnac": (curp_node.get("fechaNacimientoText") if isinstance(curp_node, dict) else None) or "",
+                            "sexo": (curp_node.get("sexo") if isinstance(curp_node, dict) else None) or "",
+                            "cp": cp_val,
+                            "fuente": "checkid-fallback",
+                        }
+                    else:
+                        self._json(404, {
+                            "error": "curp no encontrada en padron",
+                            "checkid_intentado": True,
+                            "checkid_ok": bool(ck),
+                        })
+                        return
+
                 # Extraer datos del sujeto para búsquedas
                 paterno = (sujeto.get("paterno") or "").strip()
                 materno = (sujeto.get("materno") or "").strip()
                 nombre = (sujeto.get("nombre") or "").strip()
-            
+
                 # Ejecutar búsquedas en paralelo
                 results = {}
             
@@ -5912,6 +6209,112 @@ class Handler(BaseHTTPRequestHandler):
                 query_summary={"paterno_prefix": paterno[:6],
                                "nombre_prefix": nombre[:6], "limit": limit},
                 results_count=len(rows),
+            )
+        except Exception:
+            pass
+        self._json(200, result)
+
+    def _handle_repuve_buscar(self):
+        """GET /api/v1/repuve/buscar?rfc=&placa=&nombre=&no_serie=&limit=
+
+        Búsqueda directa en api.repuve_de_persona (1.7M vehículos).
+        Cualquier combinación de filtros es válida. Si no se pasa ninguno,
+        devuelve 400.
+
+        Args:
+            rfc:      RFC exacto (PF13/PM12/PF10/PM10) — match exacto
+            placa:    Placa exacta (uppercase) — match exacto
+            no_serie: VIN (Vehicle Identification Number) — match exacto
+            nombre:   Nombre del propietario (LIKE case-insensitive)
+            limit:    1-500 (default 50)
+
+        Cada fila devuelta incluye: rfc, placa, no_serie, marca, modelo,
+        color, tipo, uso, propietario, direccion_propietario,
+        telefono_propietario, rfc_kind.
+        """
+        import urllib.parse as _up
+        qs = _up.parse_qs(_up.urlparse(self.path).query)
+        rfc      = (qs.get("rfc",      [""])[0] or "").strip().upper()
+        placa    = (qs.get("placa",    [""])[0] or "").strip().upper()
+        no_serie = (qs.get("no_serie", [""])[0] or "").strip().upper()
+        nombre   = (qs.get("nombre",   [""])[0] or "").strip()
+        try:
+            limit = int(qs.get("limit", ["50"])[0])
+        except (TypeError, ValueError):
+            limit = 50
+        limit = max(1, min(limit, 500))
+
+        if not (rfc or placa or no_serie or nombre):
+            self._json(400, {"error": "se requiere al menos uno: rfc, placa, no_serie, nombre"})
+            return
+
+        con = _init_extended_con()
+        if con is None:
+            self._json(503, {"error": "extendido no inicializado"})
+            return
+
+        where, params = [], []
+        if rfc:
+            where.append("rfc = ?")
+            params.append(rfc)
+        if placa:
+            where.append("UPPER(TRIM(placa)) = ?")
+            params.append(placa)
+        if no_serie:
+            where.append("UPPER(TRIM(no_serie)) = ?")
+            params.append(no_serie)
+        if nombre:
+            where.append("UPPER(TRIM(propietario)) LIKE ?")
+            params.append(f"%{nombre.upper()}%")
+        where_sql = " AND ".join(where) if where else "1=1"
+        params.append(limit)
+
+        rows, err, elapsed = [], None, None
+        try:
+            t0 = time.time()
+            sql = f"""
+                SELECT rfc, placa, no_serie, marca, modelo, color,
+                       tipo, uso, propietario, direccion_propietario,
+                       telefono_propietario, rfc_kind
+                FROM api.repuve_de_persona
+                WHERE {where_sql}
+                LIMIT ?
+            """
+            rows = con.execute(sql, params).fetchall()
+            elapsed = time.time() - t0
+        except Exception as e:
+            err = str(e)[:200]
+
+        cols = ["rfc","placa","no_serie","marca","modelo","color",
+                "tipo","uso","propietario","direccion_propietario",
+                "telefono_propietario","rfc_kind"]
+        repuve_rows = [dict(zip(cols, r)) for r in rows]
+
+        result = {
+            "query": {"rfc": rfc or None, "placa": placa or None,
+                      "no_serie": no_serie or None, "nombre": nombre or None,
+                      "limit": limit},
+            "rows": repuve_rows,
+            "count": len(repuve_rows),
+            "elapsed_s": round(elapsed, 3) if elapsed else None,
+            "truncated": len(repuve_rows) >= limit,
+            "found": bool(repuve_rows),
+            "error": err,
+            "nota": "REPUVE = padrón vehicular nacional. 1.7M vehículos, "
+                    "100% cobertura en placa/VIN/marca/propietario. "
+                    "Útil para confirmar ownership y cruzar con dirección "
+                    "del titular para clusters familiares.",
+        }
+        session = self._require_session()
+        try:
+            self._audit(
+                session=session, action="view_repuve_search",
+                endpoint="/api/v1/repuve/buscar", method="GET", status_code=200,
+                duration_ms=int(elapsed * 1000) if elapsed else None,
+                query_summary={"rfc": rfc[:6] if rfc else None,
+                               "placa": placa[:4] if placa else None,
+                               "limit": limit},
+                results_count=len(repuve_rows),
             )
         except Exception:
             pass
@@ -8298,6 +8701,67 @@ def get_checkid_client():
     return config._broker_clients["checkid"]
 
 
+# === Guarda de créditos CheckID (fallback universal) =====================
+# 2026-08-20: cuando un CURP no existe en el padrón, el sistema hace fallback
+# automático a CheckID. Para no vaciar el saldo accidentalmente (cada Busqueda
+# cuesta créditos), validamos SolicitudesRestantes antes de cada llamada y
+# cacheamos la respuesta 60s para no martillar la API.
+_CHECKID_CREDITS_CACHE = {"value": None, "ts": 0.0, "umbral": 5}
+
+
+def _checkid_creditos_disponibles(umbral: int = 5, ttl_s: int = 60) -> bool:
+    """Devuelve True si CheckID tiene al menos `umbral` créditos disponibles.
+
+    Cachea el resultado por `ttl_s` segundos. Si no se puede consultar
+    (sin api_key, error de red, etc.), devuelve False para proteger el saldo.
+    """
+    import time as _t
+    from config import config
+    if not config.checkid_api_key:
+        return False
+    now = _t.time()
+    if (
+        _CHECKID_CREDITS_CACHE["value"] is not None
+        and (now - _CHECKID_CREDITS_CACHE["ts"]) < ttl_s
+        and _CHECKID_CREDITS_CACHE["umbral"] == umbral
+    ):
+        return _CHECKID_CREDITS_CACHE["value"]
+    try:
+        cc = get_checkid_client()
+        health = cc.health()
+        ok = bool(health.get("ok"))
+        # health.solicitudes_restantes viene como dict {"restantes": N, ...}
+        # o como número directo según plan.
+        restantes = None
+        sr = health.get("solicitudes_restantes")
+        if isinstance(sr, dict):
+            restantes = sr.get("restantes") or sr.get("disponibles") or sr.get("total")
+        elif isinstance(sr, (int, float)):
+            restantes = sr
+        disponible = ok and (restantes is None or restantes >= umbral)
+        _CHECKID_CREDITS_CACHE.update({"value": disponible, "ts": now, "umbral": umbral})
+        return disponible
+    except Exception:
+        _CHECKID_CREDITS_CACHE.update({"value": False, "ts": now, "umbral": umbral})
+        return False
+
+
+def _checkid_lookup(curp: str, rfc_hint: str = "") -> "dict | None":
+    """Llama CheckID solo si hay créditos. Devuelve dict normalizado o None.
+
+    None significa "no se consultó" (sin créditos / error). El caller debe
+    distinguir None de un dict con exitoso=False (que sí se consultó y
+    devolvió error de negocio).
+    """
+    if not _checkid_creditos_disponibles():
+        return None
+    try:
+        cc = get_checkid_client()
+        return cc.get_full(curp, rfc_hint)
+    except Exception:
+        return None
+
+
 def get_singula_client():
     from config import config
     if not hasattr(config, "_broker_clients"):
@@ -8392,6 +8856,9 @@ def _collect_addresses_for_sujeto(sujeto: dict, enrichment: dict = None) -> list
         "metadata": {...},  # datos extra para identificación
       }
 
+    Las direcciones REPUVE también se devuelven en `repuve_addresses` (segundo
+    elemento de la tupla) para que el reporte las pinte como listado sin mapa.
+
     2026-08-13: extrae de:
       - padrón (sujeto directo)
       - cfe (todas las coincidencias de api.cfe_medidor por nombre)
@@ -8404,6 +8871,7 @@ def _collect_addresses_for_sujeto(sujeto: dict, enrichment: dict = None) -> list
       - checkid (CP del enriquecimiento)
     """
     addresses = []
+    repuve_addresses = []  # 2026-08-20: listado REPUVE separado para sección 04d
 
     # 1. Padrón
     try:
@@ -8584,7 +9052,9 @@ def _collect_addresses_for_sujeto(sujeto: dict, enrichment: dict = None) -> list
         except Exception:
             pass
 
-    # 6. REPUVE: buscar por RFC
+    # 6. REPUVE: buscar por RFC — se separa en repuve_addresses
+    # (listado sin mapa) en lugar de meterse a `addresses` con mapa
+    # (Nominatim casi nunca geocodifica estas direcciones).
     if rfc:
         try:
             con = _init_extended_con()
@@ -8596,18 +9066,17 @@ def _collect_addresses_for_sujeto(sujeto: dict, enrichment: dict = None) -> list
                     LIMIT 10
                 """, [rfc, rfc[:12] + "###" if len(rfc) == 13 else rfc, rfc[:10]]).fetchall()
                 for i, row in enumerate(rows, 1):
-                    if row[5]:
-                        addresses.append({
-                            "titulo": f"Domicilio REPUVE #{i}",
-                            "fuente": "repuve",
-                            "direccion": row[5],
-                            "cp": "",
-                            "metadata": {
-                                "placa": row[1] or "",
-                                "vehiculo": f"{row[2] or ''} {row[3] or ''}".strip(),
-                                "propietario": row[4] or "",
-                            },
-                        })
+                    repuve_addresses.append({
+                        "titulo": f"Domicilio REPUVE #{i}",
+                        "fuente": "repuve",
+                        "direccion": row[5] or "",
+                        "cp": "",
+                        "metadata": {
+                            "placa": row[1] or "",
+                            "vehiculo": f"{row[2] or ''} {row[3] or ''}".strip(),
+                            "propietario": row[4] or "",
+                        },
+                    })
         except Exception:
             pass
 
@@ -8690,25 +9159,101 @@ def _collect_addresses_for_sujeto(sujeto: dict, enrichment: dict = None) -> list
         except Exception:
             pass
 
-    return addresses
+    return addresses, repuve_addresses
 
 
-def _generate_maps_for_addresses(addresses: list, max_maps: int = 25) -> list:
+def _name_match_score(target_name: str, candidate_name: str) -> float:
+    """Compara dos nombres y devuelve un score 0.0-1.0.
+
+    2026-08-20: matcher determinístico para decidir qué direcciones van al
+    mapa del reporte. Solo direcciones con score >= 0.95 (match casi
+    perfecto) se mapean; el resto va al listado sin mapa (sección 04d).
+
+    Estrategia:
+      - Normaliza ambos nombres: uppercase, sin acentos, sin partículas
+        comunes (DE, LA, LAS, LOS, DEL, Y, SAN, SANTA).
+      - Compara sets de tokens (orden-independiente, sin duplicados).
+      - Si los sets son idénticos → 1.0 (match exacto).
+      - Si difieren en 1 token → 0.5.
+      - Si difieren en 2+ tokens → 0.0.
+
+    Es deliberadamente conservador: el usuario quiere 100% match, no IA.
+    """
+    import unicodedata
+
+    def _norm(s):
+        if not s:
+            return ""
+        s = unicodedata.normalize("NFD", s.upper())
+        s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+        return s.strip()
+
+    def _tokens(s):
+        if not s:
+            return set()
+        STOP = {"DE", "LA", "LAS", "LOS", "DEL", "Y", "SAN", "SANTA",
+                "VDA.", "VDA", "DE LA", "DE LOS", "DE LAS"}
+        s_norm = _norm(s)
+        all_tokens = [t for t in s_norm.split() if t]
+        filtered = []
+        i = 0
+        while i < len(all_tokens):
+            t = all_tokens[i]
+            if i + 1 < len(all_tokens) and (t + " " + all_tokens[i+1]) in STOP:
+                i += 2
+                continue
+            if t in STOP:
+                i += 1
+                continue
+            filtered.append(t)
+            i += 1
+        return set(filtered)
+
+    t_tokens = _tokens(target_name)
+    c_tokens = _tokens(candidate_name)
+    if not t_tokens or not c_tokens:
+        return 0.0
+    if t_tokens == c_tokens:
+        return 1.0
+    diff = t_tokens.symmetric_difference(c_tokens)
+    if len(diff) == 0:
+        return 1.0
+    if len(diff) == 1:
+        return 0.5
+    return 0.0
+
+
+def _name_match_100(target_name: str, candidate_name: str) -> bool:
+    """Match 100% (con o sin partículas). True si los sets de tokens son idénticos."""
+    return _name_match_score(target_name, candidate_name) >= 0.95
+
+
+def _generate_maps_for_addresses(addresses: list, max_maps: int = 25,
+                                  subject: dict = None) -> tuple:
     """Genera imagen PNG + geocoding para cada dirección.
 
     Args:
         addresses: lista de dicts de _collect_addresses_for_sujeto
         max_maps: máximo de mapas a generar (límite duro para reportes)
+        subject: 2026-08-20: dict con datos del sujeto. Si se pasa, se filtra
+            para que SOLO se mapeen direcciones cuyo titular coincida 100%
+            con el nombre completo del sujeto (ignorando partículas). Las
+            que no coincidan se mueven a `non_matched_addresses`.
 
     Returns:
-        lista de dicts con campos extra: image_b64, lat, lon, display_name,
-        source (Nominatim local/público). NO muta los inputs.
+        tupla (maps, non_matched_addresses):
+          - maps: lista de dicts con image_b64, lat, lon, display_name, etc.
+          - non_matched_addresses: direcciones descartadas por mismatch de
+            nombre (o por fuente repuve). Se muestran como listado en 04d.
 
     2026-08-13: si Nominatim no puede geocodificar (calle muy específica
     o texto basura como "ELOTES FTE TEMPLO S JUAN"), intenta fallback
     CFE via _search_cfe_by_domicilio y agrega un bloque cfe_fallback con
     los num_servicio / rows encontrados. Eso preserva el "mapa" CFE de
     la integración pasada en el reporte IA.
+
+    2026-08-20: agrega filtro de match 100% de nombre. Direcciones cuyo
+    titular no coincide con el sujeto van al listado (no se geocodifican).
     """
     import base64
     import re
@@ -8755,9 +9300,45 @@ def _generate_maps_for_addresses(addresses: list, max_maps: int = 25) -> list:
         return (calle, colonia, cp)
 
     out = []
+    non_matched = []
+    # 2026-08-20: nombre objetivo del sujeto para filtro de match.
+    nombre_objetivo = ""
+    if subject:
+        nombre_objetivo = (
+            subject.get("nombre_completo") or
+            f"{subject.get('nombre', '')} {subject.get('paterno', '')} {subject.get('materno', '')}".strip()
+        )
     for addr in addresses[:max_maps]:
         direccion = addr.get("direccion", "")
         cp = addr.get("cp", "")
+        fuente = addr.get("fuente", "")
+
+        # 2026-08-20: REPUVE omite el mapa. Sus direcciones son texto
+        # libre del padrón vehicular y Nominatim casi nunca las geocodifica.
+        # Van siempre al listado 04d.
+        if fuente == "repuve":
+            non_matched.append(addr)
+            continue
+
+        # 2026-08-20: filtro de match 100% de nombre. Solo se mapean
+        # direcciones cuyo titular coincide exactamente con el nombre del
+        # sujeto (ignorando partículas DE/LA/LOS/DEL/SAN/Y). El resto va
+        # al listado 04d. Padrón y CheckID pasan siempre (son del sujeto).
+        if nombre_objetivo and fuente not in ("padron", "checkid", "sepomex"):
+            meta = addr.get("metadata", {}) or {}
+            titular = (
+                meta.get("nombre_en_cfe")
+                or meta.get("propietario")
+                or meta.get("nombre")
+                or meta.get("nombres")  # ATT
+                or meta.get("titular_nombre1")  # TELCEL
+                or ""
+            )
+            # Si no hay nombre del titular en metadata, no geocodificar
+            # (sería un dato inseguro).
+            if titular and not _name_match_100(nombre_objetivo, titular):
+                non_matched.append(addr)
+                continue
         geo = geocode_address(direccion, cp)
         if not geo:
             # Si solo CP y no se pudo geocodificar, intentar fallback CP solo
@@ -8814,7 +9395,9 @@ def _generate_maps_for_addresses(addresses: list, max_maps: int = 25) -> list:
                 "cfe_fallback": cfe_result,  # dict con rows / count / query
             })
 
-    return out
+    # 2026-08-20: devolver tupla (maps, non_matched) para que el reporte
+    # muestre las que no coinciden en el listado sin mapa (sección 04d).
+    return out, non_matched
 
 
 def _search_cfe_by_domicilio(calle: str = "", colonia: str = "", cp: str = "",
