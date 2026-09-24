@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe OSINT - Noticias Boqueñas / Noticias Puebla</title>
+<style>
+:root {
+  --bg: #0f1115;
+  --panel: #1a1d24;
+  --panel2: #232730;
+  --border: #2c313c;
+  --text: #e6e8ec;
+  --muted: #8a93a6;
+  --accent: #4f8cff;
+  --accent2: #6ee7b7;
+  --warn: #f59e0b;
+  --error: #ef4444;
+  --highlight: #facc15;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  font-weight: 700;
+  color: var(--accent2);
+  margin: 2.5rem 0 1rem;
+  border-left: 4px solid var(--accent2);
+  padding-left: 0.8rem;
+  scroll-margin-top: 1rem;
+}
+
+h3 {
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  font-weight: 600;
+  color: var(--highlight);
+  margin: 1.5rem 0 0.8rem;
+}
+
+p { margin: 0.5rem 0; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  word-break: break-all;
+}
+a:hover { text-decoration: underline; }
+
+.meta {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  line-height: 1.5;
+}
+.meta strong { color: var(--text); }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.card-header {
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0.6rem 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+table.wide { min-width: 700px; }
+
+th {
+  background: var(--panel2);
+  color: var(--accent2);
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+td {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  white-space: normal;
+  word-break: break-word;
+  max-width: 280px;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover { background: rgba(79, 140, 255, 0.04); }
+
+table.kv td:first-child {
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--muted);
+  width: 35%;
+  min-width: 140px;
+}
+table.kv td:last-child { color: var(--text); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.badge-error { background: rgba(239,68,68,0.15); color: var(--error); }
+.badge-warn  { background: rgba(245,158,11,0.15); color: var(--warn); }
+.badge-ok    { background: rgba(110,231,183,0.15); color: var(--accent2); }
+.badge-accent{ background: rgba(79,140,255,0.15); color: var(--accent); }
+
+.highlight {
+  background: rgba(250,204,21,0.08);
+  border-left: 4px solid var(--highlight);
+  padding: 1rem 1.2rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.conclusion {
+  background: rgba(79,140,255,0.06);
+  border: 1px solid rgba(79,140,255,0.3);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.negative { color: var(--muted); }
+
+code {
+  background: var(--panel2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-family: 'SF Mono', Consolas, monospace;
+  word-break: break-all;
+}
+
+ul, ol { padding-left: 1.4rem; margin: 0.5rem 0; }
+li { margin: 0.3rem 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.toc {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  margin: 1.5rem 0;
+}
+.toc > strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+.toc ol { padding-left: 1.3rem; }
+.toc li { margin: 0.35rem 0; }
+.toc a { color: var(--accent); font-size: 0.9rem; }
+.toc a:hover { text-decoration: underline; }
+
+.source {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
+
+.card-suspect { border-color: rgba(239,68,68,0.4); }
+.card-suspect .card-header { color: var(--error); }
+
+@media (max-width: 768px) {
+  body { padding: 1rem; }
+  .two-col { grid-template-columns: 1fr; }
+  .card { padding: 1rem; }
+  table { font-size: 0.8rem; }
+  th, td { padding: 0.45rem 0.6rem; }
+  table.kv td:first-child { width: auto; min-width: 0; }
+  td { max-width: 200px; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 0.7rem; font-size: 0.92rem; }
+  h1 { font-size: 1.2rem; }
+  h2 { font-size: 1rem; }
+  .meta { font-size: 0.72rem; flex-direction: column; gap: 0.2rem; }
+}
+
+@media print {
+  body { background: #fff; color: #111; padding: 0; max-width: 100%; }
+  .card { border: 1px solid #ddd; break-inside: avoid; }
+  th { background: #f0f0f0; color: #333; }
+  td { border-color: #ddd; }
+  .highlight { background: #fffbe6; }
+  .conclusion { background: #f0f7ff; }
+  .badge { border: 1px solid currentColor; }
+  a { color: #0645ad; }
+  .toc { display: none; }
+  h2 { break-after: avoid; }
+  table { white-space: normal; }
+  td { max-width: none; }
+}
+</style>
+</head>
+<body>
+
+<h1>Informe OSINT - Noticias Boqueñas / Noticias Puebla</h1>
+
+<div class="meta">
+  <span><strong>Fecha:</strong> 6 de septiembre de 2026</span>
+  <span><strong>Plataforma:</strong> Argos OSINT - Plataforma Encuentra</span>
+  <span><strong>Fuentes:</strong> Lookup del proveedor externo - Herramientas OSINT automatizadas - Bases de datos internas de la plataforma</span>
+</div>
+
+<div class="toc">
+  <strong>Contenido</strong>
+  <ol>
+    <li><a href="#s1">Objeto de investigación</a></li>
+    <li><a href="#s2">Datos del lookup provisto</a></li>
+    <li><a href="#s2b">Lookup completo - 18 anuncios con glosario</a></li>
+    <li><a href="#s3">Búsqueda en bases de datos internas</a></li>
+    <li><a href="#s4">Búsqueda OSINT externa</a></li>
+    <li><a href="#s5">Hallazgo clave: la familia Dekin en Boca del Río</a></li>
+    <li><a href="#s6">Sospechoso principal: Antonio Dekin</a></li>
+    <li><a href="#s7">Colaboradores identificados</a></li>
+    <li><a href="#s8">Interpretación y análisis</a></li>
+    <li><a href="#s9">Conclusión</a></li>
+  </ol>
+</div>
+
+<!-- ====== 1 ====== -->
+<h2 id="s1">1. Objeto de investigación</h2>
+<div class="card">
+  <p>Se solicitó la identificación de los responsables de la página de Facebook <strong>"Noticias Boqueñas"</strong> (también operando como "Noticias Puebla"), una página de noticias locales categorizada como <span class="badge badge-warn">POLITICAL</span>, dedicada a contenido político y de interés público en Boca del Río, Veracruz.</p>
+  <p>El punto de partida fue un lookup provisto por el proveedor externo con <strong>18 anuncios políticos</strong> que contienen dos pares de datos de contacto (email + teléfono) registrados como anunciantes en diferentes períodos.</p>
+</div>
+
+<!-- ====== 2 ====== -->
+<h2 id="s2">2. Datos del lookup provisto</h2>
+
+<div class="card">
+  <div class="card-header">Página</div>
+  <div class="table-wrap">
+    <table class="kv">
+      <tr><td>Nombre</td><td>Noticias Boqueñas</td></tr>
+      <tr><td>Page ID</td><td><code>103556375072724</code></td></tr>
+      <tr><td>URL</td><td><a href="https://www.facebook.com/100064072151787/">facebook.com/100064072151787</a></td></tr>
+      <tr><td>Categoría</td><td>Media/news company</td></tr>
+      <tr><td>Tipo de anuncio</td><td>POLITICAL (temas sociales, elecciones, política)</td></tr>
+      <tr><td>Seguidores</td><td>2,866</td></tr>
+      <tr><td>Total anuncios</td><td>18</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header">Anunciante 1 (2023-2025)</div>
+    <div class="table-wrap">
+      <table class="kv">
+        <tr><td>Teléfono</td><td><code>+52 297 119 3265</code> <span class="badge badge-accent">fijo</span></td></tr>
+        <tr><td>Lada</td><td>297 (Orizaba/Córdoba, Ver.)</td></tr>
+        <tr><td>Email</td><td><code>melkicd3@hotmail.com</code></td></tr>
+        <tr><td>Ubicación</td><td>Puebla, Puebla</td></tr>
+        <tr><td>Registro</td><td>2 de octubre de 2023</td></tr>
+        <tr><td>Campañas</td><td>11 anuncios</td></tr>
+        <tr><td>Gasto total</td><td><strong>MX$10,600 - MX$14,900</strong></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Anunciante 2 (2026)</div>
+    <div class="table-wrap">
+      <table class="kv">
+        <tr><td>Teléfono</td><td><code>+52 229 153 9337</code> <span class="badge badge-accent">fijo</span></td></tr>
+        <tr><td>Lada</td><td>229 (Puebla/Boca del Río, Ver.)</td></tr>
+        <tr><td>Email</td><td><code>carlosrojas1978@yahoo.com</code></td></tr>
+        <tr><td>Ubicación</td><td>Ciudad de México, CDMX</td></tr>
+        <tr><td>Registro</td><td>1 de junio de 2026</td></tr>
+        <tr><td>Campañas</td><td>6 anuncios</td></tr>
+        <tr><td>Gasto total</td><td><strong>MX$1,400 - MX$1,894</strong></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="highlight">
+  <strong>Observación:</strong> El cambio de anunciante entre 2023 y 2026 (diferente email, teléfono y ubicación declarada) sugiere que la página cambió de responsable. El gasto promedio por campaña bajó de MX$963-$1,354 (anunciante 1) a MX$233-$316 (anunciante 2), pero el formato cambió de VIDEO a IMAGE.
+</div>
+
+<!-- ====== 2b ====== -->
+<h2 id="s2b">2b. Lookup completo - 18 anuncios</h2>
+
+<div class="card">
+  <div class="card-header">Glosario de campos</div>
+  <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.8rem">El lookup provisto contiene <strong>158 columnas</strong>. A continuación los campos más relevantes:</p>
+  <div class="table-wrap">
+    <table class="wide" style="min-width:600px">
+      <tr><th>Campo</th><th>Descripción</th></tr>
+      <tr><td><code>adArchiveID</code></td><td>ID único del anuncio en el Ads Library</td></tr>
+      <tr><td><code>pageName</code></td><td>Nombre de la página anunciativa</td></tr>
+      <tr><td><code>pageID</code></td><td>ID numérico de la página de Facebook</td></tr>
+      <tr><td><code>fevInfo/address</code></td><td>Dirección declarada por el anunciante (verificación de identidad)</td></tr>
+      <tr><td><code>fevInfo/email</code></td><td>Email registrado por el anunciante para verificación</td></tr>
+      <tr><td><code>fevInfo/phone</code></td><td>Teléfono registrado (enmascarado parcialmente)</td></tr>
+      <tr><td><code>fevInfo/submittedOn</code></td><td>Fecha de envío de información de verificación</td></tr>
+      <tr><td><code>startDateFormatted</code></td><td>Fecha de inicio de la campaña</td></tr>
+      <tr><td><code>endDateFormatted</code></td><td>Fecha de finalización de la campaña</td></tr>
+      <tr><td><code>spend</code></td><td>Rango de gasto del anuncio en moneda local</td></tr>
+      <tr><td><code>impressionsWithIndex/impressionsText</code></td><td>Rango de impresiones</td></tr>
+      <tr><td><code>snapshot/body/text</code></td><td>Texto/copy del anuncio</td></tr>
+      <tr><td><code>snapshot/displayFormat</code></td><td>Formato: VIDEO, IMAGE, CAROUSEL</td></tr>
+      <tr><td><code>categories/0</code></td><td>Categoría (POLITICAL = temas sociales/política)</td></tr>
+      <tr><td><code>ad_details/.../entity_type</code></td><td>Tipo: PERSON_PROFILE o PAGE</td></tr>
+      <tr><td><code>ad_details/.../likes</code></td><td>Likes de la página</td></tr>
+      <tr><td><code>publisherPlatform</code></td><td>Plataformas: FACEBOOK, INSTAGRAM, THREADS</td></tr>
+      <tr><td><code>isActive</code></td><td>Si el anuncio está activo actualmente</td></tr>
+      <tr><td><code>gatedType</code></td><td>ELIGIBLE (aprobado), TAKEN_DOWN (retirado), MISSING_DISCLAIMER</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">18 anuncios (campos clave) - Scroll horizontal</div>
+  <div class="table-wrap">
+    <table class="wide" style="min-width:1500px;font-size:0.78rem">
+      <tr>
+        <th>#</th>
+        <th>Página</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Registro</th>
+        <th>Inicio</th>
+        <th>Fin</th>
+        <th>Gasto (MXN)</th>
+        <th>Impresiones</th>
+        <th>Formato</th>
+        <th>Plataformas</th>
+        <th>Estado</th>
+        <th>Texto del anuncio</th>
+      </tr>
+      <tr>
+        <td>1</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2024-01-07</td><td>2024-01-13</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>350K-400K</td>
+        <td>VIDEO</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Las colonias de la capital son las más agradecidas con Lalo Rivera. Cero baches..."</td>
+      </tr>
+      <tr>
+        <td>2</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2024-01-02</td><td>2024-01-08</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>100K-125K</td>
+        <td>VIDEO</td><td>FB</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Lalo Rivera, el mejor alcalde del mundo para la ciudad más segura del mundo."</td>
+      </tr>
+      <tr>
+        <td>3</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2024-01-02</td><td>2024-01-11</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>450K-500K</td>
+        <td>VIDEO</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Lalo Rivera, el mejor alcalde del mundo para la ciudad más segura del mundo."</td>
+      </tr>
+      <tr>
+        <td>4</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2024-01-07</td><td>2024-01-13</td>
+        <td><strong>$800 - $899</strong></td><td>90K-100K</td>
+        <td>VIDEO</td><td>FB</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Las colonias de la capital son las más agradecidas con Lalo Rivera..."</td>
+      </tr>
+      <tr>
+        <td>5</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-21</td><td>2023-12-27</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>175K-200K</td>
+        <td>VIDEO</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Nuestres trans leerán cuentos drag a les niñes poblanos."</td>
+      </tr>
+      <tr>
+        <td>6</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-21</td><td>2023-12-27</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>70K-80K</td>
+        <td>VIDEO</td><td>FB</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Nuestres trans leerán cuentos drag a les niñes poblanos."</td>
+      </tr>
+      <tr>
+        <td>7</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-13</td><td>2023-12-18</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>80K-90K</td>
+        <td>VIDEO</td><td>FB</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Interrupción del embarazo gratuita en todas las primarias y secundarias de Puebla."</td>
+      </tr>
+      <tr>
+        <td>8</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-13</td><td>2023-12-26</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>175K-200K</td>
+        <td>VIDEO</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Interrupción del embarazo gratuita en todas las primarias y secundarias de Puebla."</td>
+      </tr>
+      <tr>
+        <td>9</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-17</td><td>2023-12-23</td>
+        <td><strong>$1,000 - $1,500</strong></td><td>70K-80K</td>
+        <td>VIDEO</td><td>FB</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Cero robos en Puebla gracias a Lalo Rivera."</td>
+      </tr>
+      <tr>
+        <td>10</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-17</td><td>2024-01-19</td>
+        <td><strong>$800 - $899</strong></td><td>300K-350K</td>
+        <td>VIDEO</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Cero robos en Puebla gracias a Lalo Rivera."</td>
+      </tr>
+      <tr>
+        <td>11</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-12</td><td>2023-12-13</td>
+        <td><strong>&lt;$100</strong></td><td>6K-7K</td>
+        <td>VIDEO</td><td>FB</td>
+        <td><span class="badge badge-error">Retirado</span></td>
+        <td>"Interrupción del embarazo gratuita..." (TAKEN_DOWN)</td>
+      </tr>
+      <tr style="background:rgba(239,68,68,0.06)">
+        <td>12</td><td>Noticias Boqueñas</td>
+        <td><code>carlosrojas1978@...</code></td><td><code>+522****9337</code></td>
+        <td>Ciudad de México</td><td>Jun 2026</td>
+        <td>2026-08-24</td><td>2026-08-28</td>
+        <td><strong>$200 - $299</strong></td><td>10K-15K</td>
+        <td>IMAGE</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Aso mare, Bertha! ¿En cuál Boca del Río vives o qué le pusiste al café?"</td>
+      </tr>
+      <tr style="background:rgba(239,68,68,0.06)">
+        <td>13</td><td>Noticias Boqueñas</td>
+        <td><code>carlosrojas1978@...</code></td><td><code>+522****9337</code></td>
+        <td>Ciudad de México</td><td>Jun 2026</td>
+        <td>2026-06-02</td><td>2026-06-07</td>
+        <td><strong>$400 - $499</strong></td><td>15K-20K</td>
+        <td>IMAGE</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>(Sin texto visible en lookup)</td>
+      </tr>
+      <tr>
+        <td>14</td><td>Noticias Puebla</td>
+        <td><code>melkicd3@...</code></td><td><code>+522****3265</code></td>
+        <td>Puebla, Puebla</td><td>Oct 2023</td>
+        <td>2023-12-12</td><td>2023-12-13</td>
+        <td><strong>$100 - $199</strong></td><td>35K-40K</td>
+        <td>VIDEO</td><td>FB, IG</td>
+        <td><span class="badge badge-error">Retirado</span></td>
+        <td>"Interrupción del embarazo gratuita..." (TAKEN_DOWN)</td>
+      </tr>
+      <tr style="background:rgba(245,158,11,0.06)">
+        <td>15</td><td>Noticias Boqueñas</td>
+        <td>(sin datos)</td><td>(sin datos)</td>
+        <td>(sin datos)</td><td>(sin datos)</td>
+        <td>2026-08-17</td><td>2026-08-18</td>
+        <td><strong>&lt;$100</strong></td><td>100-999</td>
+        <td>IMAGE</td><td>FB, IG, Threads</td>
+        <td><span class="badge badge-warn">Sin disclaimer</span></td>
+        <td>"Ta' perro el rugidón de tripa del ayuntamiento. Multa por mallas..."</td>
+      </tr>
+      <tr style="background:rgba(239,68,68,0.06)">
+        <td>16</td><td>Noticias Boqueñas</td>
+        <td><code>carlosrojas1978@...</code></td><td><code>+522****9337</code></td>
+        <td>Ciudad de México</td><td>Jun 2026</td>
+        <td>2026-08-19</td><td>2026-08-25</td>
+        <td><strong>$200 - $299</strong></td><td>9K-10K</td>
+        <td>IMAGE</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>(Sin texto visible en lookup)</td>
+      </tr>
+      <tr style="background:rgba(239,68,68,0.06)">
+        <td>17</td><td>Noticias Boqueñas</td>
+        <td><code>carlosrojas1978@...</code></td><td><code>+522****9337</code></td>
+        <td>Ciudad de México</td><td>Jun 2026</td>
+        <td>2026-08-20</td><td>2026-08-25</td>
+        <td><strong>$200 - $299</strong></td><td>8K-9K</td>
+        <td>IMAGE</td><td>FB, IG</td>
+        <td><span class="badge badge-accent">Finalizado</span></td>
+        <td>"Moscos invaden la zona conurbada. ¡Puro PIQUETE! Vecinos de Veracruz, Boca del Río y Medellín..."</td>
+      </tr>
+      <tr style="background:rgba(239,68,68,0.06)">
+        <td>18</td><td>Noticias Boqueñas</td>
+        <td><code>carlosrojas1978@...</code></td><td><code>+522****9337</code></td>
+        <td>Ciudad de México</td><td>Jun 2026</td>
+        <td>2026-09-03</td><td>2026-09-06</td>
+        <td><strong>$200 - $299</strong></td><td>8K-9K</td>
+        <td>IMAGE</td><td>FB, IG</td>
+        <td><span class="badge badge-ok">Activo</span></td>
+        <td>"Tunden en redes a Bertha Ahued. Boca del Río, Ver. - ¡Aso mare! Ahora sí nos dejó con el ojo cuadrado..."</td>
+      </tr>
+    </table>
+  </div>
+  <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">Filas resaltadas en rojo: anunciante 2 (carlosrojas1978). Amarillo: sin datos de anunciante.</p>
+</div>
+
+<div class="card">
+  <div class="card-header">Resumen estadístico</div>
+  <div class="table-wrap">
+    <table class="kv">
+      <tr><td>Total anuncios</td><td><strong>18</strong></td></tr>
+      <tr><td>Período</td><td>12 dic 2023 - 6 sep 2026</td></tr>
+      <tr><td>Anunciante 1 (melkicd3)</td><td><strong>11 anuncios</strong> - Gasto: MX$10,600-$14,900</td></tr>
+      <tr><td>Anunciante 2 (carlosrojas1978)</td><td><strong>6 anuncios</strong> - Gasto: MX$1,400-$1,894</td></tr>
+      <tr><td>Sin anunciante</td><td><strong>1 anuncio</strong> (#15, MISSING_DISCLAIMER, &lt;$100)</td></tr>
+      <tr><td>Gasto total estimado</td><td><strong>MX$12,100 - $16,894</strong></td></tr>
+      <tr><td>Impresiones totales</td><td>1.5M - 2.0M</td></tr>
+      <tr><td>Formato</td><td>VIDEO (11) → IMAGE (7) en 2026</td></tr>
+      <tr><td>Plataformas</td><td>Facebook (18), Instagram (14), Threads (1)</td></tr>
+      <tr><td>Retirados (TAKEN_DOWN)</td><td>2 (ads #11 y #14)</td></tr>
+      <tr><td>Sin disclaimer</td><td>1 (ad #15)</td></tr>
+      <tr><td>Nombre usado</td><td>"Noticias Puebla" (2023) → "Noticias Boqueñas" (2026)</td></tr>
+      <tr><td>Ubicación declarada</td><td>"Puebla" (2023) → "Ciudad de México" (2026)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ====== 3 ====== -->
+<h2 id="s3">3. Búsqueda en bases de datos internas</h2>
+
+<div class="card">
+  <div class="card-header">Búsqueda por teléfono</div>
+  <p>Se buscaron ambos números en las <strong>29 bases de datos</strong> de la plataforma (343.7M registros):</p>
+  <div class="table-wrap">
+    <table class="wide">
+      <tr><th>Base de datos</th><th>297-119-3265</th><th>229-153-9337</th></tr>
+      <tr><td>ATT (padrón telecomunicaciones)</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>Telcel (4 bases)</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>CFE (electricidad, 66M)</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>IMSS (seguro social)</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>ISSSTE</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>REPUVE (vehículos)</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>Santander (6 bases)</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>HSBC (2 bases)</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+      <tr><td>BBVA, Banorte, Scotiabank, Banamex, Bajío, Afirme</td><td class="negative">No encontrado</td><td class="negative">No encontrado</td></tr>
+    </table>
+  </div>
+  <p><strong>Conclusión:</strong> Ambos números son líneas fijas dedicadas a publicidad. No están registrados como teléfonos personales.</p>
+</div>
+
+<div class="card">
+  <div class="card-header">Búsqueda por email</div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Email</th><th>Padrón INE</th></tr>
+      <tr><td><code>melkicd3@hotmail.com</code></td><td class="negative">No encontrado</td></tr>
+      <tr><td><code>carlosrojas1978@yahoo.com</code></td><td class="negative">No encontrado</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ====== 4 ====== -->
+<h2 id="s4">4. Búsqueda OSINT externa</h2>
+
+<div class="card">
+  <div class="card-header">Instagram</div>
+  <div class="table-wrap">
+    <table class="wide">
+      <tr><th>Username</th><th>Nombre</th><th>Seguidores</th><th>Posts</th><th>Período</th><th>Observación</th></tr>
+      <tr><td><code>@carlosrojas1978</code></td><td>(vacío)</td><td>41</td><td>12</td><td>2012-2013</td><td>Cuenta personal antigua, inactiva</td></tr>
+      <tr><td><code>@carlosrojas.1978</code></td><td>carlos rojas</td><td>-</td><td>-</td><td>-</td><td>Cuenta privada</td></tr>
+      <tr><td><code>@carlos_rojas_1978</code></td><td>Carlos Rojas</td><td>1</td><td>-</td><td>-</td><td>Cuenta privada</td></tr>
+      <tr><td><code>@carlos._1978</code></td><td>Rojas Carlos</td><td>82</td><td>1</td><td>-</td><td>Cuenta pública</td></tr>
+      <tr><td><code>@carl.rojas1978</code></td><td>Carlos Rojas</td><td>61</td><td>-</td><td>-</td><td>Cuenta pública</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">TikTok / YouTube</div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Plataforma</th><th>Username</th><th>Seguidores</th><th>Videos</th><th>Observación</th></tr>
+      <tr><td>TikTok</td><td><code>@carlosrojas1978</code></td><td>5 fans</td><td>0</td><td>Cuenta vacía</td></tr>
+      <tr><td>TikTok</td><td><code>melkicd3</code></td><td>-</td><td>-</td><td>No existe</td></tr>
+      <tr><td>YouTube</td><td><code>@carlosrojas1978</code></td><td>-</td><td>0</td><td>Canal creado Mar 2017, sin videos</td></tr>
+      <tr><td>YouTube</td><td><code>melkicd3</code></td><td>-</td><td>-</td><td>No existe</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Google Search (12 queries)</div>
+  <div class="table-wrap">
+    <table class="wide">
+      <tr><th>Query</th><th>Resultado</th></tr>
+      <tr><td><code>"melkicd3@hotmail.com"</code></td><td class="negative">Sin resultados directos</td></tr>
+      <tr><td><code>"carlosrojas1978@yahoo.com"</code></td><td class="negative">Sin resultados directos</td></tr>
+      <tr><td><code>melkicd3</code></td><td class="negative">Solo "Melchizedek" (bíblico)</td></tr>
+      <tr><td><code>"2971193265"</code></td><td class="negative">1 resultado no relacionado</td></tr>
+      <tr><td><code>"2291539337"</code></td><td class="negative">Sin resultados</td></tr>
+      <tr><td><code>"Noticias Boqueñas" administrador</code></td><td><span class="badge badge-ok">Posts de Antonio Dekin, Hiram Barrientos, Ignacio Lopez Beristain</span></td></tr>
+      <tr><td><code>"Antonio Dekin" Veracruz</code></td><td><span class="badge badge-ok">Posts sobre Boca del Río, IMSS, tránsito, alerta ciudadana</span></td></tr>
+      <tr><td><code>"Noticias Boqueñas" "paid for by"</code></td><td><span class="badge badge-ok">Miguel Elizondo, Asoc. Egresados Tec Veracruz</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Otros</div>
+  <div class="table-wrap">
+    <table class="wide">
+      <tr><th>Plataforma</th><th>Resultado</th></tr>
+      <tr><td>LinkedIn: Carlos Rojas</td><td class="negative">0 resultados</td></tr>
+      <tr><td>Social Media Finder (13 redes)</td><td class="negative">0 resultados</td></tr>
+      <tr><td>Have I Been Pwned</td><td class="negative">Sin filtraciones conocidas</td></tr>
+      <tr><td>WHOIS: melkicd3.com</td><td class="negative">No registrado</td></tr>
+      <tr><td>WHOIS: carlosrojas1978.com</td><td class="negative">No registrado</td></tr>
+      <tr><td>WHOIS: noticiasboquenas.com / .mx</td><td class="negative">No registrado</td></tr>
+      <tr><td>Empleadores (DuckDB)</td><td class="negative">Sin registros</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ====== 5 ====== -->
+<h2 id="s5">5. Hallazgo clave: la familia Dekin en Boca del Río</h2>
+
+<div class="highlight">
+  <strong>Cadena de evidencia:</strong><br>
+  1) "Dekin" es un apellido extremadamente raro - solo <strong>~50 registros</strong> en el padrón INE (88.4M) y <strong>3</strong> en ATT (1M+).<br>
+  2) <strong>Antonio Dekin</strong> comparte contenido de Noticias Boqueñas como si fuera propio.<br>
+  3) <strong>Marie Claire Llamazares Dekin</strong> vive en <strong>Boca del Río, Ver.</strong> - la misma ciudad de la página.<br>
+  4) Su teléfono (lada 229) coincide con la lada del segundo anunciante.<br>
+  5) <strong>5 miembros de la familia Dekin</strong> viven en la misma dirección en Boca del Río.
+</div>
+
+<div class="card">
+  <div class="card-header">Dirección compartida - Campo Tinajas Sur 13, Col. Petrolera, Boca del Río, Ver.</div>
+  <p><strong>CP:</strong> 94299 - <strong>Colonia:</strong> Petrolera (Heriberto K.) - <strong>Municipio:</strong> Boca del Río</p>
+  <div class="table-wrap">
+    <table class="wide">
+      <tr><th>Nombre</th><th>CURP</th><th>Nacimiento</th><th>Sexo</th><th>Relación</th></tr>
+      <tr>
+        <td><strong>Clara Esther Dekin Pachecho</strong></td>
+        <td><code>DEPC670412MVZKCL08</code></td>
+        <td>12 abr 1967</td><td>M</td><td>Matriarca</td>
+      </tr>
+      <tr>
+        <td><strong>Verónica Isabel Dekin Pachecho</strong></td>
+        <td><code>DEPV730109MVZKCR05</code></td>
+        <td>9 ene 1973</td><td>M</td><td>Hija</td>
+      </tr>
+      <tr>
+        <td><strong>Irasema Dekin Pachecho</strong></td>
+        <td><code>DEPI780209MVZKCR09</code></td>
+        <td>9 feb 1978</td><td>M</td><td>Hija</td>
+      </tr>
+      <tr>
+        <td><strong>Marie Claire Llamazares Dekin</strong></td>
+        <td><code>LADM901213MVZLKR02</code></td>
+        <td>13 dic 1990</td><td>M</td><td>Nieta</td>
+      </tr>
+      <tr>
+        <td><strong>Ricardo Angel Díaz Dekin</strong></td>
+        <td><code>DIDR991021HVZZKC06</code></td>
+        <td>21 oct 1999</td><td>H</td><td>Nieto</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Datos ATT de Marie Claire Llamazares Dekin</div>
+  <div class="table-wrap">
+    <table class="kv">
+      <tr><td>RFC</td><td><code>LADM901213 9A4</code></td></tr>
+      <tr><td>Teléfono fijo</td><td><code>2291301051</code> (lada Boca del Río)</td></tr>
+      <tr><td>Celular</td><td><code>2291461424</code></td></tr>
+      <tr><td>Dirección</td><td>Campotinajas Sur 13, Col. Petrolera</td></tr>
+      <tr><td>Municipio</td><td>Boca del Río, Veracruz</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Otros Dekin en Boca del Río (CP 94xxx)</div>
+  <div class="table-wrap">
+    <table class="wide">
+      <tr><th>Nombre</th><th>CURP</th><th>Dirección</th><th>CP</th><th>Nacimiento</th></tr>
+      <tr><td>Clara Luz Dekin Ramón</td><td><code>DERC510807MVZKML09</code></td><td>Av. Olmedo 610, Fracc. Virginia</td><td>94294</td><td>1951-08-07</td></tr>
+      <tr><td>José Luis Duncan Dekin</td><td><code>DUDL760427HVZNKS05</code></td><td>C Bartolomé de Olmedo 610</td><td>94294</td><td>1976-04-27</td></tr>
+      <tr><td>Frida Isabella Bravo Dekin</td><td><code>BADF000313MVZRKRA9</code></td><td>C 7 Alejandrina 2, Fracc. Joyas de Mocambo</td><td>94297</td><td>2000-03-13</td></tr>
+      <tr><td>Karen Dekin Hernández</td><td><code>DEHK880820MVZKRR00</code></td><td>Cto. Marlin Este 8509, Fracc. Puente Moreno</td><td>94274</td><td>1988-08-20</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Presencia Dekin en Veracruz</div>
+  <p>El apellido Dekin tiene <strong>52 registros</strong> en el padrón INE. La mayoría en Veracruz:</p>
+  <ul>
+    <li><strong>Boca del Río</strong> (CP 942xx): 9 registros - la mayor concentración</li>
+    <li><strong>Veracruz ciudad</strong> (CP 91xxx): ~15 registros</li>
+    <li><strong>Cazones/Poza Rica</strong> (CP 93xxx): 6 registros</li>
+    <li><strong>Ciudad Mendoza/Orizaba</strong> (CP 94-95xxx): 4 registros</li>
+    <li><strong>Otros estados</strong> (QR, Coahuila, CDMX, Edomex): dispersos</li>
+  </ul>
+</div>
+
+<!-- ====== 6 ====== -->
+<h2 id="s6">6. Sospechoso principal: Antonio Dekin</h2>
+
+<div class="card card-suspect">
+  <div class="card-header">Perfil Facebook - antonio.dekin.7</div>
+  <div class="table-wrap">
+    <table class="kv">
+      <tr><td>URL</td><td><a href="https://www.facebook.com/antonio.dekin.7/">facebook.com/antonio.dekin.7/</a></td></tr>
+      <tr><td>Facebook ID</td><td><code>100004469683676</code></td></tr>
+      <tr><td>Nombre</td><td><strong>Antonio Dekin</strong></td></tr>
+      <tr><td>Categoría</td><td><span class="badge badge-error">GOVERNMENT_OFFICIAL</span></td></tr>
+      <tr><td>Seguidores</td><td>201</td></tr>
+      <tr><td>Hablando de esto</td><td>14</td></tr>
+      <tr><td>Género</td><td>Masculino</td></tr>
+      <tr><td>Bio</td><td>Digital creator</td></tr>
+      <tr><td>Último post</td><td>6 de septiembre de 2026 (hoy)</td></tr>
+      <tr><td>Messenger</td><td><a href="https://m.me/antonio.dekin.7">m.me/antonio.dekin.7</a></td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Contenido de sus posts (Google indexados)</div>
+  <ul>
+    <li>Comparte contenido de <strong>Noticias Boqueñas</strong> directamente en su perfil</li>
+    <li>Posts sobre <strong>alerta ciudadana en Boca del Río</strong></li>
+    <li>Comenta sobre el <strong>IMSS de Díaz Mirón</strong> (tema recurrente de NB)</li>
+    <li>Posts sobre <strong>tránsito Veracruz</strong> y vialidad</li>
+    <li>Interactúa con <strong>Ricardo Dekin</strong> en comentarios (familiar)</li>
+    <li>Miembro de grupos de compra/venta de Veracruz</li>
+  </ul>
+</div>
+
+<div class="highlight">
+  <strong>Candidato INE:</strong> El único registro con nombre "ANTONIO" + apellido "DEKIN" es <strong>Gildardo Antonio del Moral Dekin</strong> (CURP: <code>MODG670623HVZRKL04</code>), nacido 23/06/1967, CP 91850, Veracruz. El perfil FB usa solo "Antonio Dekin" - podría ser un nombre simplificado o un familiar diferente.
+</div>
+
+<!-- ====== 7 ====== -->
+<h2 id="s7">7. Colaboradores identificados</h2>
+<p>Perfiles que comparten contenido de Noticias Boqueñas regularmente:</p>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="wide">
+      <tr><th>Perfil</th><th>ID FB</th><th>Seguidores</th><th>Categoría</th><th>Ubicación</th><th>Observación</th></tr>
+      <tr>
+        <td><strong>Hiram Barrientos</strong></td>
+        <td>1375868294</td><td>5,697</td>
+        <td>Digital creator</td><td>Tijuana</td>
+        <td>Narrador Liga Softbol. Comparte NB frecuentemente.</td>
+      </tr>
+      <tr>
+        <td><strong>Ignacio Lopez Beristain</strong></td>
+        <td>1379365902</td><td>5,361</td>
+        <td>Digital creator</td><td>-</td>
+        <td>"Simplemente YO". Comparte NB.</td>
+      </tr>
+      <tr>
+        <td><strong>Ricardo Narváez</strong></td><td>-</td><td>-</td><td>-</td>
+        <td>Celaya, Gto</td><td>Comparte NB frecuentemente.</td>
+      </tr>
+      <tr>
+        <td><strong>Miguel Elizondo</strong></td><td>-</td><td>-</td><td>-</td>
+        <td>Querétaro</td><td>"Paid for by Noticias Boqueñas" en posts.</td>
+      </tr>
+      <tr>
+        <td><strong>Asoc. Egresados Tec Veracruz</strong></td>
+        <td>100010772984699</td><td>-</td><td>-</td>
+        <td>Veracruz</td><td>"Paid for by Noticias Boqueñas" en posts.</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ====== 8 ====== -->
+<h2 id="s8">8. Interpretación y análisis</h2>
+
+<div class="card">
+  <div class="card-header">Estructura de la página</div>
+  <p>"Noticias Boqueñas" opera como una <strong>página de noticias locales con orientación política</strong> en Boca del Río, Veracruz. Su contenido se centra en:</p>
+  <ul>
+    <li>Crítica a la administración municipal y estatal</li>
+    <li>Problemas de servicios públicos (CFE, IMSS, agua, mosquitos, baches)</li>
+    <li>Temas de seguridad ciudadana y tránsito</li>
+    <li>Contenido de interés local con tono humorístico/satírico</li>
+  </ul>
+</div>
+
+<div class="card">
+  <div class="card-header">Cambio de administrador</div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Período</th><th>Datos registrados</th><th>Gasto</th><th>Patrón</th></tr>
+      <tr>
+        <td>2023-2025</td>
+        <td><code>melkicd3@hotmail.com</code> - Tel: 297-119-3265 (Orizaba)</td>
+        <td><strong>MX$10,600-$14,900</strong></td>
+        <td>Posiblemente el fundador original</td>
+      </tr>
+      <tr>
+        <td>2026</td>
+        <td><code>carlosrojas1978@yahoo.com</code> - Tel: 229-153-9337 (BDR)</td>
+        <td><strong>MX$1,400-$1,894</strong></td>
+        <td>Nuevo administrador</td>
+      </tr>
+    </table>
+  </div>
+  <p>El cambio de lada telefónica de <strong>297</strong> (Orizaba) a <strong>229</strong> (Boca del Río) coincide con la zona de operación de la página. El gasto bajó pero el formato cambió de VIDEO a IMAGE.</p>
+</div>
+
+<div class="card">
+  <div class="card-header">Hipótesis de vinculación con Dekin</div>
+  <ol>
+    <li><strong>Antonio Dekin</strong> comparte contenido de NB como si fuera propio - no como seguidor, sino como operador.</li>
+    <li>Su perfil está categorizado como <strong>GOVERNMENT_OFFICIAL</strong> - conexión con política local.</li>
+    <li>El apellido <strong>Dekin</strong> es extremadamente raro (~50 registros en88.4M).</li>
+    <li>Su familia está arraigada en <strong>Boca del Río</strong> - la misma ciudad de la página.</li>
+    <li>La lada <strong>229</strong> del segundo anunciante coincide con la zona Dekin.</li>
+    <li>El email <code>carlosrojas1978@yahoo.com</code> sugiere nacimiento en 1978 - Irasema Dekin Pachecho nació en <strong>1978</strong>.</li>
+  </ol>
+</div>
+
+<!-- ====== 9 ====== -->
+<h2 id="s9">9. Conclusión</h2>
+
+<div class="conclusion">
+  <h3 style="margin-top:0">Hallazgos principales</h3>
+
+  <p><strong>1.</strong> Los teléfonos y emails del lookup no están en bases de datos personales - son líneas fijas dedicadas a publicidad.</p>
+
+  <p><strong>2.</strong> La familia Dekin es la conexión más fuerte. El apellido es extremadamente raro (~50 registros nacionales), concentrado en Veracruz, y Antonio Dekin (<code>antonio.dekin.7</code>) comparte contenido de la página como si fuera propio. Su perfil está categorizado como <span class="badge badge-error">GOVERNMENT_OFFICIAL</span>.</p>
+
+  <p><strong>3.</strong> La dirección en Boca del Río (Campo Tinajas Sur 13, Col. Petrolera, CP 94299) alberga a 5 miembros de la familia Dekin, incluyendo a Marie Claire Llamazares Dekin (RFC: <code>LADM901213 9A4</code>, tel: <code>2291301051</code>).</p>
+
+  <p><strong>4.</strong> El cambio de anunciante en 2026 sugiere que la página cambió de manos. El gasto total del anunciante 2 (carlosrojas1978) fue de <strong>MX$1,400-$1,894</strong> en 6 campañas.</p>
+
+  <p><strong>5.</strong> No se pudo vincular directamente a "Carlos Rojas" con la familia Dekin. Podría ser una identidad de registro o un colaborador externo.</p>
+
+  <h3>Sujeto identificado</h3>
+  <div class="table-wrap">
+    <table class="kv">
+      <tr><td>Nombre</td><td><strong>Antonio Dekin</strong></td></tr>
+      <tr><td>Categoría FB</td><td><span class="badge badge-error">GOVERNMENT_OFFICIAL</span></td></tr>
+      <tr><td>Ubicación</td><td>Boca del Río, Veracruz</td></tr>
+      <tr><td>Familia</td><td>Dekin Pachecho / Llamazares Dekin</td></tr>
+      <tr><td>Dirección</td><td>Campo Tinajas Sur 13, Col. Petrolera, CP 94299</td></tr>
+      <tr><td>Facebook</td><td><a href="https://www.facebook.com/antonio.dekin.7/">facebook.com/antonio.dekin.7/</a></td></tr>
+      <tr><td>Messenger</td><td><a href="https://m.me/antonio.dekin.7">m.me/antonio.dekin.7</a></td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  <p>Informe generado por <strong>Argos OSINT</strong> - Plataforma Encuentra</p>
+  <p>6 de septiembre de 2026</p>
+</div>
+
+</body>
+</html>

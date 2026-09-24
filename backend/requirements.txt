@@ -1,0 +1,42 @@
+# requirements.txt — Backend KYC (proyecto_kyc)
+# Generado desde pip freeze del venv de producción (Python 3.13)
+
+# === Core ===
+duckdb==1.5.5
+pandas==3.0.5
+numpy==2.5.2
+requests==2.34.2
+
+# === Auth / Crypto ===
+webauthn==3.0.0
+cryptography==50.0.0
+pyOpenSSL==26.4.0
+cbor2==6.1.4
+pyasn1==0.6.4
+pyasn1_modules==0.4.2
+
+# === PDF / HTML ===
+weasyprint==69.0
+pillow==12.3.0
+staticmap==0.5.7
+pyphen==0.18.1
+pydyf==0.12.1
+cssselect2==0.9.0
+tinycss2==1.5.1
+tinyhtml5==2.1.0
+brotli==1.2.0
+zopfli==0.4.3
+fonttools==4.63.0
+
+# === Utils ===
+python-dateutil==2.9.0.post0
+PyYAML==6.0.3
+six==1.17.0
+urllib3==2.7.0
+certifi==2026.7.22
+charset-normalizer==3.5.1
+idna==3.18
+
+# === Dev / Test (no install en prod) ===
+# coverage==7.15.4
+# playwright==1.62.0

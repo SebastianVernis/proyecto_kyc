@@ -1,0 +1,2 @@
+[2026-09-03T16:05:36.489246] {"event_type": "INSERT", "id": "ffc24881-effb-40c0-a70d-7952b6a4ad34", "origin": "payments-api"}
+[2026-09-03T16:19:50.133114] {"event_type": "UPDATE", "id": "ffc24881-effb-40c0-a70d-7952b6a4ad34", "origin": "payments-api"}

@@ -1,0 +1,501 @@
+==============================================================================
+  REPORTE KYC OFICIAL — ROGM700512HCSSTR01
+==============================================================================
+  Sujeto:     MARIO ANTONIO DE LA ROSA GUTIERREZ
+  CURP:       ROGM700512HCSSTR01
+  RFC:        ROGM7005127L3
+  Generado:   2026-08-21 23:55 CST
+  Plataforma: proyecto_kyc (backend sirv.py :8765)
+  Customer:   cus_mt1z5ejf5093d41a (Singula)
+==============================================================================
+
+==============================================================================
+  02 DATOS DEL PADRÓN ELECTORAL LOCAL
+==============================================================================
+02 Datos del Padrón Electoral LOCAL
+
+Datos obtenidos del padrón electoral federal (INE 2018), base nacional con 88,402,547 registros.
+
+| Campo | Valor
+
+| Nombre | MARIO ANTONIO
+| Apellido Paterno | DE LA ROSA
+| Apellido Materno | GUTIERREZ
+| Fecha de Nacimiento | 12/05/1970
+| Sexo | HOMBRE
+| Estado | 
+| Municipio | Miguel Hidalgo
+| Localidad | —
+| Sección | 
+| Manzana | —
+| Calle | —
+| Número Exterior | —
+| Número Interior | —
+| Colonia | —
+| Código Postal | 11590
+| Folio Nacional | 
+| Clave de Elector | —
+| OCR | —
+| CIC | —
+| Año de Registro |
+
+
+==============================================================================
+  03 MAPA DE UBICACIÓN GEO
+==============================================================================
+03 Mapa de Ubicación GEO
+
+Geolocalización de la dirección registrada en el padrón electoral. Datos geocodificados vía OpenStreetMap/Nominatim.
+
+Dirección:CP 11590
+Dirección:Miguel Hidalgo
+
+📍 Coordenadas: 19.4312457, -99.1779482
+
+11590, Ciudad de México, Cuauhtémoc, Ciudad de México, México
+
+Nota Metodológica
+
+La ubicación mostrada corresponde a la dirección registrada en el padrón electoral. La precisión depende de la calidad de los datos de dirección y de la geocodificación de OpenStreetMap. Pueden existir variaciones de hasta 50 metros en zonas urbanas densas o rurales con nomenclatura no estandarizada.
+
+
+==============================================================================
+  04B MAPA DE CONEXIONES GEOGRÁFICAS DEL EXPEDIENTE
+==============================================================================
+04b Mapa de Conexiones Geográficas del Expediente
+
+Distribución territorial de los 4 elementos vinculados al sujeto ROGM700512HCSSTR01: origen geográfico, vehículos registrados, expedientes judiciales federales y domicilio fiscal declarado. Las líneas punteadas muestran todas las combinaciones posibles entre jurisdicciones.
+
+① Origen
+Tapachula, CS
+
+② REPUVE
+Agua Dulce, VER
+
+③ Judicial
+Villahermosa, TAB
+
+④ Fiscal
+Miguel Hidalgo, CDMX
+
+Mapa interactivo SVG: 4 puntos georreferenciados, 6 conexiones (Haversine), base OpenStreetMap zoom 7. Los puntos numerados corresponden a las KPIs superiores. Las distancias se calculan en línea recta entre coordenadas; no consideran rutas terrestres.
+
+Distancias calculadas entre jurisdicciones
+
+| 
+
+| Origen | Destino | Distancia | Contexto
+
+| ① Tapachula, CS | ② Agua Dulce, VER | 412 km | Origen geográfico → vehículos pesados registrados
+
+| ① Tapachula, CS | ③ Villahermosa, TAB | 351 km | Origen geográfico → sede de los 14 expedientes CJF
+
+| ① Tapachula, CS | ④ Miguel Hidalgo, CDMX | 893 km | Origen geográfico → domicilio del contador
+
+| ② Agua Dulce, VER | ③ Villahermosa, TAB | 127 km | REPUVE → expedientes judiciales (corredor petrolero del Golfo)
+
+| ② Agua Dulce, VER | ④ Miguel Hidalgo, CDMX | 552 km | REPUVE → domicilio del contador
+
+| ③ Villahermosa, TAB | ④ Miguel Hidalgo, CDMX | 678 km | Sede judicial → domicilio del contador (gestión legal centralizada)
+
+⚠ Patrón geográfico observado: el sujeto tiene 4 anclajes territoriales separados por entre 127 km y 893 km. La sede judicial (Villahermosa, TAB) está a solo 127 km de Agua Dulce (VER), donde registra los 8 vehículos REPUVE, y a 678 km de CDMX, donde está su domicilio fiscal. Esta dispersión geográfica es consistente con:
+
+• Actividad empresarial vinculada al transporte pesado de carga en el corredor petrolero del Golfo de México (Coatzacoalcos-Dos Bocas-Villahermosa).
+
+• Representación legal especializada en el centro del país (CDMX) con despacho que opera el domicilio fiscal.
+
+• Origen chiapaneco con arraigo documentado en Tabasco (14 expedientes CJF).
+
+
+==============================================================================
+  04C PADRÓN VEHICULAR REPUVE — 8 VEHÍCULOS PESADOS
+==============================================================================
+04c Padrón Vehicular REPUVE — 8 vehículos pesados
+
+Vehículos registrados en el Registro Público Vehicular (REPUVE) a nombre del RFC ROGM7005127L3. Volumen atípicamente alto para persona física: consistente con actividad de autotransporte federal, operador de flotilla o gestor de unidades para terceros. Todos registrados en Agua Dulce, Veracruz (zona de actividad petrolera del Golfo de México).
+
+Total vehículos
+8
+
+Marcas distintas
+5
+
+Rango modelos
+1980 — 2008
+
+Entidad registro
+Veracruz
+
+Detalle de los 8 vehículos
+
+| 
+
+| #
+| Placa
+| No. Serie (NIV)
+| Marca
+| Tipo
+| Año
+| Color
+| Domicilio registrado
+
+{tabla_rows}
+
+Distribución por marca y tipo
+
+Por marca
+
+| FORD | 2 unidades (25%)
+
+| KENWORTH | 3 unidades (37.5%)
+
+| NAVISTAR INTERNATION | 1 unidad (12.5%)
+
+| NAVISTAR I | 1 unidad (12.5%)
+
+| FAMSA | 1 unidad (12.5%)
+
+Por tipo de vehículo
+
+| Camionetas pick-up (F-350/F-450) | 2 (25%)
+
+| Tractocamiones (T-600 / T-800) | 2 (25%)
+
+| Chasis cabina (7400 6X4) | 2 (25%)
+
+| Kenworth estacas | 1 (12.5%)
+
+| Chasis cabina F-1114 | 1 (12.5%)
+
+⚠ Interpretación: 8 vehículos pesados a nombre de una persona física es un volumen atípicamente alto. El parque vehicular está compuesto principalmente por tractocamiones y chasis cabina (5 de 8 unidades = 62.5%), típicos del autotransporte federal de carga. Las marcas dominantes (KENWORTH + NAVISTAR) son fabricantes de vehículos pesados para larga distancia. El domicilio de registro común (Agua Dulce, Veracruz) está en una zona con fuerte actividad de transporte para la industria petrolera (Poza Rica, Coatzacoalcos, Dos Bocas). Esta composición sugiere: persona dedicada al autotransporte federal de carga o gestor/arrendador de flotilla para terceros.
+
+
+==============================================================================
+  04D DOMICILIOS SIN MAPA — LISTADO DE AUDITORÍA
+==============================================================================
+04d Domicilios sin Mapa — Listado de Auditoría
+
+5 dirección(es) recopilada(s) que no se geocodificaron en
+el reporte. Razones: (a) direcciones del padrón vehicular (REPUVE) en formato libre que
+Nominatim no resuelve, o (b) domicilios en CFE/ATT/TELCEL/IMSS donde el titular no coincide
+100% con el nombre completo del sujeto (pueden ser familiares, ex-parejas, vecinos u homónimos).
+Útil para confirmar residencia histórica del sujeto y detectar vínculos secundarios.
+
+🏠 Otros domicilios no coincidentes
+
+• 
+
+CFE
+GARNICA DE LA ROSA ROSALINDA · num_serv 10000106050
+
+📍 LOPEZ MATEOS 656 B 3 ENT MACHE, ENTRE MIRAMAR Y MACHEROS, ZO, NA CENTRO
+
+• 
+
+CFE
+DE LA ROSA MOSQUEDA CARLOS H · num_serv 10000302797
+
+📍 CUARTA Y MIRAMAR 409 6 B
+
+• 
+
+CFE
+DE LA ROSA GARCIA GRISELL · num_serv 10000308426
+
+📍 CALLE MEXICO NO 746
+
+• 
+
+CFE
+BANUELO DE LA ROSA JOSE DE J · num_serv 10000509090
+
+📍 CALLE ESMERALDA NO 581, ZAYULA, AT, OYAC
+
+• 
+
+CFE
+DE LA ROSA GARCIA GRISELL · num_serv 10001006431
+
+📍 AV ESPINOZA Y JUAREZ NO 1331
+
+
+==============================================================================
+  05 VALIDACIONES SINGULA SINGULA
+==============================================================================
+05 Validaciones Singula SINGULA
+
+Customer-centric de Singula: RFC validado, antecedentes judiciales, email lookup, blacklist/PEP e inteligencia digital básica. El perfil es creado/reusado por CURP y enriquecido automáticamente con datos del padrón electoral, CheckID, Tlaloc y SEPOMEX.
+
+✓ Perfil Singula completo: customer cus_mt1z5ejf5093d41a, enriquecido con 0 fuentes (padrón, checkid, tlaloc, sepomex, apify).
+
+Validaciones Singula
+
+Customer ID
+cus_mt1z5ejf5093d41a
+
+Reusadas del cache
+2/4
+
+Ejecutadas nuevas
+0/4
+
+1. Antecedentes Judiciales CACHE
+
+Estatus: records_found ·
+Risk level: high ·
+Registros: 14 ·
+Fuentes: Boletin Judicial — Inteligencia de personas
+
+Encontramos 3 personas con el nombre exacto (homónimos) — 14 casos en total | CRÍTICO: Persona 2 (p_f38cd4b2) tiene expedientes activos como QUEJOSO contra FEEMDO/FGR por delitos federales graves (tráfico de menores, personas, órganos, biodiversidad, delincuencia organizada).
+
+Detalle de las 3 personas con nombre exacto
+
+Singula identificó 3 personas con nombre EXACTO a "MARIO ANTONIO DE LA ROSA GUTIERREZ" y 3 coincidencias parciales.
+Los 14 expedientes totales del Boletín Judicial / CJF se desglosan entre las 3 personas exactas, todos en fuero federal.
+
+🟡 PERSONA 1 — Riesgo bajo (patrón litigante laboral)
+· person_id: p_de21b4df · 6 expedientes / 49 acuerdos / 2013-03-20 → 2017-04-20
+
+Aliases: MARIO ANTONIO DE LA ROSA GUTIERREZ, Mario Antonio De la Rosa Gutiérrez, Mario Antonio de la Rosa Gutierrez, Mario Antonio de la Rosa Gutiérrez
+
+Contrapartes principales: JUNTA LOCAL DE CONCILIACION Y ARBITRAJE DEL ESTADO DE T (2x) · MAGISTRADOS DE LA SEGUNDA CIVIL DEL TRIBUNAL SUPERIOR D (1x) · JUNTA ESPECIAL NUMERO TRES DE LA LOCAL DE CONCILIACION (1x)
+
+| 
+
+| Expediente
+| Entidad
+| Tribunal
+| Materia
+| Período
+| Resolución clave
+
+| 47/2017
+| Tabasco
+| Tribunal Colegiado en Materia Civil del Décimo Circuito, con residencia en Villa
+| Civil
+| 2017-02-13 → 2017-04-20 (66d)
+| 2017-03-30: RESOLUCIÓN.- QUEJA INFUNDADA; 2017-04-20: SE ARCHIVA EL EXPEDIENTE
+
+| 36/2017
+| Tabasco
+| Juzgado Quinto de Distrito en el Estado de Tabasco
+| Mixta
+| 2017-01-27 → 2017-02-14 (18d)
+| Trámites sin resolución de fondo visible
+
+| 2173/2014
+| Tabasco
+| Juzgado Segundo de Distrito en el Estado de Tabasco
+| Mixta
+| 2014-10-02 → 2015-10-01 (364d)
+| 2014-10-14: SE NIEGA LA SUSPENSIÓN DEFINITIVA
+
+| 74/2015
+| Tabasco
+| Tribunal Colegiado en Materia Administrativa del Décimo Circuito, con residencia
+| Administrativa
+| 2015-03-12 → 2015-09-02 (174d)
+| 2015-06-25: SE CONFIRMA LA SENTENCIA RECURRIDA Y AMPARA PARA EFECTOS
+
+| 2433/2013
+| Tabasco
+| Juzgado Tercero de Distrito en el Estado de Tabasco
+| Mixta
+| 2013-10-29 → 2015-07-02 (611d)
+| 2013-12-20: ÚNICO. SE SOBRESEE EN EL PRESENTE JUICIO DE AMPARO PROMOVIDO POR EL QUEJOSO
+
+| 377/2013
+| Tabasco
+| Juzgado Tercero de Distrito en el Estado de Tabasco
+| Mixta
+| 2013-03-20 → 2013-03-20 (0d)
+| MESA VI.- SE DECLARA QUE EL ACUERDO EMITIDO POR ESTE JUZGADO EN EL QUE SE SOBRESEYÓ...
+
+🔴 PERSONA 2 — Riesgo ALTO (investigación FGR activa)
+· person_id: p_f38cd4b2 · 6 expedientes / 52 acuerdos / 2025-09-30 → 2026-08-13
+
+Aliases: Mario Antonio De la Rosa Gutiérrez
+
+Contrapartes principales: FISCALIA ESPECIAL EN INVESTIGACION DE TRAFICO DE MENORE (2x) · AGENTE DEL MINISTERIO PUBLICO DE LA FEDERACION TITULAR (2x) · JUEZ DE DISTRITO ESPECIALIZADO EN EL SISTEMA PENAL ACUS (2x)
+
+| 
+
+| Expediente
+| Entidad
+| Tribunal
+| Materia
+| Período
+| Resolución clave
+
+| 10/2026
+| —
+| Juzgado Segundo de Distrito en el Estado de Tabasco
+| Mixta
+| 2026-08-11 → 2026-08-13 (2d)
+| 2026-08-13: ÚNICO. SE NIEGA LA SUSPENSIÓN DEFINITIVA SOLICITADA POR LA PERSONA QUEJOSA
+
+| 1626/2025
+| —
+| Juzgado Segundo de Distrito en el Estado de Tabasco
+| Mixta
+| 2026-07-31 → 2026-07-31 (0d)
+| Trámite inicial
+
+| 1626/2025
+| Tabasco
+| Juzgado Segundo de Distrito en el Estado de Tabasco
+| Mixta
+| 2025-09-30 → 2026-07-28 (301d)
+| 2025-12-11: MESA V.- Se niega la suspensión definitiva
+
+| 10/2026
+| Tabasco
+| Juzgado Segundo de Distrito en el Estado de Tabasco
+| Mixta
+| 2026-01-20 → 2026-07-27 (188d)
+| Trámites, sin resolución de fondo visible
+
+| 21/2026
+| Tabasco
+| Tribunal Colegiado en Materia Penal del Décimo Circuito, con residencia en Villa
+| Penal
+| 2026-02-06 → 2026-03-27 (49d)
+| 2026-03-06: ÚNICO. Es fundado el recurso de queja
+
+| 43/2025
+| Tabasco
+| Tribunal Colegiado en Materia Penal del Décimo Circuito, con residencia en Villa
+| Penal
+| 2025-10-15 → 2025-10-15 (0d)
+| Trámite inicial
+
+🔵 PERSONA 3 — Riesgo bajo (patrón litigante civil)
+· person_id: p_a09ed70b · 2 expedientes / 8 acuerdos / 2022-05-02 → 2022-07-04
+
+Aliases: MARIO ANTONIO DE LA ROSA GUTIÉRREZ, Mario Antonio de la Rosa Gutiérrez
+
+Contrapartes principales: JUZGADO PRIMERO DE DISTRITO EN EL ESTADO DE TABASCO (1x) · JUEZ DE DISTRITO EN MATERIA MERCANTIL FEDERAL (1x)
+
+| 
+
+| Expediente
+| Entidad
+| Tribunal
+| Materia
+| Período
+| Resolución clave
+
+| 120/2022
+| Tabasco
+| Tribunal Colegiado en Materia Civil del Décimo Circuito, con residencia en Villa
+| Civil
+| 2022-05-19 → 2022-07-04 (46d)
+| 2022-06-16: RESOLUCIÓN.- INFUNDADA
+
+| 712/2022
+| Tabasco
+| Juzgado Primero de Distrito en el Estado de Tabasco
+| Mixta
+| 2022-05-02 → 2022-06-29 (58d)
+| Trámites sin resolución visible
+
+Coincidencias parciales descartadas (3)
+
+• 
+p_aa5ab5bd — GUTIERREZG GUTIERREZ ANTONIO
+· Coincidencia parcial — falta: MARIO, ROSA · ⚠️ Verifica si es la misma persona
+
+1 caso · {'Jalisco': 1} · {'MERCANTIL_EJECUTIVO': 1}
+
+• 
+p_0504e3af — MARCO ANTONIO DE LA ROSA GUTIÉRREZ
+· Posible variante de escritura (MARCO) · ⚠️ Grafía del nombre difiere
+
+1 caso · {'Tabasco': 1} · {'OTRO': 1}
+
+• 
+p_c42e1a73 — Mario de la Rosa Gutiérrez
+· Coincidencia parcial — falta: ANTONIO · ⚠️ Verifica si es la misma persona
+
+1 caso · {'Tabasco': 1} · {'OTRO': 1}
+
+Resumen cuantitativo
+
+| Total expedientes revisados | 200 (pool examined, de 50,000)
+
+| Registros relevantes | 119 (81 descartados por score bajo)
+
+| Score top / umbral | 740.37 / 185.09
+
+| Tiempo de búsqueda | 9.688 s
+
+| Por materia | Civil · Mixta (amparo laboral/penal) · Penal · Administrativa · Mercantil (parcial)
+
+| Por fuero | Todos federales (CJF)
+
+⚠ Acción requerida: Antes de cualquier decisión PLD/FT, abrir el expediente 21/2026 y los amparos contra la FEEMDO/FGR para confirmar:
+
+• (a) si la Persona 2 (p_f38cd4b2) es efectivamente ROGM700512HCSSTR01
+
+• (b) en qué carpeta de investigación federal está siendo investigado
+
+• (c) si hay auto de formal prisión, vinculación a proceso, o si solo es testigo
+
+3. Blacklist / PEP CACHE
+
+Sin coincidencias · Risk level: clear
+
+Disambiguation Blacklist
+
+| Pool examinado | 200 de 707,980 perfiles globales
+
+| Homónimos totales | 46
+
+| Por país | MX: 41 · ES: 5 · PE: 2 · US: 1 · INTERNATIONAL: 1
+
+| Strong homonyms | 0 (ningún homónimo tiene datos adicionales)
+
+| Categorías verificadas | Sanciones Internacionales, Búsqueda Penal / Wanted, Personas Políticamente Expuestas, Inhabilitaciones / Debarment, Fiscal (SAT 69-B / EFOS), Control de Exportaciones, Empresas Estatales, Adverse Media, Otros
+
+
+==============================================================================
+  06 OBSERVACIONES Y CONCLUSIONES
+==============================================================================
+06 Observaciones y Conclusiones
+
+Validación Cruzada
+
+✓ Sin inconsistencias detectadas entre las fuentes.
+
+Limitaciones del Reporte
+
+Este reporte se basa en las fuentes consultadas al momento de su generación. Los datos pueden haber cambiado desde entonces. La información de redes sociales es OSINT público; su ausencia no implica inexistencia. Los perfiles sociales mostrados son coincidencias exactas de nombre y no constituyen verificación definitiva de identidad.
+
+Fuentes Utilizadas
+
+• Padrón INE 2018 — 88.4M registros locales
+
+• CheckID — SAT (RFC, régimen, 69/69B) + IMSS (NSS)
+
+• Tlaloc — RENAPO (CURP)
+
+• Singula — SAT (RFC validation, fallback)
+
+• ISSSTE — Padrón de empleados federales (2.7M)
+
+• Social Media Finder — tri_angle/social-media-finder vía Apify (13 redes)
+
+• Ollama Cloud — Análisis narrativo (glm-5.2)
+
+• OpenStreetMap — Geocodificación local (Nominatim México) + mapa de ubicación
+
+Cláusula de Confidencialidad
+
+Este documento contiene información personal protegida por la LFPDPPP. Su uso está restringido a los fines autorizados por el titular. Prohibida su reproducción total o parcial sin consentimiento escrito. La veracidad de los datos corresponde a las fuentes consultadas; este reporte no certifica la identidad del sujeto.
+
+
+==============================================================================
+  FIN DEL REPORTE OFICIAL
+==============================================================================
+  HTML:  /home/sebastianvernis/proyectos/kyc/proyecto_kyc/reportes/ROGM700512HCSSTR01_KYC.html (368,685 bytes)
+  TXT:   /home/sebastianvernis/proyectos/kyc/proyecto_kyc/reportes/ROGM700512HCSSTR01_KYC.txt

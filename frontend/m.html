@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b0e14" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Oráculo">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+<title>Oráculo KYC</title>
+<style>
+/* ============== TOKENS ============== */
+:root {
+  --bg: #0b0e14;
+  --panel: #131720;
+  --panel-2: #1a1f2b;
+  --text: #e4e6eb;
+  --muted: #8b95a8;
+  --accent: #4f8cff;
+  --accent-2: #22d3ee;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --border: #2a2f3a;
+  --safe-top: env(safe-area-inset-top, 0);
+  --safe-bottom: env(safe-area-inset-bottom, 0);
+  --kbh: 0px;  /* keyboard height, set by JS */
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f7fa; --panel: #ffffff; --panel-2: #f0f3f8;
+    --text: #1a1f2b; --muted: #6b7488; --border: #d8dde5;
+  }
+}
+/* ============== RESET ============== */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; overscroll-behavior: none; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 15px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif;
+  height: 100vh; height: 100dvh;
+  padding-top: var(--safe-top); padding-bottom: var(--safe-bottom);
+  -webkit-font-smoothing: antialiased; user-select: none;
+  overflow: hidden;
+}
+input, textarea { user-select: text; }
+
+/* ============== AUTH ============== */
+#auth {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--bg); padding: 24px; z-index: 100;
+}
+#auth .card {
+  width: 100%; max-width: 360px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px;
+}
+#auth h1 { margin: 0 0 4px; font-size: 22px; }
+#auth .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+#auth input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+  background: var(--panel-2); color: var(--text); border-radius: 10px;
+  font-size: 15px; margin-bottom: 10px;
+}
+#auth button {
+  width: 100%; padding: 14px; background: var(--accent); color: white;
+  border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
+  margin-top: 8px; cursor: pointer;
+}
+#auth button:active { opacity: 0.8; }
+#auth .err { color: var(--red); font-size: 13px; margin-top: 8px; min-height: 18px; }
+
+/* ============== APP SHELL ============== */
+#app { display: none; height: 100%; flex-direction: column; }
+#app.active { display: flex; }
+
+/* header */
+header {
+  display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  min-height: 48px;
+}
+header .menu { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; color: var(--text); font-size: 20px; cursor: pointer; border-radius: 8px; }
+header .menu:active { background: var(--panel-2); }
+header h1 { margin: 0; font-size: 16px; font-weight: 600; flex: 1; }
+header .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--panel-2); color: var(--muted); }
+header .conn {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--muted);
+}
+header .conn.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+/* views (one at a time) */
+.view { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.view.active { display: block; }
+
+/* ============== CHAT VIEW ============== */
+#chat-view { display: flex; flex-direction: column; }
+#chat { flex: 1; overflow-y: auto; padding: 12px 14px 8px; }
+.msg { margin: 8px 0; animation: slideIn 0.2s ease-out; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.msg .bubble { max-width: 86%; padding: 10px 14px; border-radius: 16px; line-height: 1.4; word-wrap: break-word; }
+.msg.user { text-align: right; }
+.msg.user .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+.msg.assistant .bubble { background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.msg.tool .bubble { background: var(--panel-2); border: 1px solid var(--border); font: 12px ui-monospace, monospace; color: var(--muted); padding: 6px 10px; }
+.msg.error .bubble { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red); }
+.msg .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.msg .meta-right { text-align: right; }
+.cand { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin: 8px 0; }
+.cand .name { font-weight: 600; color: var(--accent-2); margin-bottom: 4px; }
+.cand .ev { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+.cand .ev b { color: var(--text); }
+.score { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.score.high { background: var(--green); color: #000; }
+.score.med { background: var(--amber); color: #000; }
+.score.low { background: var(--red); color: white; }
+.verdict { display: inline-block; padding: 4px 12px; border-radius: 16px; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; }
+.verdict.LOCALIZADO { background: var(--green); color: #000; }
+.verdict.NO_LOCALIZADO { background: var(--red); color: white; }
+.verdict.MULTIPLE { background: var(--amber); color: #000; }
+.verdict.INCIERTO { background: var(--panel-2); color: var(--muted); }
+.thinking { display: inline-flex; gap: 4px; padding: 12px 14px; }
+.thinking span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
+.thinking span:nth-child(2) { animation-delay: 0.15s; }
+.thinking span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+/* composer */
+#composer {
+  display: flex; gap: 8px; padding: 8px 12px; background: var(--panel);
+  border-top: 1px solid var(--border); align-items: flex-end;
+  padding-bottom: calc(8px + var(--kbh) / 2);
+}
+#composer textarea {
+  flex: 1; min-height: 40px; max-height: 120px; padding: 10px 14px;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  border-radius: 20px; font: 15px/1.4 inherit; resize: none; outline: none;
+}
+#composer button {
+  width: 40px; height: 40px; border: none; background: var(--accent); color: white;
+  border-radius: 50%; font-size: 18px; cursor: pointer; flex-shrink: 0;
+}
+#composer button:disabled { background: var(--panel-2); color: var(--muted); }
+#composer button:active:not(:disabled) { transform: scale(0.92); }
+
+/* suggestions */
+.suggestions { display: flex; gap: 6px; padding: 0 14px 8px; overflow-x: auto; scrollbar-width: none; }
+.suggestions::-webkit-scrollbar { display: none; }
+.suggestions button {
+  padding: 6px 12px; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 16px; font-size: 13px;
+  white-space: nowrap; cursor: pointer;
+}
+.suggestions button:active { background: var(--border); }
+
+/* ============== SEARCH VIEW ============== */
+#search-view { padding: 16px; }
+.search-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.search-card h3 { margin: 0 0 12px; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.field input {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+  background: var(--panel-2); color: var(--text); border-radius: 8px;
+  font-size: 15px; outline: none;
+}
+.field input:focus { border-color: var(--accent); }
+.btn {
+  width: 100%; padding: 12px; background: var(--accent); color: white;
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.btn:active { opacity: 0.8; }
+.btn.ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); margin-top: 8px; }
+
+.recent-searches { margin-top: 8px; }
+.recent-searches .item {
+  padding: 10px 12px; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 6px; font-size: 14px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.recent-searches .item:active { background: var(--panel-2); }
+.recent-searches .item .v { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+
+/* ============== AUDIT VIEW ============== */
+#audit-view { padding: 12px 14px; }
+.audit-item { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+.audit-item .q { font-size: 14px; margin-bottom: 6px; }
+.audit-item .when { font-size: 11px; color: var(--muted); }
+.audit-item .stats { display: flex; gap: 12px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+.empty .icon { font-size: 40px; margin-bottom: 8px; opacity: 0.5; }
+
+/* ============== ACCOUNT VIEW ============== */
+#account-view { padding: 16px; }
+.profile { text-align: center; padding: 24px 0; }
+.profile .avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--accent); color: white; font-size: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: 600; }
+.profile .name { font-size: 18px; font-weight: 600; }
+.profile .email { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.tenant-info { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 16px 0; }
+.tenant-info .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+.tenant-info .row .k { color: var(--muted); }
+.menu-list { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.menu-list .row {
+  padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border); cursor: pointer; font-size: 15px;
+}
+.menu-list .row:last-child { border-bottom: none; }
+.menu-list .row:active { background: var(--panel-2); }
+.menu-list .row .arrow { color: var(--muted); }
+
+/* ============== BOTTOM TAB BAR ============== */
+#tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; background: var(--panel); border-top: 1px solid var(--border);
+  padding-bottom: var(--safe-bottom); z-index: 50;
+}
+#tabbar .tab {
+  flex: 1; padding: 8px 4px 6px; background: none; border: none; color: var(--muted);
+  font: 11px -apple-system, system-ui, sans-serif; display: flex; flex-direction: column;
+  align-items: center; gap: 2px; cursor: pointer; position: relative;
+}
+#tabbar .tab .icon { font-size: 22px; }
+#tabbar .tab.active { color: var(--accent); }
+#tabbar .tab .dot {
+  position: absolute; top: 4px; right: calc(50% - 16px);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--red);
+  display: none;
+}
+#tabbar .tab .dot.show { display: block; }
+
+/* ============== MODAL (slide-up sheet) ============== */
+.sheet-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
+  display: none; opacity: 0; transition: opacity 0.2s;
+}
+.sheet-bg.show { display: block; opacity: 1; }
+.sheet {
+  position: fixed; bottom: 0; left: 0; right: 0; max-height: 85vh;
+  background: var(--panel); border-radius: 16px 16px 0 0; padding: 16px;
+  padding-bottom: calc(16px + var(--safe-bottom));
+  transform: translateY(100%); transition: transform 0.3s;
+  z-index: 201; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.sheet.show { transform: translateY(0); }
+.sheet .handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 12px; }
+.sheet h2 { margin: 0 0 12px; font-size: 18px; }
+.sheet pre { background: var(--panel-2); padding: 10px; border-radius: 8px; font-size: 12px; overflow-x: auto; }
+.sheet .close { align-self: flex-end; padding: 8px 16px; background: var(--panel-2); border: none; color: var(--text); border-radius: 8px; cursor: pointer; margin-top: 12px; }
+
+/* ============== TOAST ============== */
+#toast {
+  position: fixed; bottom: calc(80px + var(--safe-bottom)); left: 16px; right: 16px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 16px; color: var(--text); z-index: 300;
+  transform: translateY(120%); transition: transform 0.3s;
+  text-align: center; font-size: 14px;
+}
+#toast.show { transform: translateY(0); }
+#toast.error { border-color: var(--red); }
+#toast.success { border-color: var(--green); }
+
+/* ============== PULL TO REFRESH ============== */
+#ptr {
+  position: absolute; top: 0; left: 0; right: 0; height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 13px; pointer-events: none;
+  transform: translateY(-100%); transition: transform 0.2s;
+}
+#ptr.show { transform: translateY(0); }
+
+/* ============== ANIMATIONS ============== */
+.spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* iOS keyboard safe area */
+@supports (-webkit-touch-callout: none) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* ============== UTILITY CLASSES ============== */
+.m-row-install { display: none; }
+.m-footer-text { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 0; }
+.m-sheet-body { flex: 1; overflow-y: auto; }
+.m-estado-text { color: var(--muted); font-size: 13px; margin-left: 6px; }
+.m-evs-block { margin-top: 6px; }
+.m-resumen { margin-top: 8px; font-size: 14px; }
+.m-cand-header { margin-top: 12px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.m-see-more { text-align: center; padding: 6px; color: var(--accent); font-size: 13px; cursor: pointer; }
+.m-recent-value { background: var(--panel-2); }
+.m-memoria-section { margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ========== AUTH ========== -->
+<div id="auth">
+  <div class="card">
+    <h1>Oráculo KYC</h1>
+    <div class="sub">Plataforma Encuentra</div>
+    <input type="text" id="user" placeholder="Usuario" autocomplete="username" autocapitalize="none">
+    <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password">
+    <button id="login-btn">Entrar</button>
+    <div class="err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="app">
+  <header>
+    <h1 id="view-title">Chat</h1>
+    <div class="conn" id="conn"></div>
+    <div class="badge" id="tenant-badge">—</div>
+  </header>
+
+  <!-- CHAT -->
+  <div class="view active" id="chat-view">
+    <div id="ptr">↓ Suelta para refrescar</div>
+    <div id="chat"></div>
+    <div class="suggestions" id="suggestions">
+      <button data-q="busca a Alejandro Murat Hinojosa">Test Murat</button>
+      <button data-q="busca a TOBIAS MALDONADO en Oaxaca">Test TOBIAS OAX</button>
+      <button data-q="busca a Juan Pérez García nacido 1985">Genérico</button>
+    </div>
+    <div id="composer">
+      <textarea id="input" placeholder="Escribe un sujeto..." rows="1"></textarea>
+      <button id="send" aria-label="Enviar">▶</button>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="view" id="search-view">
+    <div class="search-card">
+      <h3>Búsqueda rápida</h3>
+      <div class="field"><label>Nombre(s)</label><input id="f-nombre" placeholder="Juan"></div>
+      <div class="field"><label>Paterno</label><input id="f-paterno" placeholder="Pérez"></div>
+      <div class="field"><label>Materno</label><input id="f-materno" placeholder="García"></div>
+      <div class="field"><label>Fecha de nac.</label><input id="f-fecnac" placeholder="1985-06-15"></div>
+      <div class="field"><label>Estado (opcional)</label><input id="f-estado" placeholder="OAXACA"></div>
+      <button class="btn" id="search-go">Buscar en oráculo</button>
+    </div>
+    <div class="search-card">
+      <h3>Búsquedas recientes</h3>
+      <div class="recent-searches" id="recent">
+        <div class="empty">Sin búsquedas aún</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIT -->
+  <div class="view" id="audit-view">
+    <div id="audit-list"></div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="view" id="account-view">
+    <div class="profile">
+      <div class="avatar" id="avatar">A</div>
+      <div class="name" id="profile-name">—</div>
+      <div class="email" id="profile-user">—</div>
+    </div>
+    <div class="tenant-info" id="tenant-info"></div>
+    <div class="menu-list">
+      <div class="row" id="row-memoria">Memoria del oráculo <span class="arrow">›</span></div>
+      <div class="row" id="row-clear">Limpiar cache local <span class="arrow">›</span></div>
+      <div class="row" id="row-install" style="display:none">Instalar como app <span class="arrow">›</span></div>
+      <div class="row" id="row-logout">Cerrar sesión <span class="arrow">›</span></div>
+    </div>
+      <div class="m-footer-text">v1.0 · Oráculo KYC PWA</div>
+  </div>
+
+  <!-- TAB BAR -->
+  <nav id="tabbar">
+    <button class="tab active" data-view="chat-view" data-title="Chat">
+      <span class="icon">💬</span>Chat
+    </button>
+    <button class="tab" data-view="search-view" data-title="Buscar">
+      <span class="icon">🔎</span>Buscar
+    </button>
+    <button class="tab" data-view="audit-view" data-title="Audit">
+      <span class="icon">📋</span>Audit
+      <span class="dot" id="audit-dot"></span>
+    </button>
+    <button class="tab" data-view="account-view" data-title="Cuenta">
+      <span class="icon">👤</span>Cuenta
+    </button>
+  </nav>
+</div>
+
+<!-- ========== MODAL SHEET ========== -->
+<div class="sheet-bg" id="sheet-bg"></div>
+<div class="sheet" id="sheet">
+  <div class="handle"></div>
+  <h2 id="sheet-title">Detalle</h2>
+  <div id="sheet-body" class="m-sheet-body"></div>
+  <button class="close" id="sheet-close">Cerrar</button>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div id="toast"></div>
+
+<script>
+// ============== UTILITIES ==============
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+const api = async (path, opts = {}) => {
+  const r = await fetch(path, { credentials: "include", ...opts });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(`HTTP ${r.status}: ${t.slice(0, 200)}`);
+  }
+  return r.json();
+};
+const cookieOK = () => document.cookie.includes("session=");
+const vibrate = (p) => navigator.vibrate?.(p);
+
+const toast = (msg, type = "") => {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.className = "", 2500);
+};
+
+const sheet = (title, bodyHTML) => {
+  $("#sheet-title").textContent = title;
+  $("#sheet-body").innerHTML = bodyHTML;
+  $("#sheet-bg").classList.add("show");
+  $("#sheet").classList.add("show");
+};
+const closeSheet = () => {
+  $("#sheet-bg").classList.remove("show");
+  $("#sheet").classList.remove("show");
+};
+
+// ============== STATE ==============
+let inFlight = false;
+let auditCache = null;
+let memoryCache = null;
+let recentSearches = JSON.parse(localStorage.getItem("recent_searches") || "[]");
+const saveRecent = () => localStorage.setItem("recent_searches", JSON.stringify(recentSearches));
+
+// ============== AUTH ==============
+async function tryAuth() {
+  if (!cookieOK()) return false;
+  try {
+    const r = await api("/api/oraculo/memoria");
+    memoryCache = r;
+    return true;
+  } catch (e) { return false; }
+}
+async function doLogin() {
+  const u = $("#user").value.trim();
+  const p = $("#pass").value;
+  if (!u || !p) { $("#login-err").textContent = "Falta usuario o contraseña"; return; }
+  try {
+    await api("/api/auth/login/password", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({username: u, password: p})
+    });
+    $("#login-err").textContent = "";
+    if (await tryAuth()) { enterApp(); }
+  } catch (e) { $("#login-err").textContent = e.message.includes("401") ? "Credenciales inválidas" : e.message; }
+}
+$("#login-btn").onclick = doLogin;
+$("#pass").onkeydown = (e) => { if (e.key === "Enter") doLogin(); };
+$("#user").onkeydown = (e) => { if (e.key === "Enter") $("#pass").focus(); };
+
+// ============== APP ENTRY ==============
+async function enterApp() {
+  $("#auth").style.display = "none";
+  $("#app").classList.add("active");
+  const r = memoryCache;
+  if (r) {
+    const u = r.tenant_id || "—";
+    $("#tenant-badge").textContent = r.tenants?.[0]?.slug || `T${u}`;
+    $("#profile-name").textContent = r.tenants?.[0]?.nombre || "—";
+    $("#profile-user").textContent = `tenant #${u}`;
+    $("#avatar").textContent = (r.tenants?.[0]?.nombre || "?").charAt(0).toUpperCase();
+    if (r.preferencias?.length) {
+      const pf = r.preferencias.map(p => `<div class="row"><span class="k">${p.clave}</span><span>${p.valor}</span></div>`).join("");
+      $("#tenant-info").innerHTML = `<div class="row"><b>Preferencias</b></div>${pf}`;
+    }
+  }
+  loadAudit();
+  renderRecent();
+  $("#input").focus();
+}
+
+// ============== TAB BAR ==============
+$$("#tabbar .tab").forEach(t => {
+  t.onclick = () => {
+    $$("#tabbar .tab").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    const v = t.dataset.view;
+    $$(".view").forEach(x => x.classList.remove("active"));
+    $("#" + v).classList.add("active");
+    $("#view-title").textContent = t.dataset.title;
+    if (v === "audit-view") { $("#audit-dot").classList.remove("show"); loadAudit(); }
+    if (v === "search-view") renderRecent();
+  };
+});
+
+// ============== CHAT ==============
+function addMsg(role, html, meta = "") {
+  const d = document.createElement("div");
+  d.className = "msg " + role;
+  d.innerHTML = `<div class="bubble">${html}</div>${meta ? `<div class="meta ${role === 'user' ? 'meta-right' : ''}">${meta}</div>` : ""}`;
+  $("#chat").appendChild(d);
+  $("#chat").scrollTop = $("#chat").scrollHeight;
+  return d;
+}
+function escapeHtml(s) { return String(s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function renderCandidato(c) {
+  const evs = (c.evidencia || []).slice(0, 5).map(e =>
+    `<div class="ev">→ <b>${escapeHtml(e.fuente || "")}</b> · ${escapeHtml(e.match || "")} · ${escapeHtml(e.detalle || "").slice(0, 100)}</div>`
+  ).join("");
+  return `<div class="cand">
+    <div class="name">${escapeHtml(c.nombre_completo || c.id || "?")}</div>
+    <div>
+      <span class="score ${c.score >= 0.7 ? "high" : c.score >= 0.3 ? "med" : "low"}">${typeof c.score === "number" ? c.score.toFixed(2) : "?"}</span>
+      ${c.estado_probable ? `<span class="m-estado-text">${escapeHtml(c.estado_probable)}</span>` : ""}
+    </div>
+    ${evs ? `<div class="m-evs-block">${evs}</div>` : ""}
+  </div>`;
+}
+
+async function sendQuery(q) {
+  if (inFlight) return;
+  if (!q) return;
+  inFlight = true;
+  $("#send").disabled = true;
+
+  addMsg("user", escapeHtml(q));
+
+  // añadir a recientes
+  recentSearches = [q, ...recentSearches.filter(x => x !== q)].slice(0, 8);
+  saveRecent();
+
+  const thinking = addMsg("assistant", '<div class="thinking"><span></span><span></span><span></span></div>');
+  const t0 = Date.now();
+
+  try {
+    const r = await api("/api/oraculo", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({query: q, model: "gpt-oss:120b", max_iterations: 8})
+    });
+    thinking.remove();
+
+    const v = r.veredicto_global || "INCIERTO";
+    const score = typeof r.confianza === "number" ? r.confianza : 0;
+    let html = `<div><span class="verdict ${v}">${v}</span> <span class="score ${score >= 0.7 ? "high" : score >= 0.3 ? "med" : "low"}">confianza ${score.toFixed(2)}</span></div>`;
+    html += `<div class="m-resumen">${escapeHtml(r.resumen || "")}</div>`;
+    const cs = r.candidatos || [];
+    if (cs.length) {
+      html += `<div class="m-cand-header">Candidatos (${cs.length})</div>`;
+      html += cs.slice(0, 3).map(renderCandidato).join("");
+      if (cs.length > 3) {
+        html += `<div class="m-see-more" onclick="showAllCandidates(${JSON.stringify(escapeHtml(JSON.stringify(cs))).slice(1, -1)})">Ver ${cs.length - 3} más ›</div>`;
+      }
+    }
+    const ds = r.descartados || [];
+    if (ds.length) {
+      html += `<details class="m-evs-block"><summary class="m-see-more" style="font-size:12px">${ds.length} descartado(s)</summary><div class="m-resumen" style="font-size:12px">${ds.slice(0, 5).map(d => `• ${escapeHtml(d.nombre || "?")}: ${escapeHtml((d.razon || "").slice(0, 60))}`).join("<br>")}</div></details>`;
+    }
+    const meta = `iter ${r.iteraciones || "?"} · ${((Date.now()-t0)/1000).toFixed(1)}s · ${r.tokens_in || 0}↘ / ${r.tokens_out || 0}↗`;
+    addMsg("assistant", html, meta);
+    vibrate(v === "LOCALIZADO" ? 30 : v === "NO_LOCALIZADO" ? [30, 50, 30] : 0);
+    $("#audit-dot").classList.add("show");
+    auditCache = null; // invalidate
+  } catch (e) {
+    thinking.remove();
+    addMsg("error", `Error: ${escapeHtml(e.message)}`);
+  }
+  inFlight = false;
+  $("#send").disabled = false;
+  $("#input").focus();
+}
+
+window.showAllCandidates = (csJson) => {
+  const cs = JSON.parse(JSON.parse('"' + csJson + '"'));
+  sheet("Todos los candidatos", cs.map(renderCandidato).join(""));
+};
+
+$("#send").onclick = () => {
+  const i = $("#input");
+  const q = i.value.trim();
+  if (q) { i.value = ""; i.style.height = "auto"; sendQuery(q); }
+};
+const autoResize = () => {
+  const i = $("#input");
+  i.style.height = "auto";
+  i.style.height = Math.min(120, i.scrollHeight) + "px";
+};
+$("#input").addEventListener("input", autoResize);
+$("#input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#send").click(); }
+});
+$$("#suggestions button").forEach(b => b.onclick = () => sendQuery(b.dataset.q));
+
+// keyboard height
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    const kb = window.innerHeight - window.visualViewport.height;
+    document.documentElement.style.setProperty("--kbh", kb + "px");
+  });
+}
+
+// ============== SEARCH VIEW ==============
+$("#search-go").onclick = () => {
+  const parts = ["f-paterno", "f-materno", "f-nombre"].map(id => $("#" + id).value.trim()).filter(Boolean);
+  const fecnac = $("#f-fecnac").value.trim();
+  const edo = $("#f-estado").value.trim();
+  let q = "busca a " + parts.join(" ");
+  if (fecnac) q += " nacido " + fecnac;
+  if (edo) q += " en " + edo;
+  if (parts.length === 0) { toast("Captura al menos un apellido", "error"); return; }
+  switchTab("chat-view");
+  sendQuery(q);
+};
+function renderRecent() {
+  const el = $("#recent");
+  if (!recentSearches.length) { el.innerHTML = `<div class="empty">Sin búsquedas aún</div>`; return; }
+  el.innerHTML = recentSearches.map(q =>
+    `<div class="item" data-q="${escapeHtml(q)}">${escapeHtml(q.slice(0, 40))}<span class="v m-recent-value">›</span></div>`
+  ).join("");
+  $$("#recent .item").forEach(it => it.onclick = () => {
+    switchTab("chat-view");
+    sendQuery(it.dataset.q);
+  });
+}
+function switchTab(v) {
+  const t = $$("#tabbar .tab").find(x => x.dataset.view === v);
+  if (t) t.click();
+}
+
+// ============== AUDIT ==============
+async function loadAudit() {
+  const el = $("#audit-list");
+  if (auditCache) { renderAudit(auditCache); return; }
+  el.innerHTML = `<div class="empty"><div class="spinner"></div></div>`;
+  try {
+    const r = await api("/api/oraculo/audit?limit=20");
+    auditCache = r.queries || [];
+    renderAudit(auditCache);
+  } catch (e) { el.innerHTML = `<div class="empty">Error: ${escapeHtml(e.message)}</div>`; }
+}
+function renderAudit(queries) {
+  const el = $("#audit-list");
+  if (!queries.length) { el.innerHTML = `<div class="empty"><div class="icon">📋</div>Sin queries aún</div>`; return; }
+  el.innerHTML = queries.map(q => {
+    const v = q.veredicto || "—";
+    const when = new Date(q.started_at * 1000).toLocaleString();
+    return `<div class="audit-item">
+      <div class="q">${escapeHtml(q.query || "—")}</div>
+      <div><span class="verdict ${v}">${v}</span> <span class="when">${when}</span></div>
+      <div class="stats">
+        <span>🔧 ${q.tool_calls || 0} tools</span>
+        <span>⏱ ${q.duration_ms || 0}ms</span>
+        <span>🎯 ${(q.confidence || 0).toFixed(2) || "—"}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ============== ACCOUNT ==============
+$("#row-memoria").onclick = async () => {
+  try {
+    const r = memoryCache || await api("/api/oraculo/memoria");
+    const body = `
+      <div><b>Tenants:</b> ${r.tenants?.map(t => t.slug).join(", ") || "—"}</div>
+      <div class="m-memoria-section"><b>Preferencias:</b></div>
+      <pre>${escapeHtml(JSON.stringify(r.preferencias || [], null, 2))}</pre>
+      <div class="m-memoria-section"><b>Aliases:</b></div>
+      <pre>${escapeHtml(JSON.stringify(r.aliases || {}, null, 2))}</pre>
+      <div class="m-memoria-section"><b>Sujetos recientes:</b></div>
+      <pre>${escapeHtml(JSON.stringify(r.sujetos || [], null, 2).slice(0, 500))}</pre>
+    `;
+    sheet("Memoria del oráculo", body);
+  } catch (e) { toast("Error: " + e.message, "error"); }
+};
+$("#row-clear").onclick = () => {
+  if (!confirm("¿Limpiar cache local?")) return;
+  localStorage.clear();
+  recentSearches = [];
+  auditCache = null;
+  toast("Cache limpiado", "success");
+};
+$("#row-logout").onclick = async () => {
+  try { await api("/api/auth/logout", { method: "POST" }); } catch {}
+  document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  location.reload();
+};
+$("#sheet-close").onclick = closeSheet;
+$("#sheet-bg").onclick = closeSheet;
+
+// ============== PULL TO REFRESH ==============
+let ptrStart = 0, ptrPulling = false;
+$("#chat").addEventListener("touchstart", e => { ptrStart = e.touches[0].clientY; ptrPulling = true; });
+$("#chat").addEventListener("touchmove", e => {
+  if (!ptrPulling) return;
+  const dy = e.touches[0].clientY - ptrStart;
+  if (dy > 80 && $("#chat").scrollTop === 0) $("#ptr").classList.add("show");
+});
+$("#chat").addEventListener("touchend", e => {
+  if ($("#ptr").classList.contains("show")) {
+    $("#ptr").classList.remove("show");
+    if (auditCache) { auditCache = null; loadAudit(); }
+    toast("Refrescado", "success");
+  }
+  ptrPulling = false;
+});
+
+// ============== PWA INSTALL ==============
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  $("#row-install").style.display = "flex";
+});
+$("#row-install").onclick = async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  $("#row-install").style.display = "none";
+};
+
+// ============== SWIPE BETWEEN TABS ==============
+let touchX = 0;
+document.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, {passive: true});
+document.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) < 80) return;
+  const tabs = ["chat-view", "search-view", "audit-view", "account-view"];
+  const cur = tabs.findIndex(v => $("#" + v).classList.contains("active"));
+  const next = dx < 0 ? Math.min(tabs.length - 1, cur + 1) : Math.max(0, cur - 1);
+  if (next !== cur) switchTab(tabs[next]);
+});
+
+// ============== ONLINE STATUS ==============
+function setConn() {
+  const c = $("#conn");
+  c.classList.toggle("online", navigator.onLine);
+}
+window.addEventListener("online", () => { setConn(); toast("Conectado", "success"); });
+window.addEventListener("offline", () => { setConn(); toast("Sin conexión", "error"); });
+setConn();
+
+// ============== BOOT ==============
+(async () => {
+  if (await tryAuth()) enterApp();
+})();
+
+// register service worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Búsqueda Universal KYC</title>
+<link rel="stylesheet" href="/css/global.css">
+<style>
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+position:relative;z-index:1;}
+header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+header h1 .small { font-size: 11px; color: var(--muted); font-weight: 400; display: block; margin-top: 2px; }
+header .nav { display: flex; gap: 10px; flex-wrap: wrap; }
+header .nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+header .nav a:hover { color: var(--text); border-color: var(--border); }
+header .nav a.active { color: var(--accent2); border-color: var(--accent2); }
+header .actions { display: flex; align-items: center; gap: 12px; }
+header .user-badge {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+header .user-badge.admin { color: var(--accent2); border-color: var(--accent2); }
+
+main {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+/* ==== Formulario universal ==== */
+.universal-form {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.universal-form h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent2);
+  font-weight: 600;
+}
+.universal-form .hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.universal-form .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.field { display: flex; flex-direction: column; }
+.field label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.field input, .field select {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  min-height: 38px;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.field input::placeholder { color: var(--muted); opacity: 0.7; }
+
+.section-divider {
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 14px 0 8px;
+  font-weight: 600;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 4px;
+}
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+button.primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+button.primary:hover { filter: brightness(1.15); }
+button.primary:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+button.secondary {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 40px;
+}
+button.secondary:hover { background: var(--border); }
+
+/* ==== Resultados ==== */
+#results-container {
+  margin-top: 16px;
+}
+.results-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.results-meta .meta-item {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 10px;
+  background: var(--panel2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.results-meta .meta-item b {
+  color: var(--accent2);
+  margin-left: 4px;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+}
+.kpi .label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.kpi .value {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.base-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.base-section .header {
+  padding: 10px 14px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.base-section .header h3 {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent2);
+  font-weight: 600;
+}
+.base-section .header .count {
+  font-size: 11px;
+  background: var(--border);
+  color: var(--text);
+  padding: 2px 10px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
+.base-section .header .source-icon { margin-right: 6px; }
+
+.base-section .table-wrap {
+  max-height: 480px;
+  overflow: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+th, td {
+  padding: 7px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+th {
+  background: var(--panel);
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+tbody tr:hover { background: rgba(79, 140, 255, 0.08); }
+tbody tr.has-curp::after {
+  content: "✓";
+  color: var(--accent2);
+  margin-left: 6px;
+}
+mark {
+  background: var(--highlight);
+  color: #000;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.empty-state {
+  padding: 30px 14px;
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+}
+.error-msg {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 6px;
+}
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 24px 12px;
+}
+.help-kbd {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+/* ==== Flow components — organic profile modal (see frontend/DESIGN.md §5) ==== */
+.step-list{background:var(--panel2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.step-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px}
+.step-item:last-child{border-bottom:none}
+.step-item .step-icon{width:20px;text-align:center;font-size:14px;flex-shrink:0}
+.step-item .step-label{flex:1;color:var(--text)}
+.step-item .step-time{color:var(--muted);font-size:11px;font-family:monospace}
+.step-item .step-status{width:20px;text-align:center;font-weight:600;flex-shrink:0}
+.step-item .step-detail{color:var(--muted);font-size:11px;flex-shrink:0}
+.step-item.step-ok .step-status{color:var(--accent2)}
+.step-item.step-warn .step-status{color:var(--warn)}
+.step-item.step-error .step-status{color:var(--error)}
+.step-item.step-skip .step-status{color:var(--muted)}
+.step-list-empty{padding:12px;color:var(--muted);font-size:12px}
+
+.source-chips{display:flex;flex-wrap:wrap;gap:6px}
+.source-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;font-size:11px;font-weight:500;border-radius:999px;background:rgba(110,231,183,.12);color:var(--accent2);border:1px solid rgba(110,231,183,.25);white-space:nowrap}
+.source-chips-empty{color:var(--muted);font-size:12px}
+
+.stat-cards{display:flex;gap:14px}
+.stat-card{flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center}
+.stat-card .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.stat-card .stat-value{font-size:18px;font-weight:700;font-family:monospace}
+.stat-card.stat-accent .stat-value{color:var(--accent)}
+.stat-card.stat-accent2 .stat-value{color:var(--accent2)}
+.stat-card.stat-neutral .stat-value{color:var(--text)}
+
+.kv-row{display:flex;gap:8px;font-size:13px;margin-bottom:3px}
+.kv-row .kv-label{color:var(--muted);min-width:64px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding-top:1px}
+.kv-row .kv-val{color:var(--text);font-family:monospace;word-break:break-word}
+
+.perfil-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px}
+.perfil-modal .perfil-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.perfil-modal .perfil-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.perfil-modal .perfil-title{margin:0;font-size:16px;color:var(--text)}
+.perfil-modal .perfil-close{background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.perfil-modal .perfil-close:hover{color:var(--text);background:var(--panel2)}
+.perfil-modal .perfil-body{padding:16px 20px}
+.perfil-modal .perfil-section{margin-bottom:16px}
+.perfil-modal .perfil-section-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.perfil-modal .perfil-empty{color:var(--muted);font-size:12px}
+.perfil-modal .perfil-actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--panel);z-index:2}
+.perfil-modal .error-list{margin-bottom:12px}
+.perfil-modal .error-list-title{font-size:12px;font-weight:600;color:var(--error);margin-bottom:6px}
+.perfil-modal .error-item{background:rgba(239,68,68,.1);border:1px solid var(--error);border-radius:4px;padding:6px 8px;margin-bottom:4px;font-size:11px;color:var(--error)}
+.perfil-modal .btn{padding:8px 16px;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;transition:border-color .15s}
+.perfil-modal .btn:hover{border-color:var(--muted)}
+.perfil-modal .btn.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.perfil-modal .btn.btn-primary:hover{background:#3a7aef}
+
+/* Estado badge con tonalidad translúcida (rampa §2 DESIGN.md) */
+.estado-badge{display:inline-block;margin-top:4px;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid}
+.estado-badge.estado-completo{background:rgba(110,231,183,.14);color:var(--accent2);border-color:rgba(110,231,183,.3)}
+.estado-badge.estado-parcial{background:rgba(245,158,11,.14);color:var(--warn);border-color:rgba(245,158,11,.3)}
+.estado-badge.estado-ya_completo{background:rgba(79,140,255,.14);color:var(--accent);border-color:rgba(79,140,255,.3)}
+.estado-badge.estado-error{background:rgba(239,68,68,.14);color:var(--error);border-color:rgba(239,68,68,.3)}
+
+@media (max-width: 640px) {
+  .stat-cards{flex-direction:column;gap:8px}
+  .step-item{flex-wrap:wrap}
+  .perfil-modal{padding:12px}
+}
+
+/* ==== Responsive ==== */
+@media (max-width: 768px) {
+  header { padding: 10px 14px; }
+  main { padding: 0 14px; }
+  .universal-form { padding: 14px; }
+  .results-meta { font-size: 11px; padding: 10px; }
+  .kpi .value { font-size: 16px; }
+  th, td { font-size: 11px; padding: 6px 7px; }
+}
+
+/* --- Argos OSINT Portal Background --- */
+.argos-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse 80% 75% at 50% 50%, #0f1115 0%, #080C20 60%, #05081A 100%)}
+.argos-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.argos-bg::after{content:"";position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.argos-bg--quiet canvas{opacity:.45}
+@media (prefers-reduced-motion:reduce){.argos-bg canvas{opacity:.45}}
+body > *:not(.argos-bg) { position: relative; z-index: 1; }
+
+/* Page-specific classes for inline style replacements */
+.profile-menu { position: relative; }
+.profile-btn {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 10px; cursor: pointer; display: flex; align-items: center;
+  gap: 6px; color: var(--text); font-size: 13px;
+}
+.user-avatar {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 11px; color: #fff;
+}
+.profile-dropdown {
+  display: none; position: absolute; top: 100%; right: 0; margin-top: 6px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px; min-width: 180px; z-index: 200;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+.dropdown-item {
+  display: block; padding: 8px 12px; border-radius: 6px; font-size: 13px;
+  color: var(--muted); text-decoration: none;
+}
+.dropdown-item--active {
+  color: var(--accent2); background: rgba(110,231,183,0.08);
+}
+.dropdown-item--danger { color: var(--error); }
+.dropdown-sep { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+.hint-right { margin-left: auto; }
+.section-heading { color: var(--text); margin: 0 0 8px; }
+.section-text { font-size: 11px; }
+.code-tag {
+  background: var(--panel2); padding: 2px 6px; border-radius: 3px; color: var(--accent2);
+}
+.source-card { padding: 8px 16px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.source-card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.source-card-sub { font-size: 11px; color: var(--muted); }
+.menu-item-action {
+  padding: 10px 16px; cursor: pointer; display: flex; align-items: center;
+  gap: 10px; font-size: 13px; color: var(--text); transition: background 0.15s;
+}
+.menu-item-label { font-weight: 500; }
+.menu-item-desc { font-size: 11px; color: var(--muted); }
+.modal-source {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto;
+}
+.modal-source-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-source-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.modal-source-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.modal-close {
+  background: transparent; border: none; color: var(--muted); font-size: 22px; cursor: pointer;
+}
+.modal-close-lg { font-size: 24px; }
+.modal-source-body { padding: 12px 20px; }
+.modal-table { width: 100%; border-collapse: collapse; }
+.modal-table th {
+  padding: 6px 12px; color: var(--muted); font-size: 12px;
+  white-space: nowrap; font-weight: 500; text-transform: uppercase;
+}
+.modal-table td { padding: 6px 12px; color: var(--text); font-size: 13px; }
+.overlay-spinner {
+  width: 24px; height: 24px; border-width: 3px; margin-bottom: 12px;
+}
+.kpi-value { color: ${kpiColor(k)}; }
+.cfe-card-header { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.cfe-card {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px; margin-bottom: 6px; font-size: 12px;
+}
+.cfe-card-name { font-weight: 500; color: var(--text); }
+.cfe-card-addr { color: var(--muted); }
+.cfe-card-detail { color: var(--muted); font-size: 11px; }
+.cfe-empty { color: var(--muted); font-size: 13px; padding: 16px; }
+.checkid-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;
+}
+.checkid-value { font-size: 16px; }
+.checkid-error {
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 6px; padding: 10px; margin-bottom: 16px; font-size: 12px; color: var(--error);
+}
+.checkid-unavail { color: var(--muted); font-size: 13px; padding: 16px; }
+.cp-note {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px; margin-bottom: 16px; font-size: 12px;
+}
+.mapeo-modal {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px;
+}
+.mapeo-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+}
+.mapeo-title { margin: 0; font-size: 18px; color: var(--text); }
+.mapeo-section { margin-bottom: 20px; }
+.mapeo-section-heading { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.mapeo-card {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 12px; font-size: 13px;
+}
+.mapeo-empty { text-align: center; color: var(--muted); font-size: 11px; }
+
+</style>
+</head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+
+<header>
+  <h1>🔍 Búsqueda Universal
+    <span class="small">Padrón INE + CFE + Telcel + ATT + REPUVE + IMSS + ISSSTE</span>
+  </h1>
+  <div class="nav">
+    <a href="/dashboard.html">← Dashboard</a>
+    <a href="/busquedas_adicionales.html">🌐 Búsquedas Ext.</a>
+    <a href="/admin.html" id="nav-admin" class="hidden">⚙️ Admin</a>
+  </div>
+  <div class="actions">
+    <div class="profile-menu">
+      <button id="profile-btn" class="profile-btn">
+        <span id="user-avatar" class="user-avatar">?</span>
+        <span id="user-badge">cargando...</span> ▾
+      </button>
+      <div id="profile-dropdown" class="profile-dropdown">
+        <a href="/dashboard.html" class="dropdown-item">📊 Dashboard</a>
+        <a href="/buscar.html" class="dropdown-item dropdown-item--active">🔍 Búsqueda</a>
+        <a href="/oraculo.html" class="dropdown-item">🤖 Oráculo</a>
+        <a href="/sujeto.html" class="dropdown-item">📋 Expediente</a>
+        <a href="/busquedas_adicionales.html" class="dropdown-item">🌐 Búsquedas Ext.</a>
+        <hr class="dropdown-sep">
+        <a href="/subscribe.html" class="dropdown-item">💳 Suscripción</a>
+        <a href="#" id="logout-link" class="dropdown-item dropdown-item--danger">🚪 Cerrar sesión</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <form id="universal-form" class="universal-form" autocomplete="off">
+    <h2>🧠 Búsqueda Universal</h2>
+    <div class="hint">
+      Llená los campos que tengas — el sistema detecta automáticamente qué endpoint usar.
+      La búsqueda por <strong>nombre + dirección</strong> se hace en paralelo.
+      Click en cualquier fila para <strong>crear el sujeto</strong>: si la fila tiene CURP o RFC
+      se abre la ficha directamente; si no, se intenta resolver automáticamente con
+      <strong>RFC → NSS → nombre + 2 datos secundarios</strong>.
+    </div>
+
+    <div class="section-divider">� Identidad</div>
+    <div class="grid">
+      <div class="field">
+        <label>CURP (18)</label>
+        <input id="curp" placeholder="AISR750901MDFVLS01" maxlength="18" class="text-upper">
+      </div>
+      <div class="field">
+        <label>RFC (10-13)</label>
+        <input id="rfc" placeholder="AISR750901DT5" maxlength="13" class="text-upper">
+      </div>
+      <div class="field">
+        <label>NSS</label>
+        <input id="nss" placeholder="12345678901" maxlength="11" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="section-divider">👤 Nombre</div>
+    <div class="grid">
+      <div class="field">
+        <label>Nombre(s)</label>
+        <input id="nombre" placeholder="ROSALIA">
+      </div>
+      <div class="field">
+        <label>Paterno</label>
+        <input id="paterno" placeholder="AVILA">
+      </div>
+      <div class="field">
+        <label>Materno</label>
+        <input id="materno" placeholder="SALDAÑA">
+      </div>
+      <div class="field">
+        <label>F. nacimiento</label>
+        <input id="fecnac" type="date">
+      </div>
+      <div class="field">
+        <label>Sexo</label>
+        <select id="sexo">
+          <option value="">—</option>
+          <option value="H">Hombre</option>
+          <option value="M">Mujer</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-divider">📍 Dirección</div>
+    <div class="grid">
+      <div class="field">
+        <label>CP (5 dígitos)</label>
+        <input id="cp" placeholder="10200" maxlength="5" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Calle</label>
+        <input id="calle" placeholder="VISTA DEL ATARDECER">
+      </div>
+      <div class="field">
+        <label>Colonia</label>
+        <input id="colonia" placeholder="LOMAS DE VISTABELLA">
+      </div>
+      <div class="field">
+        <label># Exterior</label>
+        <input id="ext" placeholder="159" maxlength="8">
+      </div>
+      <div class="field">
+        <label>Municipio</label>
+        <input id="mun" placeholder="MAGDALENA CONTRERAS">
+      </div>
+    </div>
+
+    <div class="section-divider">📞 Claves puntuales</div>
+    <div class="grid">
+      <div class="field">
+        <label>Num. servicio CFE (10-12)</label>
+        <input id="num_servicio" placeholder="123456789012" maxlength="12" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Teléfono (7+ dígitos)</label>
+        <input id="telefono" placeholder="5512345678" maxlength="15" inputmode="tel">
+      </div>
+      <div class="field">
+        <label>Límite por base</label>
+        <input id="limit" type="number" min="10" max="500" value="50">
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="primary" type="submit" id="btn-search">🔍 Buscar en todas las bases</button>
+      <button class="secondary" type="button" id="btn-clear">Limpiar</button>
+      <span class="hint hint-right">
+        <span class="help-kbd">/</span> enfocar · <span class="help-kbd">Enter</span> buscar
+      </span>
+    </div>
+  </form>
+
+  <div id="results-container">
+    <div class="empty-state">
+      <h3 class="section-heading">Listo para buscar</h3>
+      <p>Llená cualquier campo y pulsá Buscar. Ejemplos rápidos:</p>
+      <p class="section-text">
+        <code class="code-tag">AISR750901MDFVLS01</code> (CURP directa)
+        · <code class="code-tag">AVILA ROSALIA 1975-09-01</code> (nombre+fechadenac)
+        · <code class="code-tag">CP 10200 + Vista del Atardecer</code> (dirección)
+        · <code class="code-tag">5512345678</code> (teléfono)
+      </p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Búsqueda universal KYC · v2026-08-15
+</footer>
+
+<script>
+/* ==== API URL ==== */
+const API_URL = (() => {
+  // El backend (servir.py) sirve este mismo HTML, así que la API vive en el
+  // mismo origen que la página — salvo cuando se abre el archivo localmente
+  // (file://) o en desarrollo directo contra localhost.
+  const h = location.hostname;
+  if (location.protocol === "file:" || h === "" || h === "localhost" || h === "127.0.0.1") {
+    return "http://localhost:8765";
+  }
+  return `${location.protocol}//${location.host}`;
+})();
+
+const $ = (id) => document.getElementById(id);
+
+/* ==== Estado ==== */
+const state = {
+  rows: {},        // {base_key: [...rows]}
+  cols: {},        // {base_key: [...cols]}
+  total: {},       // {base_key: count}
+  query_ms: 0,
+};
+
+/* ==== Render helpers ==== */
+function esc(s) {
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+function fmtNum(n) {
+  if (n === null || n === undefined) return "—";
+  return Number(n).toLocaleString("es-MX");
+}
+
+const BASE_ICONS = {
+  ine: "🇲🇽", cfe: "⚡", telcel: "📱", att: "☎️",
+  repuve: "🚗", imss: "🏥", issste: "🏛️",
+};
+const BASE_TITLES = {
+  ine:     "Padrón INE",
+  cfe:     "CFE (medidores)",
+  telcel:  "Telcel",
+  att:     "ATT",
+  repuve:  "REPUVE",
+  imss:    "IMSS Asegurados",
+  issste:  "ISSSTE",
+};
+// Columnas a renderizar por base. Mantienen el contrato del backend.
+const BASE_COLS = {
+  ine:     ["curp", "nombre", "paterno", "materno", "calle", "ext",
+            "colonia", "cp", "sexo", "fecnac"],
+  cfe:     ["num_servicio", "nombre", "cp", "direccion", "colonia",
+            "agencia_nom", "division"],
+  telcel:  ["rfc", "nombre1", "nombre2", "telefono", "domicilio",
+            "colonia", "cp"],
+  att:     ["rfc", "nombres", "paterno", "materno", "telefono_fijo",
+            "celular", "direccion", "colonia", "municipio"],
+  repuve:  ["rfc", "placa", "no_serie", "marca", "modelo", "color", "tipo", "uso", "propietario", "direccion"],
+  imss:    ["curp", "nss", "asegurado", "patron", "domicilio", "cp",
+            "ciudad_estado", "giro"],
+  issste:  ["paterno", "materno", "nombres", "sexo", "cargo", "sueldo",
+            "ramo", "entidad"],
+};
+
+/* ==== init ==== */
+async function init() {
+  const token = localStorage.getItem("session_token");
+  try {
+    const me = await fetch(`${API_URL}/api/auth/me`, {
+      headers: token ? {"Authorization": `Bearer ${token}`} : {},
+    }).then(r => r.json());
+    if (!me.ok) {
+      location.href = "/login.html";
+      return;
+    }
+    const badge = $("user-badge");
+    badge.textContent = me.user?.username || "—";
+    const avatar = $("user-avatar");
+    if (avatar) avatar.textContent = (me.user?.username || "?")[0].toUpperCase();
+    if (me.user?.is_admin) {
+      badge.classList.add("admin");
+      $("nav-admin").style.display = "inline-flex";
+    }
+    // Profile dropdown toggle
+    const profileBtn = $("profile-btn");
+    const profileDrop = $("profile-dropdown");
+    if (profileBtn && profileDrop) {
+      profileBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        profileDrop.style.display = profileDrop.style.display === "block" ? "none" : "block";
+      });
+      document.addEventListener("click", () => profileDrop.style.display = "none");
+    }
+    // Logout link
+    const logoutLink = $("logout-link");
+    if (logoutLink) {
+      logoutLink.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await fetch(`${API_URL}/api/auth/logout`, {method: "POST"});
+        localStorage.removeItem("session_token");
+        location.href = "/login.html";
+      });
+    }
+  } catch (e) {
+    $("user-badge").textContent = "⚠️ sin conexión";
+  }
+}
+
+/* ==== Helpers de fetch ==== */
+function authedFetch(url, opts = {}) {
+  const token = localStorage.getItem("session_token");
+  const headers = {"Content-Type": "application/json", ...(opts.headers || {})};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return fetch(url, {...opts, headers}).then(r => {
+    if (r.status === 401) { location.href = "/login.html"; throw new Error("no auth"); }
+    return r;
+  });
+}
+
+/* Lee la respuesta de forma segura: si el body no es JSON (p.ej. un 502
+   Bad Gateway HTML del túnel Cloudflare cuando el endpoint tarda demasiado),
+   devuelve {error: "..."} legible en lugar de un JSON.parse críptico. */
+async function safeJson(r) {
+  const text = await r.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    if (r.status === 502 || r.status === 504) {
+      return {error: `HTTP ${r.status}: el servidor tardó demasiado (timeout del túnel). Reintentá o acotá la búsqueda.`};
+    }
+    if (!r.ok) {
+      return {error: `HTTP ${r.status}: respuesta no-JSON del servidor`};
+    }
+    const snippet = text.trim().slice(0, 80);
+    return {error: `respuesta no-JSON (posible timeout/502): ${snippet || "(vacía)"}`};
+  }
+}
+
+/* ==== Detección automática de modo ==== */
+function readFilter() {
+  return {
+    curp: $("curp").value.trim(),
+    rfc: $("rfc").value.trim(),
+    nss: $("nss").value.trim(),
+    nombre: $("nombre").value.trim(),
+    paterno: $("paterno").value.trim(),
+    materno: $("materno").value.trim(),
+    fecnac: $("fecnac").value.trim(),
+    sexo: $("sexo").value,
+    cp: $("cp").value.trim(),
+    calle: $("calle").value.trim(),
+    colonia: $("colonia").value.trim(),
+    ext: $("ext").value.trim(),
+    mun: $("mun").value.trim(),
+    num_servicio: $("num_servicio").value.trim(),
+    telefono: $("telefono").value.trim(),
+    limit: parseInt($("limit").value) || 50,
+  };
+}
+
+function clearFilter() {
+  ["curp","rfc","nss","nombre","paterno","materno","fecnac","sexo",
+   "cp","calle","colonia","ext","mun","num_servicio","telefono"].forEach(id => {
+    const el = $(id);
+    if (el.tagName === "SELECT") el.selectedIndex = 0;
+    else el.value = "";
+  });
+  $("limit").value = "50";
+  $("results-container").innerHTML = `
+    <div class="empty-state">
+      <h3 class="section-heading">Formulario limpio</h3>
+      <p>Llená cualquier campo y pulsá Buscar.</p>
+    </div>`;
+}
+
+/**
+ * decideEndpoints(f) — devuelve la lista de endpoints a invocar en paralelo
+ * según los campos llenos. La cascada es:
+ *   1. CURP exacta (1 lookup) → INE + enriquecido en background
+ *   2. num_servicio CFE (1 lookup) → CFE exacto
+ *   3. telefono (1 lookup) → Telcel + ATT en paralelo
+ *   4. dirección (cp o calle) → direccion/buscar (multi-base)
+ *   5. nombre (con o sin paterno/materno) → cfe/buscar_por_nombre
+ *   6. RFC/NSS solos → resolver_desde_hint (luego abre sujeto.html)
+ *
+ *   Cualquier combinación es válida: se ejecutan en Promise.all.
+ */
+function decideEndpoints(f) {
+  const calls = [];
+  const lim = f.limit;
+
+  // 1. CURP exacta → /api/sujeto (que ya hace fallback a CheckID si el
+  //    padrón no tiene al sujeto). Antes llamaba a /api/v1/persona/curp/
+  //    que solo consulta bases internas y devuelve found:false para CURPs
+  //    no registrados — el usuario veía "sin resultados" aunque CheckID
+  //    tuviera los datos fiscales completos.
+  if (f.curp && f.curp.length === 18) {
+    calls.push({
+      key: "ine",
+      label: "Padrón INE (CURP exacta + fallback CheckID)",
+      url: `${API_URL}/api/sujeto?curp=${encodeURIComponent(f.curp)}`,
+      map: d => {
+        // 2026-08-20: si viene del fallback CheckID (no en padrón),
+        // construir una fila mínima con la CURP y el RFC para que el
+        // usuario pueda hacer clic y abrir la ficha completa.
+        if (d.sujeto) {
+          const s = d.sujeto;
+          const ck = d.checkid || {};
+          const rfcPrincipal = (d.rfc && d.rfc.rfc) || ck.rfc || "";
+          return {
+            rows: [{
+              curp: s.curp,
+              nombre: s.nombre || (ck.razon_social || "").split(" ").slice(0, -2).join(" "),
+              paterno: s.paterno || (ck.razon_social || "").split(" ").slice(-2, -1)[0] || "",
+              materno: s.materno || (ck.razon_social || "").split(" ").slice(-1)[0] || "",
+              fecnac: s.fecnac || (ck.curp && ck.curp.fechaNacimientoText) || "",
+              cp: s.cp || (ck.codigo_postal && ck.codigo_postal.codigoPostal) || "",
+              rfc: rfcPrincipal,
+              fuente: s.fuente || "padron",
+              checkid_exitoso: !!ck.exitoso,
+            }],
+            count: 1,
+            cols: ["curp", "nombre", "paterno", "materno", "fecnac", "cp", "rfc", "fuente"],
+          };
+        }
+        return {rows: [], count: 0, cols: null};
+      },
+    });
+  }
+  // 1b. NSS solo → resolver_desde_hint (busca CURP via IMSS Asegurados)
+  if (f.nss && f.nss.trim().length >= 8) {
+    const qs = new URLSearchParams();
+    qs.set("nss", f.nss.trim());
+    qs.set("source", "nss");
+    calls.push({
+      key: "nss_resolver",
+      label: "Resolver CURP desde NSS (IMSS)",
+      url: `${API_URL}/api/v1/sujeto/resolver_desde_hint?${qs}`,
+      map: d => ({rows: d.ok ? [{curp: d.curp, estrategia: d.estrategia, score: d.score}] : [],
+                   count: d.ok ? 1 : 0,
+                   cols: ["curp", "estrategia", "score"]}),
+    });
+  }
+  // 1c. RFC solo → resolver_desde_hint (busca CURP via IMSS Salud)
+  if (f.rfc && f.rfc.trim().length >= 10) {
+    const qs = new URLSearchParams();
+    qs.set("rfc", f.rfc.trim());
+    qs.set("source", "rfc");
+    calls.push({
+      key: "rfc_resolver",
+      label: "Resolver CURP desde RFC",
+      url: `${API_URL}/api/v1/sujeto/resolver_desde_hint?${qs}`,
+      map: d => ({rows: d.ok ? [{curp: d.curp, estrategia: d.estrategia, score: d.score}] : [],
+                   count: d.ok ? 1 : 0,
+                   cols: ["curp", "estrategia", "score"]}),
+    });
+  }
+  // 2. num_servicio CFE → CFE exacto
+  if (f.num_servicio && /^\d{10,12}$/.test(f.num_servicio)) {
+    calls.push({
+      key: "cfe",
+      label: "CFE (num_servicio exacto)",
+      url: `${API_URL}/api/v1/persona/cfe/${encodeURIComponent(f.num_servicio)}`,
+      map: d => ({rows: d.medidor ? [d.medidor] : [], count: d.medidor ? 1 : 0,
+                   cols: d.medidor ? Object.keys(d.medidor) : null}),
+    });
+  }
+  // 3. Teléfono → Telcel + ATT en paralelo
+  if (f.telefono && f.telefono.replace(/\D/g, "").length >= 7) {
+    const tel = encodeURIComponent(f.telefono);
+    calls.push({
+      key: "telcel",
+      label: "Telcel (teléfono)",
+      url: `${API_URL}/api/v1/telcel/buscar?telefono=${tel}&limit=${lim}`,
+      map: d => ({rows: d.rows || [], count: d.count || 0, cols: d.cols || null}),
+    });
+    calls.push({
+      key: "att",
+      label: "ATT (teléfono)",
+      url: `${API_URL}/api/v1/att/buscar?telefono=${tel}&limit=${lim}`,
+      map: d => ({rows: d.rows || [], count: d.count || 0, cols: d.cols || null}),
+    });
+  }
+  // 4. Dirección (cp o calle) → multi-base
+  if (f.cp || f.calle) {
+    const qs = new URLSearchParams();
+    if (f.cp) qs.set("cp", f.cp);
+    if (f.calle) qs.set("calle", f.calle);
+    if (f.colonia) qs.set("colonia", f.colonia);
+    if (f.mun) qs.set("mun", f.mun);
+    if (f.ext) qs.set("ext", f.ext);
+    qs.set("limit", String(lim));
+    calls.push({
+      key: "_direccion",
+      label: "Dirección (multi-base)",
+      url: `${API_URL}/api/v1/direccion/buscar?${qs}`,
+      // Esta llamada devuelve varias secciones; el render las desglosa.
+      map: d => ({_multi: d}),
+    });
+  }
+  // 5. Nombre → CFE por titular (66M) + padrón via OSINT
+  if (f.nombre || f.paterno || f.materno) {
+    const qs = new URLSearchParams();
+    if (f.nombre) qs.set("nombre", f.nombre);
+    if (f.paterno) qs.set("paterno", f.paterno);
+    if (f.materno) qs.set("materno", f.materno);
+    qs.set("limit", String(Math.min(lim, 100)));
+    calls.push({
+      key: "cfe_nombre",
+      label: "CFE (titular)",
+      url: `${API_URL}/api/v1/cfe/buscar_por_nombre?${qs}`,
+      map: d => ({rows: d.rows || [], count: d.count || 0,
+                   cols: ["num_servicio","nombre","cp","direccion","colonia",
+                          "agencia_nom","division"]}),
+    });
+    // También padrón directo por nombre+paterno+materno+fecnac/sexo vía /api/osint
+    const osintPayload = {};
+    if (f.curp) osintPayload.curp = f.curp;
+    if (f.nombre) osintPayload.nombre = f.nombre;
+    if (f.paterno) osintPayload.paterno = f.paterno;
+    if (f.materno) osintPayload.materno = f.materno;
+    if (f.fecnac) osintPayload.fecnac = f.fecnac;
+    if (f.sexo) osintPayload.sexo = f.sexo;
+    if (f.email) osintPayload.email = f.email;
+    if (f.telefono) osintPayload.telefono = f.telefono;
+    calls.push({
+      key: "osint",
+      label: "Padrón INE + OSINT",
+      url: `${API_URL}/api/osint`,
+      method: "POST",
+      body: JSON.stringify(osintPayload),
+      map: d => ({rows: d.padron || [], count: d.padron?.length || 0,
+                   cols: ["curp","nombre","paterno","materno","calle","ext","colonia","cp","sexo","fecnac"]}),
+    });
+  }
+  return calls;
+}
+
+/* ==== Submit ==== */
+async function doSearch() {
+  const f = readFilter();
+  const hasAny = Object.entries(f).some(([k, v]) =>
+    !["limit"].includes(k) && v !== "" && v !== null && v !== undefined);
+  if (!hasAny) {
+    alert("Llená al menos un campo");
+    return;
+  }
+  const btn = $("btn-search");
+  btn.disabled = true;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner"></span>Buscando...';
+  $("results-container").innerHTML = `
+    <div class="results-meta">
+      <span class="meta-item"><b>⏱</b> buscando en ${countEndpoints(f)} endpoint(s)...</span>
+    </div>`;
+  const calls = decideEndpoints(f);
+  if (!calls.length) {
+    btn.disabled = false; btn.innerHTML = original;
+    $("results-container").innerHTML = `<div class="error-msg">
+      No se pudo decidir qué endpoint usar. Llená al menos un campo identificable.
+    </div>`;
+    return;
+  }
+  const t0 = performance.now();
+  const results = await Promise.allSettled(calls.map(c => {
+    const opts = { method: c.method || "GET" };
+    if (c.body) {
+      opts.body = c.body;
+    }
+    return authedFetch(c.url, opts).then(safeJson);
+  }));
+  state.query_ms = performance.now() - t0;
+  // Reset state
+  state.rows = {}; state.cols = {}; state.total = {};
+  const errores = [];
+  results.forEach((res, i) => {
+    const call = calls[i];
+    if (res.status === "rejected") {
+      errores.push(`${call.label}: ${res.reason?.message || "error"}`);
+      return;
+    }
+    const d = res.value;
+    if (d.error) { errores.push(`${call.label}: ${d.error}`); return; }
+    if (call.key === "_direccion") {
+      // Multi-sección: desglosar en ine/cfe/telcel/att/repuve/imss/issste
+      const m = call.map(d)._multi || {};
+      for (const k of ["personas","cfe","telcel","att","repuve","imss","issste"]) {
+        const rows = m[k] || [];
+        if (!rows.length) continue;
+        const baseKey = k === "personas" ? "ine" : k;
+        state.rows[baseKey] = (state.rows[baseKey] || []).concat(rows);
+        state.total[baseKey] = (state.total[baseKey] || 0) + rows.length;
+      }
+      // totales globales del endpoint
+      if (m.totales) {
+        for (const [k, v] of Object.entries(m.totales)) {
+          const baseKey = k === "padron" ? "ine" : k;
+          if (v > (state.total[baseKey] || 0)) state.total[baseKey] = v;
+        }
+      }
+    } else {
+      const mapped = call.map(d);
+      state.rows[call.key] = mapped.rows;
+      state.cols[call.key] = mapped.cols;
+      state.total[call.key] = mapped.count;
+    }
+  });
+  btn.disabled = false; btn.innerHTML = original;
+  render(errores);
+  // Si la búsqueda fue por dirección y el padrón no trajo nada exacto,
+  // ofrecer candidatos fuzzy para que el usuario elija con cuál enriquecer.
+  if ((f.cp || f.calle) && !(state.rows["ine"] || []).length) {
+    fetchCandidatos(f);
+  }
+}
+
+/* ==== Candidatos fuzzy (decisión manual) ==== */
+async function fetchCandidatos(f) {
+  const qs = new URLSearchParams();
+  if (f.calle) qs.set("calle", f.calle);
+  if (f.ext) qs.set("ext", f.ext);
+  if (f.colonia) qs.set("colonia", f.colonia);
+  if (f.cp) qs.set("cp", f.cp);
+  qs.set("limit", "10");
+  let d;
+  try {
+    const r = await authedFetch(`${API_URL}/api/v1/direccion/candidatos?${qs}`);
+    d = await safeJson(r);
+  } catch { return; }
+  if (!d || d.error || !(d.candidatos || []).length) return;
+  const c = $("results-container");
+  const panel = document.createElement("div");
+  panel.className = "results-meta";
+  panel.style.cssText = "display:block;margin-top:12px";
+  const items = d.candidatos.map((cand, i) => {
+    const dir = [cand.via, cand.ext, cand.col, cand.cp, cand.entidad]
+      .filter(Boolean).join(" · ");
+    const nivel = cand.nivel.startsWith("exacto") ? "exacta" : `~${Math.round(cand.score * 100)}%`;
+    return `<button class="btn-candidato" data-i="${i}">
+      ${dir} &nbsp;<small>(${cand.n_personas} persona(s) · ${nivel})</small>
+    </button>`;
+  }).join("");
+  panel.innerHTML = `<div><b>Sin match exacto en el padrón.</b>
+    Opciones parecidas — elegí una para traer sus personas:</div>${items}`;
+  c.prepend(panel);
+  panel.querySelectorAll(".btn-candidato").forEach(b => {
+    b.onclick = () => aplicarCandidato(d.candidatos[Number(b.dataset.i)], panel);
+  });
+}
+
+async function aplicarCandidato(cand, panel) {
+  if (!(cand.refs || []).length) return;
+  let d;
+  try {
+    const r = await authedFetch(
+      `${API_URL}/api/v1/direccion/candidatos?refs=${cand.refs.join(",")}`);
+    d = await safeJson(r);
+  } catch { return; }
+  if (!d || !(d.personas || []).length) return;
+  for (const p of d.personas) p.source = "ine (candidato elegido)";
+  state.rows["ine"] = d.personas;
+  state.total["ine"] = cand.n_personas;
+  render([]);
+}
+
+function countEndpoints(f) {
+  let n = 0;
+  if (f.curp && f.curp.length === 18) n++;
+  if (f.num_servicio && /^\d{10,12}$/.test(f.num_servicio)) n++;
+  if (f.telefono && f.telefono.replace(/\D/g, "").length >= 7) n += 2;
+  if (f.cp || f.calle) n++;
+  if (f.nombre || f.paterno || f.materno) n += 2;  // CFE + OSINT
+  return n;
+}
+
+/* ==== Render ==== */
+function render(errores) {
+  const c = $("results-container");
+  const bases = Object.keys(state.rows).filter(k => (state.rows[k] || []).length > 0);
+  if (!bases.length && !errores.length) {
+    c.innerHTML = `<div class="empty-state">
+      <h3 class="section-heading">Sin resultados</h3>
+      <p>Probá relajar los filtros o quitar alguno.</p>
+    </div>`;
+    return;
+  }
+
+  // Meta header con tiempo y cantidad de bases
+  let html = `<div class="results-meta">
+    <span class="meta-item"><b>⏱</b> ${state.query_ms.toFixed(0)}ms</span>
+    <span class="meta-item"><b>📊</b> ${bases.length} base(s) con resultados</span>`;
+  for (const [k, v] of Object.entries(state.total)) {
+    if (v > 0) html += `<span class="meta-item"><b>${BASE_TITLES[k] || k}:</b> ${fmtNum(v)}</span>`;
+  }
+  html += "</div>";
+  if (errores.length) {
+    html += `<div class="error-msg">
+      <b>Errores parciales:</b><br>${errores.map(e => "• " + esc(e)).join("<br>")}
+    </div>`;
+  }
+  // KPIs
+  if (bases.length) {
+    html += `<div class="kpi-grid">`;
+    for (const k of ["ine","cfe","telcel","att","repuve","imss","issste"]) {
+      const v = state.total[k] || 0;
+      if (v > 0) {
+        html += `<div class="kpi">
+          <div class="label">${esc(BASE_TITLES[k])}</div>
+          <div class="value">${fmtNum(v)}</div>
+        </div>`;
+      }
+    }
+    html += "</div>";
+  }
+  // Tablas por base
+  for (const k of bases) {
+    const rows = state.rows[k];
+    const cols = state.cols[k] || BASE_COLS[k] || Object.keys(rows[0] || {});
+    html += renderBase(k, rows, cols);
+  }
+  c.innerHTML = html;
+  // Wire up row clicks
+  c.querySelectorAll("tr.row-clickable").forEach(tr => {
+    tr.addEventListener("click", () => onRowClick(tr));
+  });
+}
+
+function kpiColor(k) {
+  return ({
+    ine: "var(--accent)", cfe: "var(--warn)",
+    telcel: "var(--accent2)", att: "#9b87f5",
+    repuve: "#ec4899", imss: "#14b8a6", issste: "#f97316",
+  })[k] || "var(--text)";
+}
+
+function renderBase(key, rows, cols) {
+  const shown = rows.length;
+  const total = state.total[key] || shown;
+  let html = `<div class="base-section">
+    <div class="header">
+      <h3><span class="source-icon">${BASE_ICONS[key] || "📦"}</span>
+          ${esc(BASE_TITLES[key] || key)}</h3>
+      <span class="count">${fmtNum(shown)}${total > shown ? ` de ${fmtNum(total)}` : ""}</span>
+    </div>
+    <div class="table-wrap"><table><thead><tr>`;
+  for (const col of cols) html += `<th>${esc(col.toUpperCase())}</th>`;
+  html += "</tr></thead><tbody>";
+  for (const r of rows.slice(0, 200)) {  // cap visual por base
+    const dataAttrs = `data-base="${esc(key)}" ` +
+      cols.map(c => `data-${esc(c)}="${esc(r[c] ?? "")}"`).join(" ") +
+      ` data-curp="${esc(r.curp || "")}" data-rfc="${esc(r.rfc || "")}"` +
+      ` data-nss="${esc(r.nss || "")}"`;
+    html += `<tr class="row-clickable" ${dataAttrs}>`;
+    for (const c of cols) {
+      const v = r[c];
+      html += `<td>${v === null || v === undefined || v === "" ? "—" : esc(v)}</td>`;
+    }
+    html += "</tr>";
+  }
+  html += `</tbody></table></div>
+    ${rows.length > 200 ? `<div class="empty-state">Mostrando primeras 200 filas; refiná con más filtros para ver todas.</div>` : ""}
+  </div>`;
+  return html;
+}
+
+/* ==== Click handler: crear sujeto ==== */
+async function onRowClick(tr) {
+  const base = tr.dataset.base;
+  const get = k => tr.dataset[k] || "";
+  const curp = get("curp");
+  const rfc = get("rfc");
+  const nss = get("nss");
+
+  // Construir hints desde TODOS los data-* del row
+  const hints = {};
+  for (const attr of tr.attributes) {
+    if (attr.name.startsWith("data-") && !["base","curp","rfc","nss"].includes(attr.name.replace("data-",""))) {
+      const k = attr.name.replace("data-", "");
+      if (attr.value) hints[k] = attr.value;
+    }
+  }
+  if (rfc) hints.rfc = rfc;
+  if (nss) hints.nss = nss;
+  if (hints.nombre1 || hints.nombre2) {
+    delete hints.nombre1; delete hints.nombre2;
+    const nombreParts = (hints.nombre2 || "").trim().split(/\s+/);
+    if (nombreParts.length >= 2) {
+      hints.paterno = nombreParts[0];
+      hints.materno = nombreParts.slice(1).join(" ");
+      hints.nombre = hints.nombre1 || nombreParts.slice(1).join(" ");
+    } else if (nombreParts.length === 1) {
+      hints.paterno = nombreParts[0];
+      hints.nombre = hints.nombre1 || "";
+    } else {
+      hints.nombre = hints.nombre1 || "";
+    }
+  }
+  hints.source = base;
+
+  // Mostrar menú contextual
+  showRowMenu(tr, base, curp, hints);
+}
+
+function showRowMenu(tr, base, curp, hints) {
+  // Cerrar menú anterior si existe
+  const old = document.getElementById("row-context-menu");
+  if (old) old.remove();
+
+  const rect = tr.getBoundingClientRect();
+  const menu = document.createElement("div");
+  menu.id = "row-context-menu";
+  menu.style.cssText = `position:fixed;top:${Math.min(rect.bottom + 4, window.innerHeight - 200)}px;left:${rect.left}px;z-index:10000;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 0;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.4)`;
+
+  const nombreCompleto = [hints.nombre, hints.paterno, hints.materno].filter(Boolean).join(" ") || "—";
+
+  menu.innerHTML = `
+    <div class="source-card">
+      <div class="source-card-title">${esc(nombreCompleto)}</div>
+      <div class="source-card-sub">Fuente: ${esc(base.toUpperCase())}${curp ? " • CURP: " + esc(curp) : ""}</div>
+    </div>
+    <div class="menu-item menu-item-action" data-action="ver">
+      <span class="text-lg">👁</span>
+      <div>
+        <div class="menu-item-label">Ver solo datos</div>
+        <div class="menu-item-desc">Respuesta de ${esc(base.toUpperCase())} • 1 crédito</div>
+      </div>
+    </div>
+    ${curp && curp.length === 18 ? `
+    <div class="menu-item menu-item-action" data-action="perfil">
+      <span class="text-lg">👤</span>
+      <div>
+        <div class="menu-item-label">Crear perfil</div>
+        <div class="menu-item-desc">Busca en todas las bases • 3 créditos</div>
+      </div>
+    </div>
+    <div class="menu-item menu-item-action" data-action="mapear">
+      <span class="text-lg">🗺</span>
+      <div>
+        <div class="menu-item-label">Mapear sujeto</div>
+        <div class="menu-item-desc">CheckID + CFE + mapas • 3 créditos</div>
+      </div>
+    </div>` : ""}
+  `;
+
+  // Hover effect
+  menu.querySelectorAll(".menu-item").forEach(item => {
+    item.addEventListener("mouseenter", () => item.style.background = "var(--panel2)");
+    item.addEventListener("mouseleave", () => item.style.background = "transparent");
+  });
+
+  // Click handlers
+  menu.querySelector('[data-action="ver"]').addEventListener("click", () => {
+    menu.remove();
+    verDatos(tr, base, curp, hints);
+  });
+
+  const mapearBtn = menu.querySelector('[data-action="mapear"]');
+  if (mapearBtn) {
+    mapearBtn.addEventListener("click", () => {
+      menu.remove();
+      mapearSujeto(curp, hints);
+    });
+  }
+
+  const perfilBtn = menu.querySelector('[data-action="perfil"]');
+  if (perfilBtn) {
+    perfilBtn.addEventListener("click", () => {
+      menu.remove();
+      crearPerfil(curp, hints);
+    });
+  }
+
+  document.body.appendChild(menu);
+
+  // Cerrar al hacer click fuera
+  const closeMenu = (e) => {
+    if (!menu.contains(e.target)) {
+      menu.remove();
+      document.removeEventListener("click", closeMenu);
+    }
+  };
+  setTimeout(() => document.addEventListener("click", closeMenu), 50);
+}
+
+async function verDatos(tr, base, curp, hints) {
+  // Consumir 1 crédito de búsqueda
+  let creditOk = true;
+  try {
+    const cr = await authedFetch(`${API_URL}/api/v1/uso/consumir`, { method: "POST" });
+    const cd = await cr.json();
+    if (cd.error) { creditOk = false; alert(cd.error); return; }
+  } catch(e) { creditOk = false; }
+
+  // Mostrar popup con los datos de la fila
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px";
+
+  // Recoger todos los data-* de la fila
+  const rowData = {};
+  for (const attr of tr.attributes) {
+    if (attr.name.startsWith("data-")) {
+      const k = attr.name.replace("data-", "");
+      if (attr.value && k !== "base") rowData[k] = attr.value;
+    }
+  }
+
+  const nombreCompleto = [hints.nombre, hints.paterno, hints.materno].filter(Boolean).join(" ") || "—";
+  const sourceIcon = ({ine:"📋",cfe:"⚡",telcel:"📱",att:"📞",repuve:"🚗",imss:"🏥",issste:"🏛",fotos:"📷"})[base] || "📦";
+  const sourceTitle = ({ine:"Padrón Electoral",cfe:"CFE",telcel:"Telcel",att:"ATT",repuve:"REPUVE",imss:"IMSS",issste:"ISSSTE",fotos:"Fotos"})[base] || base.toUpperCase();
+
+  let rowsHtml = "";
+  for (const [k, v] of Object.entries(rowData)) {
+    if (v && v !== "—" && v !== "null" && v !== "undefined") {
+      rowsHtml += `<tr><td class="modal-table th">${esc(k)}</td><td class="modal-table td">${esc(v)}</td></tr>`;
+    }
+  }
+
+  modal.innerHTML = `<div class="modal-source">
+    <div class="modal-source-header">
+      <div>
+        <div class="modal-source-title">${sourceIcon} ${esc(sourceTitle)}</div>
+        <div class="modal-source-subtitle">${esc(nombreCompleto)}</div>
+      </div>
+      <button class="modal-close" onclick="this.closest('div[style*=fixed]').remove()">&times;</button>
+    </div>
+    <div class="modal-source-body">
+      <table class="modal-table">${rowsHtml}</table>
+    </div>
+  </div>`;
+
+  document.body.appendChild(modal);
+}
+
+async function mapearSujeto(curp, hints) {
+  const overlay = showLoading("Mapeando sujeto...", "CheckID + CFE");
+  try {
+    const body = {
+      curp: curp,
+      nombre: hints.nombre || "",
+      paterno: hints.paterno || "",
+      materno: hints.materno || "",
+      calle: hints.calle || "",
+      ext: hints.ext || "",
+      colonia: hints.colonia || "",
+      cp: hints.cp || "",
+      estado: hints.estado || "",
+      municipio: hints.municipio || "",
+      seccion: hints.seccion || "",
+    };
+    const r = await authedFetch(`${API_URL}/api/v1/sujeto/mapear`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (data.error) {
+      alert("Error: " + data.error);
+      return;
+    }
+    // Renderizar resultado
+    renderMapearResult(data);
+  } catch (e) {
+    alert("Error al mapear: " + e.message);
+  } finally {
+    overlay.remove();
+  }
+}
+
+function showLoading(msg, sub) {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center";
+  overlay.innerHTML = `<div class="overlay-panel">
+    <div class="overlay-spinner spinner"></div>
+    <div class="overlay-msg">${esc(msg)}</div>
+    <div class="overlay-sub">${esc(sub)}</div>
+  </div>`;
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+async function crearPerfil(curp, hints) {
+  const overlay = showLoading("Creando perfil...", "Buscando en todas las bases");
+  try {
+    const body = {
+      curp: curp,
+      rfc: hints.rfc || "",
+      nss: hints.nss || "",
+      nombre: [hints.nombre, hints.paterno, hints.materno].filter(Boolean).join(" "),
+    };
+    const r = await authedFetch(`${API_URL}/api/perfil/crear`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (data.error) {
+      alert("Error: " + data.error);
+      return;
+    }
+    renderPerfilResult(data);
+  } catch (e) {
+    alert("Error al crear perfil: " + e.message);
+  } finally {
+    overlay.remove();
+  }
+}
+
+function renderPerfilResult(data) {
+  const modal = document.createElement("div");
+  modal.className = "perfil-modal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+
+  const estado = data.estado || "error";
+  const perfil = data.perfil || {};
+  const pasos = data.pasos || [];
+  const errores = data.errores || [];
+  const creditos = data.metadata?.creditos || {};
+  const elapsed = data.metadata?.elapsed_ms || 0;
+
+  const estadoBadge = ({completo: "✓ Completo", parcial: "⚠ Parcial", ya_completo: "♻ Ya existía", error: "✗ Error"})[estado] || estado;
+  const estadoClass = "estado-badge estado-" + estado;
+
+  const stepIcons = {leer_existente:"📂",padron:"📋",checkid:"🧮",imss:"🏥",att:"📞",telcel:"📱",repuve:"🚗",empleadores:"🏢",issste:"🏛️",cfe:"⚡"};
+  const stepLabels = {leer_existente:"Lectura previa",padron:"Padrón INE",checkid:"CheckID (SAT)",imss:"IMSS Asegurados",att:"ATT",telcel:"Telcel",repuve:"REPUVE",empleadores:"Empleadores",issste:"ISSSTE",cfe:"CFE"};
+
+  let pasosHtml = "";
+  for (const p of pasos) {
+    const icon = stepIcons[p.paso] || "📦";
+    const label = stepLabels[p.paso] || p.paso;
+    const ok = p.ok !== undefined ? p.ok : (p.existe !== undefined);
+    const stepClass = p.error ? "step-error" : (ok || p.existe) ? "step-ok" : (p.reutilizado ? "step-skip" : "step-skip");
+    const statusIcon = p.error ? "✗" : (ok || p.existe) ? "✓" : (p.reutilizado ? "♻" : "—");
+    const detail = p.reutilizado ? "reutilizado" : (p.creditos !== undefined ? `${p.creditos} créditos` : (p.servicios_count !== undefined ? `${p.servicios_count} servicios` : ""));
+    pasosHtml += `<div class="step-item ${stepClass}">
+      <span class="step-icon">${icon}</span>
+      <span class="step-label">${esc(label)}</span>
+      <span class="step-time">${esc(p.tiempo_ms + "ms")}</span>
+      <span class="step-status">${statusIcon}</span>
+      ${detail ? `<span class="step-detail">${esc(detail)}</span>` : ""}
+    </div>`;
+  }
+
+  let datosHtml = "";
+  const fields = [
+    ["CURP", perfil.curp], ["RFC", perfil.rfc], ["NSS", perfil.nss],
+  ];
+  for (const [label, val] of fields) {
+    if (val) datosHtml += `<div class="kv-row"><span class="kv-label">${label}</span><span class="kv-val">${esc(String(val))}</span></div>`;
+  }
+
+  const fuentes = Object.keys(perfil).filter(k => k.endsWith("_data") && perfil[k]);
+  const fuentesHtml = fuentes.map(f => {
+    const name = f.replace("_data","").replace(/_/g," ").toUpperCase();
+    const count = Array.isArray(perfil[f]) ? perfil[f].length : (perfil[f] ? 1 : 0);
+    return `<span class="source-chip">✓ ${esc(name)}${count > 1 ? ` (${count})` : ""}</span>`;
+  }).join("");
+
+  let erroresHtml = "";
+  if (errores.length) {
+    erroresHtml = `<div class="error-list"><div class="error-list-title">⚠ Errores</div>
+      ${errores.map(e => `<div class="error-item">${esc(e)}</div>`).join("")}</div>`;
+  }
+
+  const verExpedienteBtn = perfil.curp
+    ? `<a href="/sujeto.html?curp=${encodeURIComponent(perfil.curp)}" class="btn btn-primary">📋 Ver expediente</a>`
+    : "";
+
+  modal.innerHTML = `<div class="perfil-card">
+    <div class="perfil-head">
+      <div>
+        <h2 class="perfil-title">👤 Perfil del sujeto</h2>
+        <span class="${estadoClass}">${estadoBadge}</span>
+      </div>
+      <button class="perfil-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="perfil-body">
+      <div class="perfil-section">
+        <div class="perfil-section-title">📋 Datos identificados</div>
+        ${datosHtml || '<div class="perfil-empty">Sin datos</div>'}
+      </div>
+
+      <div class="perfil-section">
+        <div class="perfil-section-title">⏱ Flujo (${(elapsed / 1000).toFixed(1)}s)</div>
+        <div class="step-list">
+          ${pasosHtml || '<div class="step-list-empty">Sin pasos ejecutados</div>'}
+        </div>
+      </div>
+
+      <div class="perfil-section">
+        <div class="perfil-section-title">📚 Fuentes consultadas</div>
+        <div class="source-chips">${fuentesHtml || '<span class="source-chips-empty">Ninguna</span>'}</div>
+      </div>
+
+      <div class="perfil-section">
+        <div class="stat-cards">
+          <div class="stat-card stat-accent"><div class="stat-label">CheckID</div><div class="stat-value">${creditos.checkid || 0}</div></div>
+          <div class="stat-card stat-accent2"><div class="stat-label">Bases locales</div><div class="stat-value">${creditos.bases_locales || 0}</div></div>
+          <div class="stat-card stat-neutral"><div class="stat-label">Total</div><div class="stat-value">${creditos.total || 0}</div></div>
+        </div>
+      </div>
+
+      ${erroresHtml}
+
+      <div class="perfil-section"></div>
+    </div>
+    <div class="perfil-actions">
+      ${verExpedienteBtn}
+      <button class="btn" data-close>Cerrar</button>
+    </div>
+  </div>`;
+
+  const cerrar = () => modal.remove();
+  modal.querySelector(".perfil-close").addEventListener("click", cerrar);
+  modal.querySelector("[data-close]").addEventListener("click", cerrar);
+  modal.addEventListener("click", (e) => { if (e.target === modal) cerrar(); });
+  document.addEventListener("keydown", function onKey(e) {
+    if (e.key === "Escape") { cerrar(); document.removeEventListener("keydown", onKey); }
+  });
+
+  document.body.appendChild(modal);
+}
+
+async function confirmarPerfil(btn) {
+  const modal = btn.closest('div[style*="fixed"]');
+  const overlay = showLoading("Guardando perfil...", "Confirmando datos");
+  try {
+    const r = await authedFetch(`${API_URL}/api/perfil/crear`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmar: true, datos_pendientes: {} }),
+    });
+    const data = await r.json();
+    if (data.error) {
+      alert("Error: " + data.error);
+    } else {
+      modal.remove();
+      alert("Perfil guardado correctamente");
+    }
+  } catch (e) {
+    alert("Error: " + e.message);
+  } finally {
+    overlay.remove();
+  }
+}
+
+function renderMapearResult(data) {
+  // Crear modal con el resultado del mapeo
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px";
+
+  const p = data.padron || {};
+  const checkid = data.checkid || {};
+  const cpComp = data.cp_comparison || {};
+  const cfe = data.cfe || {};
+  const cfePorClasif = cfe.por_clasificacion || {};
+
+  // Clasificación de CFE
+  const cfeClasifLabels = {
+    domicilio_sujeto: { icon: "🎯", label: "Domicilio del sujeto", color: "var(--accent2)" },
+    domicilio_familiar: { icon: "👨‍👩‍👧", label: "Domicilio familiar", color: "var(--accent)" },
+    direccion_exacta: { icon: "📍", label: "Dirección coincidente", color: "var(--muted)" },
+    por_nombre: { icon: "🔎", label: "Coincidencia por nombre", color: "var(--warn)" },
+  };
+
+  let cfeHtml = "";
+  for (const [key, conf] of Object.entries(cfeClasifLabels)) {
+    const items = cfePorClasif[key] || [];
+    if (items.length === 0) continue;
+    cfeHtml += `<div class="mapeo-section">
+      <div class="cfe-card-header" style="color:${conf.color}">${conf.icon} ${conf.label} (${items.length})</div>`;
+    for (const c of items) {
+      cfeHtml += `<div class="cfe-card">
+        <div class="cfe-card-name">${esc(c.nombre || "—")}</div>
+        <div class="cfe-card-addr">${esc(c.direccion || "")} ${esc(c.colonia || "")} ${esc(c.cp || "")}</div>
+        <div class="cfe-card-detail">Servicio: ${esc(c.num_servicio || "—")} • ${esc(c.division || "")}</div>
+      </div>`;
+    }
+    cfeHtml += `</div>`;
+  }
+
+  if (!cfeHtml) {
+    cfeHtml = '<div class="cfe-empty">Sin coincidencias CFE encontradas.</div>';
+  }
+
+  // CheckID info
+  let checkidHtml = "";
+  if (checkid.exitoso) {
+    checkidHtml = `
+      <div class="checkid-grid">
+        <div class="stat"><div class="label">RFC</div><div class="value checkid-value">${esc(checkid.rfc || "—")}</div></div>
+        <div class="stat"><div class="label">NSS</div><div class="value checkid-value">${esc(checkid.nss?.nss || "—")}</div></div>
+        <div class="stat"><div class="label">CP Fiscal</div><div class="value checkid-value">${esc(cpComp.cp_fiscal || "—")}</div></div>
+        <div class="stat"><div class="label">Régimen</div><div class="value checkid-value">${esc(Array.isArray(checkid.regimen_fiscal?.regimenesFiscales) ? checkid.regimen_fiscal.regimenesFiscales[0] : "—")}</div></div>
+      </div>`;
+    if (checkid.estado_69_69b?.con_problema) {
+      checkidHtml += `<div class="checkid-error">⚠ Problema en lista 69/69B detectado</div>`;
+    }
+  } else {
+    checkidHtml = `<div class="checkid-unavail">CheckID no disponible: ${esc(checkid.error || "error desconocido")}</div>`;
+  }
+
+  // CP comparison
+  let cpHtml = "";
+  if (cpComp.cp_fiscal) {
+    const color = cpComp.coinciden ? "var(--accent2)" : "var(--warn)";
+    const icon = cpComp.coinciden ? "✓" : "≠";
+    cpHtml = `<div class="cp-note">
+      <span style="color:${color};font-weight:600">${icon}</span> ${esc(cpComp.nota)}
+    </div>`;
+  }
+
+  modal.innerHTML = `<div class="mapeo-modal">
+    <div class="mapeo-header">
+      <h2 class="mapeo-title">🗺 Mapeo de sujeto</h2>
+      <button class="modal-close modal-close-lg" onclick="this.closest('div[style*=fixed]').remove()">&times;</button>
+    </div>
+
+    <div class="mapeo-section">
+      <div class="mapeo-section-heading">📋 Padrón Electoral</div>
+      <div class="mapeo-card">
+        <div><strong>${esc(p.paterno || "")} ${esc(p.materno || "")}, ${esc(p.nombre || "")}</strong></div>
+        <div class="text-muted">CURP: ${esc(p.curp || "—")}</div>
+        <div class="text-muted">${esc(p.calle || "")} ${esc(p.ext || "")}, ${esc(p.colonia || "")}, CP ${esc(p.cp || "—")}</div>
+        <div class="text-muted">${esc(p.municipio || "")}, ${esc(p.estado || "")} — Sección ${esc(p.seccion || "—")}</div>
+      </div>
+    </div>
+
+    <div class="mapeo-section">
+      <div class="mapeo-section-heading">🏛 Datos fiscales (CheckID)</div>
+      ${checkidHtml}
+      ${cpHtml}
+    </div>
+
+    <div class="mapeo-section">
+      <div class="mapeo-section-heading">⚡ Coincidencias CFE (${cfe.total || 0})</div>
+      ${cfeHtml}
+    </div>
+
+    <div class="mapeo-empty">
+      Mapeo completado en ${data.metadata?.elapsed_ms || 0}ms • 3 créditos consumidos
+    </div>
+  </div>`;
+
+  document.body.appendChild(modal);
+}
+
+/* ==== Eventos ==== */
+$("universal-form").addEventListener("submit", e => { e.preventDefault(); doSearch(); });
+$("btn-clear").addEventListener("click", clearFilter);
+if ($("logout")) $("logout").addEventListener("click", async () => {
+  await fetch(`${API_URL}/api/auth/logout`, {method: "POST",
+    headers: localStorage.getItem("session_token")
+      ? {"Authorization": `Bearer ${localStorage.getItem("session_token")}`} : {}});
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "/" && document.activeElement.tagName !== "INPUT" &&
+      document.activeElement.tagName !== "SELECT" && document.activeElement.tagName !== "TEXTAREA") {
+    e.preventDefault();
+    $("curp").focus();
+  }
+});
+
+init();
+</script>
+<script>
+(function(){
+  const wrap = document.querySelector('.argos-bg');
+  if (!wrap) return;
+  const cv = wrap.querySelector('canvas');
+  const ctx = cv.getContext('2d');
+  const quiet = wrap.classList.contains('argos-bg--quiet');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = quiet || reduce;
+  const PLATA = '201,205,213', AMBAR = '232,180,74';
+  let W, H, dpr, nodes = [], amber = [];
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function build(){
+    const n = Math.round((W * H) / (quiet ? 44000 : 22000));
+    nodes = [];
+    for (let i = 0; i < n; i++){
+      nodes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12,
+        r: 1 + Math.random() * 1.4,
+        a: .25 + Math.random() * .45
+      });
+    }
+    amber = [];
+    const spots = [[.18,.28],[.80,.22],[.72,.78]];
+    spots.forEach(([fx,fy]) => amber.push({ x: W*fx + (Math.random()-.5)*80, y: H*fy + (Math.random()-.5)*80, t: Math.random()*Math.PI*2 }));
+  }
+  function centerFade(x, y){
+    const dx = (x - W/2) / (W*.45), dy = (y - H/2) / (H*.45);
+    const d = Math.min(1, Math.sqrt(dx*dx + dy*dy));
+    return .25 + .75 * d * d;
+  }
+  const LINK = 150;
+  function draw(t){
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < nodes.length; i++){
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++){
+        const b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y, d2 = dx*dx + dy*dy;
+        if (d2 < LINK*LINK){
+          const k = 1 - Math.sqrt(d2) / LINK;
+          const f = centerFade((a.x+b.x)/2, (a.y+b.y)/2);
+          ctx.strokeStyle = 'rgba('+PLATA+','+(k * .16 * f).toFixed(3)+')';
+          ctx.lineWidth = .8;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+    }
+    for (const p of nodes){
+      const f = centerFade(p.x, p.y);
+      ctx.fillStyle = 'rgba('+PLATA+','+(p.a * f).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      if (!still){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -10) p.x = W + 10; if (p.x > W + 10) p.x = -10;
+        if (p.y < -10) p.y = H + 10; if (p.y > H + 10) p.y = -10;
+      }
+    }
+    for (const s of amber){
+      const pulse = still ? .5 : (.5 + .5 * Math.sin(t * .0009 + s.t));
+      nodes.forEach(p => {
+        const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy);
+        if (d < LINK * 1.3){
+          ctx.strokeStyle = 'rgba('+AMBAR+','+(.10 + .12 * pulse) * (1 - d/(LINK*1.3))+')';
+          ctx.lineWidth = .9;
+          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        }
+      });
+      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 26);
+      g.addColorStop(0, 'rgba('+AMBAR+','+(.22 + .18 * pulse).toFixed(3)+')');
+      g.addColorStop(1, 'rgba('+AMBAR+',0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba('+AMBAR+','+(.75 + .25 * pulse).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 2.6, 0, Math.PI*2); ctx.fill();
+    }
+    if (!still) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', () => { resize(); if (still) draw(0); });
+  resize();
+  still ? draw(0) : requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

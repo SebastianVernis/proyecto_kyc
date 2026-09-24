@@ -1,0 +1,263 @@
+Reporte de Verificación — FARIT REYES DOMINGUEZ
+
+NX
+
+NEXO INTELLIGENCE
+
+Plataforma de Verificación de Identidad · Padrón Nacional
+
+Reporte de Verificación
+
+FARIT REYES DOMINGUEZ
+
+ CONFIDENCIAL
+ ID interno: NEXO-REDF8901-20260828
+
+CURP
+
+REDF890102HOCYMR07
+
+RFC
+
+REDF890102HD7
+
+Folio Nacional
+
+820052111559
+
+Sección Electoral
+
+2217
+
+Fecha de Consulta
+
+28/08/2026 01:19:26
+
+Tipo de Reporte
+
+Verificación Integral
+
+© 2026 Nexo Intelligence · Todos los datos provienen de fuentes oficiales verificables
+
+02 Resumen Ejecutivo
+
+Síntesis narrativa generada con IA (modelo glm-5.2) a partir de los datos recolectados en el padrón, fuentes oficiales (RENAPO/SAT/IMSS vía CheckID) y redes sociales.
+
+FARIT REYES DOMINGUEZ (CURP REDF890102HOCYMR07, RFC REDF890102HD7) es un varón nacido el 2 de enero de 1989 en Oaxaca. Su identidad quedó verificada por dos vías oficiales: padrón electoral federal y CheckID/SAT.
+
+1) PADRÓN INE 2018 (folio 820052111559, sección 2217, Oaxaca de Juárez): credencial vigente, avecindado en Calle Naranjos Mza G Lote 9, Fraccionamiento Los Tamarindos, CP 70760.
+
+2) CHECKID/SAT (consultado en esta sesión): RFC REDF890102HD7 activo, régimen 616 'Sin obligaciones fiscales', NSS 78108940459, CP fiscal 52784 (Huixquilucan, Estado de México), sin problemas en listas 69/69B del SAT. La razón social registrada es 'FARIT REYES DOMINGUEZ' — coincidencia exacta con el nombre del padrón.
+
+VALIDACIÓN OFICIAL: la CURP se validó contra el SAT (RFC válido y susceptible de recibir CFDI). Sin embargo, RENAPO (Tlaloc) no la encontró en su base — esto puede deberse a que la CURP no ha sido 'verificada presencialmente' o a cobertura incompleta de la base RENAPO consultada. El nombre y la clave CURP coinciden con la consulta CheckID, lo que da alta confianza en la identidad.
+
+BÚSQUEDAS NEGATIVAS (sujeta auditoría):
+- Telcel: 0 líneas con el RFC REDF890102HD7. Solo existe un registro en telcel.duckdb con RFC 'REDF8901024KA' (homoclave distinta), pero pertenece a FIORELLA KATHERINE REINA DURAN (Cancún, Quintana Roo) — RFC mal capturado en la base, no es nuestro sujeto.
+- IMSS (imss_asegurados, imss_salud): 0 registros con la CURP, con el RFC, o con el nombre completo.
+- Bancarias: 0 cuentas.
+- REPUVE: 0 vehículos.
+- ISSSTE: 0 empleados federales.
+- ATT: 0 líneas fijas/celulares con el nombre exacto.
+- CFE: 0 servicios. Una búsqueda con el nombre 'DOMINGUEZ REYES FARIT' o 'FARIT REYES DOMINGUEZ' devuelve 5 contratos en la base, pero todos son de terceros (DOMINGUEZ REYES FARIT ISOLET en Apizaco Tlaxcala, y DOMINGUEZ REYES JESUS FARITH en Nogales Sonora). Tras la validación con la CURP oficial, se descartan como mismo sujeto.
+
+INCONSISTENCIA PREVIA CORREGIDA: en una primera investigación sin la CURP, el endpoint xwalk.nombre_rfcs devolvió 50 RFCs de personas con apellido REYES DOMINGUEZ o DOMINGUEZ REYES, incluyendo 'DORJ920803EM0' (atribuido a un tal JESUS FARITH DOMINGUEZ REYES, nacido 1992, con 5 líneas Telcel activas y patrón IMSS en Agua Prieta, Sonora). Se descarta como mismo sujeto: la fecha de nacimiento difiere en 3 años (1989 vs 1992), los RFCs son estructuralmente distintos (REDF vs DORJ), y el domicilio fiscal (Huixquilucan vs Agua Prieta) no coincide. La asociación inicial fue un falso positivo del xwalk por coincidencia de apellido.
+
+PERFIL DE RIESGO: bajo. Sin antecedentes en listas negras (69/69B), sin vehículos registrados, sin actividad financiera formal visible, sin línea telefónica móvil, sin servicio eléctrico contratado a su nombre. El sujeto es económicamente inactivo o de actividad muy reducida (régimen 616 'Sin obligaciones fiscales' lo confirma). Padrón electoral vigente en Oaxaca.
+
+Estado de las Fuentes
+
+ | Fuente | | Estado | | Detalle | 
+
+ | Padrón INE 2018 | | Verificado | | FARIT REYES DOMINGUEZ | 
+
+ | Tlaloc (RENAPO) | | No consultado | | Pendiente de validación | 
+
+ | CheckID (SAT/IMSS) | | Verificado | | RFC REDF890102HD7, NSS 78108940459, régimen 616 - Sin obligaciones fiscales... | 
+
+ | Singula (SAT) | | No consultado | | Pendiente | 
+
+ | Social Media Finder | | Sin resultados | | No se encontraron coincidencias exactas de nombre | 
+
+03 Datos del Padrón Electoral LOCAL
+
+Datos obtenidos del padrón electoral federal (INE 2018), base nacional con 88,402,547 registros.
+
+ | Campo | | Valor | 
+
+ | Nombre | | FARIT | 
+
+ | Apellido Paterno | | REYES | 
+
+ | Apellido Materno | | DOMINGUEZ | 
+
+ | Fecha de Nacimiento | | 02/01/1989 | 
+
+ | Sexo | | H | 
+
+ | Estado | | Oaxaca | 
+
+ | Municipio | | Oaxaca de Juárez | 
+
+ | Localidad | | Oaxaca de Juárez | 
+
+ | Sección | | 2217 | 
+
+ | Manzana | | 42 | 
+
+ | Calle | | C NARANJOS MZA G LOTE | 
+
+ | Número Exterior | | 9 | 
+
+ | Número Interior | | — | 
+
+ | Colonia | | FRACC LOS TAMARINDOS | 
+
+ | Código Postal | | 70760 | 
+
+ | Folio Nacional | | 820052111559 | 
+
+ | Clave de Elector | | — | 
+
+ | OCR | | — | 
+
+ | CIC | | — | 
+
+ | Año de Registro | | 2018 | 
+
+04 Mapa de Ubicación GEO
+
+Geolocalización de la dirección registrada en el padrón electoral. Datos geocodificados vía OpenStreetMap/Nominatim.
+
+Dirección:CALLE NARANJOS MZA G LOTE 9
+
+Dirección:FRACCIONAMIENTO LOS TAMARINDOS
+
+Dirección:CP 70760
+
+Dirección:Oaxaca de Juárez
+
+Dirección:OAXACA
+
+📍 Coordenadas: 19.4102554, -99.2647124
+
+52784, Huixquilucan, Estado de México, México
+
+Nota Metodológica
+
+La ubicación mostrada corresponde a la dirección registrada en el padrón electoral. La precisión depende de la calidad de los datos de dirección y de la geocodificación de OpenStreetMap. Pueden existir variaciones de hasta 50 metros en zonas urbanas densas o rurales con nomenclatura no estandarizada.
+
+05 Identidad Oficial (RENAPO) TLALOC
+
+Validación de identidad contra el Registro Nacional de Población (RENAPO) vía API Tlaloc.
+
+✗ Error: no encontrada en RENAPO
+
+Datos Verificados
+
+ | Campo | | Valor | 
+
+ | Nombres | | — | 
+
+ | Apellido Paterno | | — | 
+
+ | Apellido Materno | | — | 
+
+ | Sexo | | HOMBRE | 
+
+ | Fecha de Nacimiento | | 02/01/1989 | 
+
+ | Nacionalidad | | — | 
+
+ | Entidad de Registro | | OAXACA | 
+
+ | Clave de Entidad | | — | 
+
+ | Estatus CURP | | — | 
+
+ | Año de Registro | | — | 
+
+ | Entidad de Registro (Doc) | | — | 
+
+ | Municipio de Registro | | — | 
+
+ | Número de Acta | | — | 
+
+06 Situación Fiscal y Laboral (SAT/IMSS) CHECKID
+
+Consulta fiscal y laboral vía CheckID (Canicalabs): RFC, NSS, código postal, régimen fiscal y estatus en listas 69 y 69B del SAT.
+
+✓ Datos fiscales y laborales obtenidos vía CheckID: RFC, NSS, régimen fiscal, código postal y estado en listas 69/69B.
+
+Datos Fiscales y Laborales
+
+ | Campo | | Valor | 
+
+ | RFC | | REDF890102HD7 | 
+
+ | Razón social | | FARIT REYES DOMINGUEZ | 
+
+ | NSS | | 78108940459 | 
+
+ | Email fiscal | | — | 
+
+ | Código postal | | 52784 | 
+
+ | Régimen fiscal | | 616 - Sin obligaciones fiscales | 
+
+ | 69/69B con problema | | No | 
+
+06b Padrón ISSSTE (Empleados Federales) ISSSTE
+
+Búsqueda en padrón del Instituto de Seguridad y Servicios Sociales de los Trabajadores del Estado (2.7M empleados). Búsqueda por nombre + paterno + materno (sin RFC/CURP).
+
+ℹ No se ha ejecutado la búsqueda en padrón ISSSTE.
+
+Coincidencias
+
+ | Apellidos | | Nombre | | Cargo | | Sexo | 
+ | Sueldo | | Ramo | | Entidad | | Sector | 
+
+ | Sin coincidencias en padrón ISSSTE | 
+
+07 Validaciones Singula SINGULA
+
+Customer-centric de Singula: RFC validado, antecedentes judiciales, email lookup, blacklist/PEP e inteligencia digital básica. El perfil es creado/reusado por CURP y enriquecido automáticamente con datos del padrón electoral, CheckID, Tlaloc y SEPOMEX.
+
+ℹ No se ha ejecutado la validación con Singula.
+
+08 Presencia en Redes Sociales SOCIAL MEDIA FINDER
+
+Búsqueda automática en 13 plataformas sociales (Instagram, Facebook, LinkedIn, TikTok, Twitter/X, YouTube, Twitch, Medium, Pinterest, Snapchat, Reddit, GitHub, Spotify) vía tri_angle/social-media-finder en Apify. Solo se incluyen perfiles cuyo nombre mostrado coincide exactamente con el nombre completo registrado en el padrón electoral.
+
+ℹ No se encontraron coincidencias exactas de nombre. Se revisaron 0 candidatos en 13 redes sociales.
+
+ℹ No se encontraron perfiles con coincidencia exacta de nombre. Solo se muestran perfiles cuyo nombre mostrado coincide exactamente con el nombre registrado en el padrón.
+
+Nota Metodológica
+
+La búsqueda se realiza por nombre completo. El filtro de coincidencia exacta compara el nombre mostrado del perfil (displayName, name, fullName, title) contra el nombre del sujeto en el padrón, ignorando mayúsculas/minúsculas y acentos. Un perfil que aparece aquí tiene alta probabilidad de pertenecer a la entidad buscada, pero no constituye una verificación definitiva de identidad.
+
+09 Observaciones y Conclusiones
+
+Validación Cruzada
+
+✓ Sin inconsistencias detectadas entre las fuentes.
+
+Limitaciones del Reporte
+
+Este reporte se basa en las fuentes consultadas al momento de su generación. Los datos pueden haber cambiado desde entonces. La información de redes sociales es OSINT público; su ausencia no implica inexistencia. Los perfiles sociales mostrados son coincidencias exactas de nombre y no constituyen verificación definitiva de identidad.
+
+Fuentes Utilizadas
+
+ Padrón INE 2018 — 88.4M registros locales
+ CheckID — SAT (RFC, régimen, 69/69B) + IMSS (NSS)
+ Tlaloc — RENAPO (CURP)
+ Singula — SAT (RFC validation, fallback)
+ ISSSTE — Padrón de empleados federales (2.7M)
+ Social Media Finder — tri_angle/social-media-finder vía Apify (13 redes)
+ Ollama Cloud — Análisis narrativo (glm-5.2)
+ OpenStreetMap — Geocodificación local (Nominatim México) + mapa de ubicación
+
+Cláusula de Confidencialidad
+
+Este documento contiene información personal protegida por la LFPDPPP. Su uso está restringido a los fines autorizados por el titular. Prohibida su reproducción total o parcial sin consentimiento escrito. La veracidad de los datos corresponde a las fuentes consultadas; este reporte no certifica la identidad del sujeto.

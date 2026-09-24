@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte KYC — Familia Jiménez Godoy</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root { --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b; --accent: #818cf8; --green: #10b981; --red: #ef4444; --amber: #f59e0b; --border: #334155; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .full { width: 100%; padding: 24px 32px; }
+  .cover { text-align: center; padding: 60px 32px; background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e293b 100%); border-bottom: 3px solid var(--accent); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .cover h1 { font-size: 2.4em; color: var(--accent); margin-bottom: 8px; }
+  .cover h2 { font-size: 1.2em; color: var(--text2); font-weight: 400; margin-bottom: 24px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; width: 100%; max-width: 800px; margin: 0 auto; }
+  .kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .kpi .number { font-size: 1.8em; font-weight: 700; color: var(--accent); }
+  .kpi .label { font-size: 0.75em; color: var(--text3); }
+  h2.sec { font-size: 1.3em; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin: 24px 0 16px; }
+  .card { background: var(--bg2); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px; overflow: hidden; }
+  .card-h { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .card-h h3 { margin: 0; font-size: 1em; }
+  .card-b { padding: 12px 16px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 16px; font-size: 0.7em; color: #fff; font-weight: 600; }
+  .bg { background: #065f46; color: #6ee7b7; }
+  .br { background: #7f1d1d; color: #fca5a5; }
+  .ba { background: #78350f; color: #fcd34d; }
+  .bb { background: #1e3a5f; color: #93c5fd; }
+  table { width: 100%; font-size: 0.85em; border-collapse: collapse; }
+  td { padding: 4px 8px; border-bottom: 1px solid var(--border); }
+  td:first-child { color: var(--text3); width: 35%; }
+  .arg { background: var(--bg3); border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-size: 0.9em; line-height: 1.5; border-left: 3px solid var(--accent); }
+  .arg strong { color: var(--accent); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .alert { padding: 10px 14px; border-radius: 6px; margin: 10px 0; font-size: 0.85em; border-left: 3px solid; }
+  .aw { background: #78350f; border-color: var(--amber); }
+  .ag { background: #064e3b; border-color: var(--green); }
+  .footer { margin-top: 24px; padding: 16px; background: var(--bg2); border-radius: 8px; font-size: 0.75em; color: var(--text3); text-align: center; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:0.8em; color:var(--accent); letter-spacing:4px; margin-bottom:6px;">PLATAFORMA ENCUENTRA</div>
+  <h1>Reporte de Verificación KYC</h1>
+  <h2>Familia Jiménez Godoy — Análisis consolidado</h2>
+  <div class="kpi-row">
+    <div class="kpi"><div class="number">3</div><div class="label">Sujetos</div></div>
+    <div class="kpi"><div class="number">3</div><div class="label">RFC verificados</div></div>
+    <div class="kpi"><div class="number">1</div><div class="label">IMSS + ISSSTE</div></div>
+    <div class="kpi"><div class="number">1</div><div class="label">CFE</div></div>
+    <div class="kpi"><div class="number">1</div><div class="label">Acta nacimiento</div></div>
+  </div>
+  <div style="margin-top:32px; color:var(--text3); font-size:0.85em;">
+    <div>Fecha de emisión: 11 de septiembre de 2026</div>
+    <div style="margin-top:4px;">Identidad confirmada por acta de nacimiento certificada del Registro Civil de Jalisco</div>
+  </div>
+</div>
+
+<!-- 01 GABRIELA -->
+<div class="full">
+  <h2 class="sec">01 · GABRIELA GEORGINA JIMENEZ GODOY</h2>
+  <p style="color:var(--text3); font-size:0.9em;">CURP: <code>JIGG870223MJCMDB08</code> · Nacimiento: 23 de febrero de 1987 · Guadalajara, Jalisco · Mujer</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h3>Identidad fiscal</h3></div>
+      <div class="card-b">
+        <table>
+          <tr><td>RFC</td><td><code>JIGG870223KC0</code></td></tr>
+          <tr><td>Vigencia</td><td>Hasta 19 de diciembre de 2029</td></tr>
+          <tr><td>Régimen 605</td><td>Sueldos y salarios</td></tr>
+          <tr><td>Régimen 611</td><td>Dividendos</td></tr>
+          <tr><td>Régimen 612</td><td>Actividades empresariales y profesionales</td></tr>
+          <tr><td>Régimen 606</td><td>Arrendamiento</td></tr>
+          <tr><td>Estado 69/69B</td><td>Sin problemas</td></tr>
+          <tr><td>CP fiscal</td><td>01040 · San Ángel, Alvaro Obregón, CDMX</td></tr>
+          <tr><td>AFORE</td><td>PENSIONISSSTE</td></tr>
+          <tr><td>NSS</td><td><code>39098702531</code></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Acta de nacimiento</h3> <span class="badge bg">Certificada</span></div>
+      <div class="card-b">
+        <table>
+          <tr><td>Registro Civil</td><td>Zapopan, Jalisco</td></tr>
+          <tr><td>Número de acta</td><td>553</td></tr>
+          <tr><td>Libro / Oficialía</td><td>3 / 0001</td></tr>
+          <tr><td>Fecha de registro</td><td>14 de marzo de 1987</td></tr>
+          <tr><td>Folio</td><td>11412000011987005530</td></tr>
+          <tr><td>Padre</td><td>JORGE JAVIER JIMENEZ ALCARAZ</td></tr>
+          <tr><td>Madre</td><td>GABRIELA GODOY CASTILLON</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h3>Domicilio electoral</h3></div>
+      <div class="card-b">
+        <table>
+          <tr><td>Calle</td><td>Calle 10 #251</td></tr>
+          <tr><td>Colonia</td><td>Porvenir, CP 02940</td></tr>
+          <tr><td>Alcaldía</td><td>Azcapotzalco, CDMX</td></tr>
+          <tr><td>Sección / Mza</td><td>5 / 17</td></tr>
+          <tr><td>Folio INE</td><td>509210104556</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Estado civil</h3></div>
+      <div class="card-b">
+        <div class="alert ag"><strong>Soltera</strong></div>
+        <p style="font-size:0.85em; margin-top:8px;">Cuatro consultas a Consulta Única (3 matrimonio, 1 divorcio) no retornaron resultados.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="arg">
+    <strong>Análisis:</strong> Perfil fiscal activo con 4 regímenes simultáneos (sueldos, dividendos, empresarial, arrendamiento). AFORE PENSIONISSSTE sugiere empleo en sector público vinculado al ISSSTE. No aparece en IMSS, ISSSTE ni bases de telecom/vehiculares — posible actividad bajo RFC diferente o economía informal. CP fiscal 01040 coincide con padre (HGZMF 8 San Ángel) y madre (Guadalupe Inn CP 01020), confirmando residencia familiar en zona sur de Alvaro Obregón.
+  </div>
+</div>
+
+<!-- 02 PADRE -->
+<div class="full">
+  <h2 class="sec" style="color:var(--green);">02 · JORGE JAVIER JIMENEZ ALCARAZ</h2>
+  <p style="color:var(--text3); font-size:0.9em;">CURP: <code>JIAJ491109HDFMLR05</code> · Nacimiento: 09 de noviembre de 1949 · Jalisco · 76 años</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h3>Identidad fiscal</h3></div>
+      <div class="card-b">
+        <table>
+          <tr><td>RFC</td><td><code>JIAJ491109DF1</code></td></tr>
+          <tr><td>CP fiscal</td><td>01040 · San Ángel</td></tr>
+          <tr><td>Estado 69/69B</td><td>Sin problemas</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>IMSS</h3> <span class="badge bg">Encontrado</span></div>
+      <div class="card-b">
+        <table>
+          <tr><td>NSS</td><td><code>06754903208</code></td></tr>
+          <tr><td>Régimen</td><td>Continuación Voluntaria · Seguro Convencional</td></tr>
+          <tr><td>Unidad</td><td>HGZMF 8 San Ángel · OOAD DF SUR</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h3>ISSSTE</h3> <span class="badge bg">Encontrado</span></div>
+      <div class="card-b">
+        <table>
+          <tr><td>Cargo</td><td>Confidencial</td></tr>
+          <tr><td>Sueldo</td><td>$7,935.00 mensuales</td></tr>
+          <tr><td>Ramo</td><td>Gobierno del Distrito Federal (GDF)</td></tr>
+          <tr><td>Modalidad</td><td>Todos los seguros, prestaciones y servicios</td></tr>
+          <tr><td>Sector / Estado</td><td>Gobierno Estatal · CDMX</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Domicilios</h3></div>
+      <div class="card-b">
+        <table>
+          <tr><td>Electoral</td><td>C Las Flores #380, Col Tlacopac, CP 01049 · Sección 3504</td></tr>
+          <tr><td>Fiscal</td><td>CP 01040 · San Ángel (mismo que hija)</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="arg">
+    <strong>Análisis:</strong> Doble afiliación ISSSTE (GDF, $7,935) + IMSS (HGZMF 8 San Ángel, seguro voluntario). Puede indicar: (a) dos empleos gubernamentales, (b) cambio laboral sin baja del régimen anterior, o (c) empleo principal en ISSSTE con seguro IMSS complementario. La "Continuación Voluntaria" sugiere jubilación parcial o transición laboral. CP fiscal compartido con hija.
+  </div>
+</div>
+
+<!-- 03 MADRE -->
+<div class="full">
+  <h2 class="sec" style="color:var(--amber);">03 · GABRIELA GODOY CASTILLON</h2>
+  <p style="color:var(--text3); font-size:0.9em;">CURP: <code>GOCG600103MJCDSB08</code> · Nacimiento: 03 de enero de 1960 · Jalisco · 65 años</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h3>Identidad fiscal</h3></div>
+      <div class="card-b">
+        <table>
+          <tr><td>RFC</td><td><code>GOCG600103RG2</code></td></tr>
+          <tr><td>CP fiscal</td><td>01020 · Guadalupe Inn, Alvaro Obregón</td></tr>
+          <tr><td>Estado 69/69B</td><td>Sin problemas</td></tr>
+        </table>
+        <div class="alert aw" style="margin-top:10px;">El nombre "GABRIELA" se transmite a la hija — práctica consuetudinaria mexicana.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>CFE</h3> <span class="badge bg">Confirmado</span></div>
+      <div class="card-b">
+        <table>
+          <tr><td>Servicio</td><td><code>288180200600</code></td></tr>
+          <tr><td>Dirección</td><td>AV Insurgentes Sur 1857 B 1301</td></tr>
+          <tr><td>Colonia</td><td>Guadalupe Inn · CP 01020 · Zona Las Lomas</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>Domicilios</h3></div>
+    <div class="card-b">
+      <table>
+        <tr><td>Electoral</td><td>C Lerdo de Tejada #3, Col Guadalupe Inn, CP 01020 · Sección 3455 · Alvaro Obregón</td></tr>
+        <tr><td>Fiscal</td><td>CP 01020 (consistente electoral + CFE)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="arg">
+    <strong>Análisis:</strong> Sin afiliación laboral formal (sin IMSS, sin ISSSTE). Contrato CFE a su nombre en zona residencial de clase media-alta (Guadalupe Inn). A sus 65 años, consistente con jubilada o ingresos por arrendamiento/inversiones. La consistencia CP electoral + CP fiscal + CFE confirma domicilio estable y verificable.
+  </div>
+</div>
+
+<!-- 04 FAMILIA ISSSTE -->
+<div class="full">
+  <h2 class="sec">04 · Familia JIMENEZ GODOY en ISSSTE</h2>
+  <p style="color:var(--text3); font-size:0.9em;">9 registros — distribuidos en 7 estados del país</p>
+
+  <table style="margin-bottom:16px;">
+    <tr style="background:var(--bg3);"><th style="text-align:left; padding:6px 8px; color:var(--text2);">Nombre</th><th style="text-align:left; padding:6px 8px; color:var(--text2);">Cargo</th><th style="text-align:left; padding:6px 8px; color:var(--text2);">Ramo</th><th style="text-align:left; padding:6px 8px; color:var(--text2);">Estado</th><th style="text-align:right; padding:6px 8px; color:var(--text2);">Sueldo</th></tr>
+    <tr><td>ARACELI JIMENEZ GODOY</td><td>Base</td><td>Serv. Educativos Estado de México</td><td>México</td><td style="text-align:right;">$12,097</td></tr>
+    <tr><td>CARLOS MISAEL JIMENEZ GODOY</td><td>Base</td><td>SEP Baja California Sur</td><td>B.C.S.</td><td style="text-align:right;">$6,210</td></tr>
+    <tr><td>MARIA GUADALUPE JIMENEZ GODOY</td><td>Base</td><td>ISSSTE Nayarit</td><td>Nayarit</td><td style="text-align:right;">$13,780</td></tr>
+    <tr><td>CORAZON DE MARIA JIMENEZ GODOY</td><td>Base</td><td>SE Jalisco</td><td>Jalisco</td><td style="text-align:right;">$2,814</td></tr>
+    <tr><td>ROGELIO HAZAEL JIMENEZ GODOY</td><td>Eventual</td><td>Salud Morelos</td><td>Morelos</td><td style="text-align:right;">$2,441</td></tr>
+    <tr><td>SERGIO JIMENEZ GODOY</td><td>Base</td><td>ISSSTE</td><td>—</td><td style="text-align:right;">$5,226</td></tr>
+    <tr><td>LILIANA JIMENEZ GODOY</td><td>Base</td><td>ISSSTE</td><td>—</td><td style="text-align:right;">$8,295</td></tr>
+    <tr><td>JUAN CARLOS JIMENEZ GODOY</td><td>Base</td><td>ISSSTE</td><td>—</td><td style="text-align:right;">$8,695</td></tr>
+    <tr><td>LILIANA JIMENEZ GODOY</td><td>Confidencial</td><td>ISSSTE</td><td>—</td><td style="text-align:right;">$5,226</td></tr>
+  </table>
+
+  <div class="arg">
+    <strong>Análisis:</strong> Dispersión geográfica en 7 estados (Jalisco, Estado de México, Baja California Sur, Nayarit, Morelos). Predominio de empleados de base en sector educativo público. Sueldos entre $2,441 y $13,780. Patrón consistente con familias de servidores públicos estatales de Jalisco que se han dispersado por el país.
+  </div>
+</div>
+
+<!-- 05 CONCLUSIONES -->
+<div class="full">
+  <h2 class="sec">05 · Conclusiones</h2>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-h"><h3>Identidad verificada</h3></div>
+    <div class="card-b">
+      <p style="font-size:0.9em;">Filiación confirmada por acta de nacimiento certificada (acta #553, Zapopan, Jalisco). Los tres tienen RFC verificado sin problemas en estado 69/69B.</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h3>Estado civil</h3></div>
+      <div class="card-b"><p style="font-size:0.9em;"><strong>Soltera</strong> — 4 consultas a Consulta Única sin resultados de matrimonio o divorcio.</p></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Perfil fiscal</h3></div>
+      <div class="card-b"><p style="font-size:0.9em;">4 regímenes activos simultáneos (sueldos, dividendos, empresarial, arrendamiento). Estructura económica diversificada.</p></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h3>Padre — doble afiliación</h3></div>
+      <div class="card-b"><p style="font-size:0.9em;">IMSS (HGZMF 8 San Ángel, voluntario) + ISSSTE (GDF, $7,935). CP fiscal compartado con hija. Empleado del ext. GDF.</p></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Madre — perfil doméstico</h3></div>
+      <div class="card-b"><p style="font-size:0.9em;">Sin afiliación laboral formal. CFE a su nombre en Guadalupe Inn (CP 01020). Domicilio estable verificable.</p></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-h"><h3>Familia extendida</h3></div>
+    <div class="card-b">
+      <p style="font-size:0.9em;">9 registros JIMENEZ GODOY en ISSSTE (7 estados). Cluster de Jalisco (Montes Marcianos 2029, CP 44320) con empleados públicos en sector educativo.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div style="font-size:1.1em; color:var(--text2); margin-bottom:6px;">PLATAFORMA ENCUENTRA</div>
+    Reporte KYC — Familia Jiménez Godoy · 11 de septiembre de 2026<br>
+    <span style="display:block; margin-top:4px;">Información reservada. Uso exclusivo de verificación de identidad.</span>
+  </div>
+</div>
+
+</body>
+</html>

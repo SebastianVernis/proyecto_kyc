@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte KYC — Familia Jiménez Godoy</title>
+
+<style>
+  :root {
+    --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+    --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+    --accent: #818cf8; --accent2: #6366f1;
+    --green: #10b981; --red: #ef4444; --amber: #f59e0b; --pink: #ec4899;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+  /* Cover */
+  .cover { text-align: center; padding: 80px 40px; background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e293b 100%); border-bottom: 3px solid var(--accent); page-break-after: always; }
+  .cover h1 { font-size: 2.5em; color: var(--accent); margin-bottom: 10px; }
+  .cover h2 { font-size: 1.3em; color: var(--text2); font-weight: 400; }
+  .cover .meta { margin-top: 40px; color: var(--text3); font-size: 0.9em; }
+  .cover .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+  .kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .kpi .number { font-size: 2em; font-weight: 700; color: var(--accent); }
+  .kpi .label { font-size: 0.8em; color: var(--text3); }
+
+  /* Sections */
+  .section { page-break-inside: avoid; margin-bottom: 40px; }
+  .section-title { font-size: 1.4em; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 20px; }
+
+  /* Network */
+  #network { width: 100%; height: 500px; background: var(--bg2); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; }
+
+  /* Cards */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 20px; }
+  .card { background: var(--bg2); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; page-break-inside: avoid; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .card-header h3 { font-size: 1.1em; margin: 6px 0 2px; }
+  .card-header .fecnac { color: var(--text3); font-size: 0.85em; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75em; color: #fff; font-weight: 600; }
+  .card-body { padding: 16px 20px; }
+  .section-mini { margin-bottom: 14px; }
+  .section-mini h4 { font-size: 0.9em; color: var(--text2); margin-bottom: 6px; }
+  .section-mini table { width: 100%; font-size: 0.85em; }
+  .section-mini td { padding: 3px 8px; border-bottom: 1px solid var(--border); }
+  .section-mini td:first-child { color: var(--text3); width: 30%; }
+  .section-mini ul { list-style: none; padding: 0; }
+  .section-mini li { padding: 2px 0; font-size: 0.85em; color: var(--text2); }
+  .section-mini li::before { content: "→ "; color: var(--accent); }
+  code { background: var(--bg3); padding: 1px 6px; border-radius: 4px; font-size: 0.9em; color: var(--green); }
+  .money { color: var(--green); font-weight: 600; text-align: right; }
+
+  /* Summary table */
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 0.85em; margin-bottom: 20px; }
+  .summary-table th { background: var(--bg3); color: var(--text2); padding: 8px 12px; text-align: left; font-weight: 600; }
+  .summary-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .summary-table tr:hover { background: var(--bg2); }
+  .hit { color: var(--green); }
+  .miss { color: var(--text3); }
+
+  /* Footer */
+  .footer { margin-top: 60px; padding: 30px; background: var(--bg2); border-radius: 12px; border: 1px solid var(--border); font-size: 0.8em; color: var(--text3); }
+  .footer h4 { color: var(--text2); margin-bottom: 10px; }
+
+  /* Print */
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: var(--bg) !important; }
+    .cover { padding: 40px 30px; }
+    #network { height: 400px; }
+    .cards-grid { grid-template-columns: 1fr 1fr; }
+    .card { page-break-inside: avoid; }
+    @page { margin: 1cm; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1>REPORTE KYC — FAMILIA JIMÉNEZ GODOY</h1>
+  <h2>GABRIELA GEORGINA JIMÉNEZ GODOY — Sujeto Principal</h2>
+  <div class="meta">
+    <p>Plataforma Encuentra · Investigación de Red Familiar</p>
+    <p>CURP: JIGG870223MJCMDB08 · RFC: JIGG870223KC0</p>
+    <p>Fecha: 2026-09-09</p>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="number">12</div><div class="label">Familiares identificados</div></div>
+    <div class="kpi"><div class="number">8</div><div class="label">Con padrón INE</div></div>
+    <div class="kpi"><div class="number">7</div><div class="label">Con IMSS activo</div></div>
+    <div class="kpi"><div class="number">2</div><div class="label">Zonas geográficas</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 02: RESUMEN -->
+<div class="section">
+  <div class="section-title">02 · Resumen Ejecutivo</div>
+  <p style="color:var(--text2); margin-bottom:16px;">
+    La investigación revela una familia extendida <strong>JIMENEZ GODOY</strong> originaria de <strong>Guadalajara, Jalisco</strong>,
+    con un cluster principal en <strong>C Montes Marcianos 2029, Col Belisario Domínguez, CP 44320</strong>.
+    El sujeto principal, Gabriela Georgina (1987), nació en Jalisco y posteriormente se registró en <strong>CDMX (Azcapotzalco)</strong>.
+    Un segundo cluster familiar opera en <strong>Col Ignacio Allende, CP 02810</strong> (Silvia, Juan Carlos, Verónica).
+    <strong>Jorge Gabriel</strong> (1991) reside en el mismo CP fiscal que Gabriela (01020) y opera su propia empresa.
+  </p>
+  <table class="summary-table">
+    <thead><tr><th>Familiar</th><th>Relación</th><th>Nacimiento</th><th>Padrón</th><th>IMSS</th><th>CFE</th><th>Tel</th></tr></thead>
+    <tbody>
+      <tr><td>GABRIELA GEORGINA</td><td><span class="badge" style="background:var(--pink);">SUJETO</span></td><td>1987-02-23</td><td class="hit">✓ CURP</td><td class="miss">✗</td><td class="miss">✗</td><td class="miss">✗</td></tr>
+      <tr><td>MARIA GUADALUPE GODOY GONZALEZ</td><td><span class="badge" style="background:#8b5cf6;">Abuela</span></td><td>1937-09-30</td><td class="hit">✓ CURP</td><td class="miss">✗ directo</td><td class="miss">✗</td><td class="miss">✗</td></tr>
+      <tr><td>GILBERTO JIMENEZ GODOY</td><td><span class="badge" style="background:var(--red);">Padre?</span></td><td>1959-02-08</td><td class="hit">✓ CURP</td><td class="hit">✓ Walmart $67K</td><td class="hit">✓ 2 serv</td><td class="hit">✓2</td></tr>
+      <tr><td>JOSE JAIME JIMENEZ GODOY</td><td><span class="badge" style="background:var(--red);">Padre?</span></td><td>1962-07-31</td><td class="hit">✓ CURP</td><td class="hit">✓ Rocofam $65K</td><td class="miss">✗</td><td class="hit">✓1</td></tr>
+      <tr><td>ISMAEL JIMENEZ GODOY</td><td><span class="badge" style="background:#6366f1;">Tío</span></td><td>1964-09-16</td><td class="hit">✓ CURP</td><td class="hit">✓ Lab Sophia $67K</td><td class="hit">✓1</td><td class="hit">✓2</td></tr>
+      <tr><td>SUSANA JIMENEZ GODOY</td><td><span class="badge" style="background:#6366f1;">Tía</span></td><td>1966-03-10</td><td class="hit">✓ CURP</td><td class="hit">✓ Joyería $38K</td><td class="hit">✓2</td><td class="hit">✓1</td></tr>
+      <tr><td>MARIA TERESA JIMENEZ GODOY</td><td><span class="badge" style="background:#6366f1;">Tía</span></td><td>1955-04-13</td><td class="hit">✓ CURP</td><td class="hit">✓ UDG</td><td class="miss">✗</td><td class="miss">✗</td></tr>
+      <tr><td>SILVIA JIMENEZ GODOY</td><td><span class="badge" style="background:var(--amber);">Tía CDMX</span></td><td>1969-12-06</td><td class="hit">✓ CURP</td><td class="miss">✗</td><td class="miss">✗</td><td class="miss">✗</td></tr>
+      <tr><td>JUAN CARLOS JIMENEZ GODOY</td><td><span class="badge" style="background:var(--amber);">Tío CDMX</span></td><td>1971-01-08</td><td class="hit">✓ CURP</td><td class="hit">✓ CEMEX $97K</td><td class="miss">✗</td><td class="miss">✗</td></tr>
+      <tr><td>VERONICA JIMENEZ GODOY</td><td><span class="badge" style="background:var(--amber);">Tía CDMX</span></td><td>1972-06-06</td><td class="hit">✓ CURP</td><td class="hit">✓ Nuclear $41K</td><td class="miss">✗</td><td class="hit">✓2</td></tr>
+      <tr><td>LUIS EDUARDO JIMENEZ GODOY</td><td><span class="badge" style="background:var(--green);">Primo</span></td><td>1974-10-05</td><td class="hit">✓ CURP</td><td class="hit">✓ Coppel $35K</td><td class="hit">✓1</td><td class="miss">✗</td></tr>
+      <tr><td>ADRIANA GUADALUPE JIMENEZ GODOY</td><td><span class="badge" style="background:var(--green);">Prima</span></td><td>1974-10-05</td><td class="hit">✓ CURP</td><td class="miss">✗</td><td class="miss">✗</td><td class="miss">✗</td></tr>
+      <tr><td>JORGE GABRIEL JIMENEZ GODOY</td><td><span class="badge" style="background:var(--pink);">Hermano?</span></td><td>1991-10-05</td><td class="hit">✓ CURP</td><td class="hit">✓ JJ Integrity $61K</td><td class="hit">✓2</td><td class="hit">✓1</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SECTION 03: MAPA RELACIONAL -->
+<div class="section">
+  <div class="section-title">03 · Mapa Relacional Familiar</div>
+  <div style="text-align:center; margin-bottom:20px;">
+    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNTYwIiB3aWR0aD0iOTAwIiBoZWlnaHQ9IjU2MCI+CjxkZWZzPjxmaWx0ZXIgaWQ9Imdsb3ciPjxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIiIHJlc3VsdD0iYmx1ciIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZSBpbj0iYmx1ciIvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT48L2ZpbHRlcj48L2RlZnM+CjxyZWN0IHdpZHRoPSI5MDAiIGhlaWdodD0iNTYwIiBmaWxsPSIjMGYxNzJhIiByeD0iMTIiLz4KPGxpbmUgeDE9IjU1MCIgeTE9IjUwIiB4Mj0iMTAwIiB5Mj0iMTgwIiBzdHJva2U9IiM0NzU1NjkiIHN0cm9rZS13aWR0aD0iMiIgIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8bGluZSB4MT0iNTUwIiB5MT0iNTAiIHgyPSIyNTAiIHkyPSIxODAiIHN0cm9rZT0iIzQ3NTU2OSIgc3Ryb2tlLXdpZHRoPSIyIiAgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+CjxsaW5lIHgxPSI1NTAiIHkxPSI1MCIgeDI9IjQwMCIgeTI9IjE4MCIgc3Ryb2tlPSIjNDc1NTY5IiBzdHJva2Utd2lkdGg9IjIiICBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPGxpbmUgeDE9IjU1MCIgeTE9IjUwIiB4Mj0iNTUwIiB5Mj0iMTgwIiBzdHJva2U9IiM0NzU1NjkiIHN0cm9rZS13aWR0aD0iMiIgIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8bGluZSB4MT0iNTUwIiB5MT0iNTAiIHgyPSI3MDAiIHkyPSIxODAiIHN0cm9rZT0iIzQ3NTU2OSIgc3Ryb2tlLXdpZHRoPSIyIiAgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+CjxsaW5lIHgxPSI1NTAiIHkxPSI1MCIgeDI9IjE1MCIgeTI9IjMzMCIgc3Ryb2tlPSIjMzM0MTU1IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYsNCIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjM1MCIgeT0iMTg0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIiBmb250LXNpemU9IjEwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+PzwvdGV4dD4KPGxpbmUgeDE9IjU1MCIgeTE9IjUwIiB4Mj0iMzAwIiB5Mj0iMzMwIiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiw0IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPHRleHQgeD0iNDI1IiB5PSIxODQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4/PC90ZXh0Pgo8bGluZSB4MT0iNTUwIiB5MT0iNTAiIHgyPSI0NTAiIHkyPSIzMzAiIHN0cm9rZT0iIzMzNDE1NSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2LDQiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8dGV4dCB4PSI1MDAiIHk9IjE4NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1zaXplPSIxMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPj88L3RleHQ+CjxsaW5lIHgxPSI1NTAiIHkxPSI1MCIgeDI9IjYyMCIgeTI9IjMzMCIgc3Ryb2tlPSIjMzM0MTU1IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYsNCIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjU4NSIgeT0iMTg0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIiBmb250LXNpemU9IjEwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+PzwvdGV4dD4KPGxpbmUgeDE9IjU1MCIgeTE9IjUwIiB4Mj0iNzcwIiB5Mj0iMzMwIiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiw0IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPHRleHQgeD0iNjYwIiB5PSIxODQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4/PC90ZXh0Pgo8bGluZSB4MT0iMjUwIiB5MT0iMTgwIiB4Mj0iMzUwIiB5Mj0iNDgwIiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiw0IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPHRleHQgeD0iMzAwIiB5PSIzMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5wYWRyZT88L3RleHQ+CjxsaW5lIHgxPSI0MDAiIHkxPSIxODAiIHgyPSIzNTAiIHkyPSI0ODAiIHN0cm9rZT0iIzMzNDE1NSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2LDQiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8dGV4dCB4PSIzNzUiIHk9IjMyNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1zaXplPSIxMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPnBhZHJlPzwvdGV4dD4KPGxpbmUgeDE9IjI1MCIgeTE9IjE4MCIgeDI9IjU1MCIgeTI9IjQ4MCIgc3Ryb2tlPSIjMzM0MTU1IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYsNCIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iMzI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIiBmb250LXNpemU9IjEwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+cGFkcmU/PC90ZXh0Pgo8bGluZSB4MT0iNDAwIiB5MT0iMTgwIiB4Mj0iNTUwIiB5Mj0iNDgwIiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiw0IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPHRleHQgeD0iNDc1IiB5PSIzMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5wYWRyZT88L3RleHQ+CjxsaW5lIHgxPSIzNTAiIHkxPSI0ODAiIHgyPSI1NTAiIHkyPSI0ODAiIHN0cm9rZT0iIzMzNDE1NSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2LDQiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8dGV4dCB4PSI0NTAiIHk9IjQ3NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1zaXplPSIxMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPmhlcm1hbm9zPzwvdGV4dD4KPGNpcmNsZSBjeD0iNTUwIiBjeT0iNTAiIHI9IjM0IiBmaWxsPSIjOGI1Y2Y2IiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjU1MCIgY3k9IjUwIiByPSIzMCIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjOGI1Y2Y2IiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjU1MCIgeT0iNDIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNlMmU4ZjAiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+TUFSSUEgR1VBREFMVVBFPC90ZXh0Pgo8dGV4dCB4PSI1NTAiIHk9IjU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0ibm9ybWFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+R09ET1kgR09OWkFMRVo8L3RleHQ+Cjx0ZXh0IHg9IjU1MCIgeT0iNjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4oMTkzNyk8L3RleHQ+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjE4MCIgcj0iMjYiIGZpbGw9IiM2MzY2ZjEiIG9wYWNpdHk9IjAuMTUiLz4KPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTgwIiByPSIyMiIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjNjM2NmYxIiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTc4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZTJlOGYwIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPk1BUklBIFRFUkVTQTwvdGV4dD4KPHRleHQgeD0iMTAwIiB5PSIxOTEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4oMTk1NSk8L3RleHQ+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjE4MCIgcj0iMzAiIGZpbGw9IiNlZjQ0NDQiIG9wYWNpdHk9IjAuMTUiLz4KPGNpcmNsZSBjeD0iMjUwIiBjeT0iMTgwIiByPSIyNiIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjZWY0NDQ0IiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iMTcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZTJlOGYwIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPkdJTEJFUlRPPC90ZXh0Pgo8dGV4dCB4PSIyNTAiIHk9IjE4NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9Im5vcm1hbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPigxOTU5KTwvdGV4dD4KPHRleHQgeD0iMjUwIiB5PSIxOTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5XYWxtYXJ0PC90ZXh0Pgo8Y2lyY2xlIGN4PSI0MDAiIGN5PSIxODAiIHI9IjMwIiBmaWxsPSIjZWY0NDQ0IiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjQwMCIgY3k9IjE4MCIgcj0iMjYiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iI2VmNDQ0NCIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8dGV4dCB4PSI0MDAiIHk9IjE3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2UyZThmMCIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5KT1NFIEpBSU1FPC90ZXh0Pgo8dGV4dCB4PSI0MDAiIHk9IjE4NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9Im5vcm1hbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPigxOTYyKTwvdGV4dD4KPHRleHQgeD0iNDAwIiB5PSIxOTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5Sb2NvZmFtPC90ZXh0Pgo8Y2lyY2xlIGN4PSI1NTAiIGN5PSIxODAiIHI9IjI2IiBmaWxsPSIjNjM2NmYxIiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjU1MCIgY3k9IjE4MCIgcj0iMjIiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzYzNjZmMSIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8dGV4dCB4PSI1NTAiIHk9IjE3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2UyZThmMCIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5JU01BRUw8L3RleHQ+Cjx0ZXh0IHg9IjU1MCIgeT0iMTg1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0ibm9ybWFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+KDE5NjQpPC90ZXh0Pgo8dGV4dCB4PSI1NTAiIHk9IjE5OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9Im5vcm1hbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPkxhYiBTb3BoaWE8L3RleHQ+CjxjaXJjbGUgY3g9IjcwMCIgY3k9IjE4MCIgcj0iMjYiIGZpbGw9IiM2MzY2ZjEiIG9wYWNpdHk9IjAuMTUiLz4KPGNpcmNsZSBjeD0iNzAwIiBjeT0iMTgwIiByPSIyMiIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjNjM2NmYxIiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjcwMCIgeT0iMTcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZTJlOGYwIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPlNVU0FOQTwvdGV4dD4KPHRleHQgeD0iNzAwIiB5PSIxODUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4oMTk2Nik8L3RleHQ+Cjx0ZXh0IHg9IjcwMCIgeT0iMTk4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0ibm9ybWFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Sm95ZXLDrWE8L3RleHQ+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjMzMCIgcj0iMjQiIGZpbGw9IiNmNTllMGIiIG9wYWNpdHk9IjAuMTUiLz4KPGNpcmNsZSBjeD0iMTUwIiBjeT0iMzMwIiByPSIyMCIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjZjU5ZTBiIiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMzIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZTJlOGYwIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPlNJTFZJQTwvdGV4dD4KPHRleHQgeD0iMTUwIiB5PSIzMzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4oMTk2OSk8L3RleHQ+Cjx0ZXh0IHg9IjE1MCIgeT0iMzQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0ibm9ybWFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Q0RNWDwvdGV4dD4KPGNpcmNsZSBjeD0iMzAwIiBjeT0iMzMwIiByPSIyNCIgZmlsbD0iI2Y1OWUwYiIgb3BhY2l0eT0iMC4xNSIvPgo8Y2lyY2xlIGN4PSIzMDAiIGN5PSIzMzAiIHI9IjIwIiBmaWxsPSIjMWUyOTNiIiBzdHJva2U9IiNmNTllMGIiIHN0cm9rZS13aWR0aD0iMi41IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPHRleHQgeD0iMzAwIiB5PSIzMjIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNlMmU4ZjAiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+SlVBTiBDQVJMT1M8L3RleHQ+Cjx0ZXh0IHg9IjMwMCIgeT0iMzM1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0ibm9ybWFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+KDE5NzEpPC90ZXh0Pgo8dGV4dCB4PSIzMDAiIHk9IjM0OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9Im5vcm1hbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPkNFTUVYPC90ZXh0Pgo8Y2lyY2xlIGN4PSI0NTAiIGN5PSIzMzAiIHI9IjI0IiBmaWxsPSIjZjU5ZTBiIiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjQ1MCIgY3k9IjMzMCIgcj0iMjAiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iI2Y1OWUwYiIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8dGV4dCB4PSI0NTAiIHk9IjMyMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2UyZThmMCIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5WRVJPTklDQTwvdGV4dD4KPHRleHQgeD0iNDUwIiB5PSIzMzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4oMTk3Mik8L3RleHQ+Cjx0ZXh0IHg9IjQ1MCIgeT0iMzQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0ibm9ybWFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+TnVjbGVhcjwvdGV4dD4KPGNpcmNsZSBjeD0iNjIwIiBjeT0iMzMwIiByPSIyNCIgZmlsbD0iIzEwYjk4MSIgb3BhY2l0eT0iMC4xNSIvPgo8Y2lyY2xlIGN4PSI2MjAiIGN5PSIzMzAiIHI9IjIwIiBmaWxsPSIjMWUyOTNiIiBzdHJva2U9IiMxMGI5ODEiIHN0cm9rZS13aWR0aD0iMi41IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPHRleHQgeD0iNjIwIiB5PSIzMjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNlMmU4ZjAiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+TFVJUyBFRFVBUkRPPC90ZXh0Pgo8dGV4dCB4PSI2MjAiIHk9IjM0MSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9Im5vcm1hbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPigxOTc0KTwvdGV4dD4KPGNpcmNsZSBjeD0iNzcwIiBjeT0iMzMwIiByPSIyNCIgZmlsbD0iIzEwYjk4MSIgb3BhY2l0eT0iMC4xNSIvPgo8Y2lyY2xlIGN4PSI3NzAiIGN5PSIzMzAiIHI9IjIwIiBmaWxsPSIjMWUyOTNiIiBzdHJva2U9IiMxMGI5ODEiIHN0cm9rZS13aWR0aD0iMi41IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KPHRleHQgeD0iNzcwIiB5PSIzMjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNlMmU4ZjAiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+QURSSUFOQTwvdGV4dD4KPHRleHQgeD0iNzcwIiB5PSIzNDEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4oMTk3NCk8L3RleHQ+CjxjaXJjbGUgY3g9IjM1MCIgY3k9IjQ4MCIgcj0iMzYiIGZpbGw9IiNlYzQ4OTkiIG9wYWNpdHk9IjAuMTUiLz4KPGNpcmNsZSBjeD0iMzUwIiBjeT0iNDgwIiByPSIzMiIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjZWM0ODk5IiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+Cjx0ZXh0IHg9IjM1MCIgeT0iNDg1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZWM0ODk5IiBmb250LXNpemU9IjE4Ij7imIU8L3RleHQ+Cjx0ZXh0IHg9IjM1MCIgeT0iNDcyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZWM0ODk5IiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPuKYhSBHQUJSSUVMQTwvdGV4dD4KPHRleHQgeD0iMzUwIiB5PSI0ODUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj4oMTk4Nyk8L3RleHQ+Cjx0ZXh0IHg9IjM1MCIgeT0iNDk4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZWM0ODk5IiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0ibm9ybWFsIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+U1VKRVRPPC90ZXh0Pgo8Y2lyY2xlIGN4PSI1NTAiIGN5PSI0ODAiIHI9IjMwIiBmaWxsPSIjZWM0ODk5IiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjU1MCIgY3k9IjQ4MCIgcj0iMjYiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iI2VjNDg5OSIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8dGV4dCB4PSI1NTAiIHk9IjQ3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2UyZThmMCIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5KT1JHRSBHQUJSSUVMPC90ZXh0Pgo8dGV4dCB4PSI1NTAiIHk9IjQ4NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9Im5vcm1hbCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPigxOTkxKTwvdGV4dD4KPHRleHQgeD0iNTUwIiB5PSI0OTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJub3JtYWwiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5KSiBJbnRlZ3JpdHk8L3RleHQ+CjxyZWN0IHg9IjIwIiB5PSI1MDAiIHdpZHRoPSI4NjAiIGhlaWdodD0iNDUiIGZpbGw9IiMxZTI5M2IiIHJ4PSI4IiBzdHJva2U9IiMzMzQxNTUiLz4KPGNpcmNsZSBjeD0iNDAiIGN5PSI1MjIiIHI9IjYiIGZpbGw9IiM4YjVjZjYiLz4KPHRleHQgeD0iNTIiIHk9IjUyNiIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPkFidWVsYTwvdGV4dD4KPGNpcmNsZSBjeD0iMTgwIiBjeT0iNTIyIiByPSI2IiBmaWxsPSIjZWY0NDQ0Ii8+Cjx0ZXh0IHg9IjE5MiIgeT0iNTI2IiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjExIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+UG9zaWJsZSBQYWRyZTwvdGV4dD4KPGNpcmNsZSBjeD0iMzIwIiBjeT0iNTIyIiByPSI2IiBmaWxsPSIjNjM2NmYxIi8+Cjx0ZXh0IHg9IjMzMiIgeT0iNTI2IiBmaWxsPSIjOTRhM2I4IiBmb250LXNpemU9IjExIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+VMOtby9Uw61hIEphbGlzY288L3RleHQ+CjxjaXJjbGUgY3g9IjQ2MCIgY3k9IjUyMiIgcj0iNiIgZmlsbD0iI2Y1OWUwYiIvPgo8dGV4dCB4PSI0NzIiIHk9IjUyNiIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPlTDrW8vVMOtYSBDRE1YPC90ZXh0Pgo8Y2lyY2xlIGN4PSI2MDAiIGN5PSI1MjIiIHI9IjYiIGZpbGw9IiMxMGI5ODEiLz4KPHRleHQgeD0iNjEyIiB5PSI1MjYiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5Qcmltby9hPC90ZXh0Pgo8Y2lyY2xlIGN4PSI3NDAiIGN5PSI1MjIiIHI9IjYiIGZpbGw9IiNlYzQ4OTkiLz4KPHRleHQgeD0iNzUyIiB5PSI1MjYiIGZpbGw9IiM5NGEzYjgiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5TdWpldG8vSGVybWFubzwvdGV4dD4KPHRleHQgeD0iNDUwIiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzgxOGNmOCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIj5NQVBBIFJFTEFDSU9OQUwg4oCUIEZBTUlMSUEgSklNw4lORVogR09ET1k8L3RleHQ+Cjwvc3ZnPg==" style="width:100%; max-width:900px; border-radius:12px; border:1px solid var(--border);" />
+  </div>
+  <p style="color:var(--text3); font-size:0.8em; text-align:center;">
+    ● = nodo &nbsp;|&nbsp; ★ = sujeto principal &nbsp;|&nbsp; ◆ = posible padre &nbsp;|&nbsp; línea punteada = relación no confirmada
+  </p>
+</div>
+
+<!-- SECTION 04: DIAGRAMA DE CLUSTERS -->
+<div class="section">
+  <div class="section-title">04 · Clusters Geográficos</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px;">
+      <h4 style="color:var(--accent); margin-bottom:12px;">🇲🇽 Cluster Jalisco — Guadalajara</h4>
+      <p style="color:var(--text2); font-size:0.85em; margin-bottom:10px;">C Montes Marcianos 2029, Col Belisario Domínguez, CP 44320/44330</p>
+      <div style="background:var(--bg); border-radius:8px; padding:12px; font-size:0.85em;">
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#8b5cf6;display:inline-block;"></span> MARIA GUADALUPE GODOY GONZALEZ (1937) — Matriarca</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#6366f1;display:inline-block;"></span> MARIA TERESA (1955)</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span> GILBERTO (1959) — Walmart Azcapotzalco</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span> JOSE JAIME (1962) — Servicios Rocofam</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#6366f1;display:inline-block;"></span> ISMAEL (1964) — Lab Sophia</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#6366f1;display:inline-block;"></span> SUSANA (1966) — Joyería</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span> LUIS EDUARDO (1974) — Coppel</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span> ADRIANA GUADALUPE (1974)</div>
+      </div>
+    </div>
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px;">
+      <h4 style="color:var(--amber); margin-bottom:12px;">🏙️ Cluster CDMX — Azcapotzalco</h4>
+      <p style="color:var(--text2); font-size:0.85em; margin-bottom:10px;">Col Ignacio Allende, CP 02810 + Col Porvenir, CP 02940</p>
+      <div style="background:var(--bg); border-radius:8px; padding:12px; font-size:0.85em;">
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span> SILVIA (1969) — C Mezquite 27</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span> JUAN CARLOS (1971) — CEMEX $97K</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span> VERONICA (1972) — Aceleración Nuclear</div>
+        <div style="border-top:1px solid var(--border); margin:8px 0;"></div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#ec4899;display:inline-block;"></span> ★ GABRIELA (1987) — SUJETO — C10 ext251, Col Porvenir</div>
+        <div style="display:flex; align-items:center; gap:8px; margin:4px 0;"><span style="width:10px;height:10px;border-radius:50%;background:#ec4899;display:inline-block;"></span> JORGE GABRIEL (1991) — JJ Integrity, CP01020</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 05: FICHAS INDIVIDUALES -->
+<div class="section">
+  <div class="section-title">05 · Fichas Individuales de Familiares</div>
+  <div class="cards-grid">
+    <div class="card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <span class="badge" style="background:#ec4899;">SUJETO PRINCIPAL</span>
+        <h3>GABRIELA GEORGINA JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1987-02-23</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGG870223MJCMDB08</code></td></tr>
+          <tr><td>Folio</td><td>509210104556</td></tr>
+          <tr><td>Domicilio</td><td>C 10 ext 251, Col Porvenir, CP 02940, Azcapotzalco CDMX</td></tr></table>
+        </div><div class="section-mini">
+          <h4>🔍 CheckID</h4>
+          <table><tr><td>RFC</td><td><code>JIGG870223KC0</code></td></tr>
+          <tr><td>NSS</td><td><code>39098702531</code></td></tr>
+          <tr><td>Email</td><td><code>gabrielajimenez001@gmail.com</code></td></tr>
+          <tr><td>CP Fiscal</td><td>01040</td></tr>
+          <tr><td>Régimen</td><td>605 Sueldos, 611 Dividendos, 612 Actividades Empresariales, 606 Arrendamiento</td></tr></table>
+        </div></div></div><div class="card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <span class="badge" style="background:#8b5cf6;">Abuela Materna</span>
+        <h3>MARIA GUADALUPE GODOY GONZALEZ</h3>
+        <span class="fecnac">Nac: 1937-09-30</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>GOGG370930MJCDND02</code></td></tr>
+          <tr><td>Folio</td><td>22107197</td></tr>
+          <tr><td>Domicilio</td><td>C Montes Marcianos 2029, Col Belisario Domínguez, CP 44320, Jalisco</td></tr></table>
+        </div></div></div><div class="card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <span class="badge" style="background:#6366f1;">Tía Mayor</span>
+        <h3>MARIA TERESA JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1955-04-13</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGT550413MJCMDR11</code></td></tr>
+          <tr><td>Folio</td><td>22108148</td></tr>
+          <tr><td>Domicilio</td><td>C Montes Marcianos 2029, Col Belisario Domínguez, CP 44330, Jalisco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>Universidad de Guadalajara</td><td class="money">$0</td></tr></table></div></div></div><div class="card" style="border-left: 4px solid #ef4444;">
+      <div class="card-header">
+        <span class="badge" style="background:#ef4444;">Posible Padre</span>
+        <h3>GILBERTO JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1959-02-08</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGG590208HJCMDL09</code></td></tr>
+          <tr><td>Folio</td><td>86196533</td></tr>
+          <tr><td>Domicilio</td><td>C Montes Marcianos 2029, CP 44330, Jalisco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>Walmart (Azcapotzalco CDMX)</td><td class="money">$67,727</td></tr><tr><td>Cristino Alvarado Huerta</td><td class="money">$16,350</td></tr></table></div><div class="section-mini"><h4>⚡ CFE</h4><ul><li>R. Michel 2149A</li><li>Sirius 137, CP 45650</li></ul></div><div class="section-mini"><h4>📱 Teléfonos</h4><p><code>3336457898</code> · <code>3334695998</code></p></div></div></div><div class="card" style="border-left: 4px solid #ef4444;">
+      <div class="card-header">
+        <span class="badge" style="background:#ef4444;">Posible Padre</span>
+        <h3>JOSE JAIME JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1962-07-31</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGJ620731HJCMDM06</code></td></tr>
+          <tr><td>Folio</td><td>22107194</td></tr>
+          <tr><td>Domicilio</td><td>C Monte Marciano 2029, CP 44320, Jalisco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>Servicios Rocofam SA (Zapopan)</td><td class="money">$65,529</td></tr></table></div><div class="section-mini"><h4>📱 Teléfonos</h4><p><code>33365887</code></p></div></div></div><div class="card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <span class="badge" style="background:#6366f1;">Tío</span>
+        <h3>ISMAEL JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1964-09-16</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGI640916HJCMDS07</code></td></tr>
+          <tr><td>Folio</td><td>78063054</td></tr>
+          <tr><td>Domicilio</td><td>C Montes Marcianos 2029, CP 44320, Jalisco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>Laboratorios Sophia SA (Zapopan)</td><td class="money">$67,459</td></tr></table></div><div class="section-mini"><h4>⚡ CFE</h4><ul><li>Arco Verde 55, CP 45650</li></ul></div><div class="section-mini"><h4>📱 Teléfonos</h4><p><code>3336385887</code> · <code>3334074151</code></p></div></div></div><div class="card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <span class="badge" style="background:#6366f1;">Tía</span>
+        <h3>SUSANA JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1966-03-10</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGS660310MJCMDS06</code></td></tr>
+          <tr><td>Folio</td><td>22107196</td></tr>
+          <tr><td>Domicilio</td><td>C Montes Marcianos 2029, CP 44320, Jalisco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>Joyería Ana María Valencia (GDL)</td><td class="money">$38,344</td></tr></table></div><div class="section-mini"><h4>⚡ CFE</h4><ul><li>Montes Marcianos 2029A</li></ul></div><div class="section-mini"><h4>📱 Teléfonos</h4><p><code>3336385887</code></p></div></div></div><div class="card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <span class="badge" style="background:#f59e0b;">Tía (CDMX)</span>
+        <h3>SILVIA JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1969-12-06</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGS691206MDFMDL00</code></td></tr>
+          <tr><td>Folio</td><td>7932899</td></tr>
+          <tr><td>Domicilio</td><td>C Mezquite 27, Col Ignacio Allende, CP 02810, Azcapotzalco</td></tr></table>
+        </div></div></div><div class="card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <span class="badge" style="background:#f59e0b;">Tío (CDMX)</span>
+        <h3>JUAN CARLOS JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1971-01-08</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGJ710108HDFMDN09</code></td></tr>
+          <tr><td>Folio</td><td>7932897</td></tr>
+          <tr><td>Domicilio</td><td>C Mezquite 32, Col Ignacio Allende, CP 02810, Azcapotzalco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>CEMEX Concretos (CDMX)</td><td class="money">$97,752</td></tr></table></div></div></div><div class="card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <span class="badge" style="background:#f59e0b;">Tía (CDMX)</span>
+        <h3>VERONICA JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1972-06-06</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGV720606MDFMDR09</code></td></tr>
+          <tr><td>Folio</td><td>7932898</td></tr>
+          <tr><td>Domicilio</td><td>C Mezquite 27, Col Ignacio Allende, CP 02810, Azcapotzalco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>Aceleración Nuclear (Del Valle)</td><td class="money">$41,424</td></tr></table></div><div class="section-mini"><h4>📱 Teléfonos</h4><p><code>5553564773</code> · <code>5618582607</code></p></div></div></div><div class="card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <span class="badge" style="background:#10b981;">Primo/Tío</span>
+        <h3>LUIS EDUARDO JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1974-10-05</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGL741005HJCMDS04</code></td></tr>
+          <tr><td>Folio</td><td>78412173</td></tr>
+          <tr><td>Domicilio</td><td>C Montes Marcianos 2029, CP 44320, Jalisco</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>Coppel (Chapala)</td><td class="money">$35,603</td></tr></table></div><div class="section-mini"><h4>⚡ CFE</h4><ul><li>Cruz del Zapote 2438A</li></ul></div></div></div><div class="card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <span class="badge" style="background:#10b981;">Prima/Tía (Gemela)</span>
+        <h3>ADRIANA GUADALUPE JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1974-10-05</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGA741005MJCMDD07</code></td></tr>
+          <tr><td>Folio</td><td>78412172</td></tr>
+          <tr><td>Domicilio</td><td>C Montes Marcianos 2029, CP 44330, Jalisco</td></tr></table>
+        </div></div></div><div class="card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <span class="badge" style="background:#ec4899;">Posible Hermano</span>
+        <h3>JORGE GABRIEL JIMENEZ GODOY</h3>
+        <span class="fecnac">Nac: 1991-10-05</span>
+      </div>
+      <div class="card-body"><div class="section-mini">
+          <h4>📋 Padrón Electoral</h4>
+          <table><tr><td>CURP</td><td><code>JIGJ911005HDFMDR02</code></td></tr>
+          <tr><td>Folio</td><td>1009162105779</td></tr>
+          <tr><td>Domicilio</td><td>C Lerdo de Tejada 3, Guadalupe Inn, CP 01020, CDMX</td></tr></table>
+        </div><div class="section-mini"><h4>🏥 IMSS</h4><table><tr><td>JJ Integrity Services SC (Av. Revolución 1527, Alvaro Obregón)</td><td class="money">$61,100</td></tr><tr><td>Luis Rai Godoy Jiménez (Tepic)</td><td class="money">$29,254</td></tr></table></div><div class="section-mini"><h4>⚡ CFE</h4><ul><li>Francisco Villa 471</li><li>Río Danubio 61A</li></ul></div><div class="section-mini"><h4>📱 Teléfonos</h4><p><code>2015022530</code></p></div></div></div>
+  </div>
+</div>
+
+<!-- SECTION 06: ANÁLISIS -->
+<div class="section">
+  <div class="section-title">06 · Análisis de Vínculos y Observaciones</div>
+  <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px;">
+    <h4 style="color:var(--accent); margin-bottom:12px;">🔗 Vínculos Identificados</h4>
+    <ul style="list-style:none; padding:0; color:var(--text2); font-size:0.9em;">
+      <li style="padding:6px 0; border-bottom:1px solid var(--border);">✅ <strong>Gilberto → Walmart Azcapotzalco</strong> (CP 02770): Empleador en la misma demarcación que el domicilio electoral de Gabriela. Vínculo geográfico fuerte.</li>
+      <li style="padding:6px 0; border-bottom:1px solid var(--border);">✅ <strong>Jorge Gabriel → JJ Integrity Services</strong> (CP 01020): Mismo CP fiscal que Gabriela (01040). Empresa propia. Posible hermano.</li>
+      <li style="padding:6px 0; border-bottom:1px solid var(--border);">✅ <strong>Cluster Jalisco — misma dirección</strong>:7 familiares en C Montes Marcianos 2029. Matriarca María Guadalupe Godoy González (1937).</li>
+      <li style="padding:6px 0; border-bottom:1px solid var(--border);">✅ <strong>Cluster CDMX — Col Ignacio Allende</strong>: Silvia, Juan Carlos y Verónica en C Mezquite 27-32, CP 02810. Migración Jalisco→CDMX.</li>
+      <li style="padding:6px 0; border-bottom:1px solid var(--border);">✅ <strong>Verónica → Tel 5553564773</strong>: Única línea telefónica confirmada en el cluster CDMX.</li>
+      <li style="padding:6px 0;">✅ <strong>Ismael → Lab Sophia</strong>: Empleo farmacéutico de nivel medio-alto en Zapopan ($67K).</li>
+    </ul>
+  </div>
+  <div style="background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; margin-top:16px;">
+    <h4 style="color:var(--amber); margin-bottom:12px;">⚠️ Limitaciones</h4>
+    <ul style="list-style:none; padding:0; color:var(--text2); font-size:0.9em;">
+      <li style="padding:4px 0;">• Tlaloc/RENAPO sin créditos (HTTP 402) — no se pudo verificar CURPs contra RENAPO.</li>
+      <li style="padding:4px 0;">• Bases con corte ~2024. Operadores no incluidos: Movistar, Bait, Unefon, Oxxo Cel.</li>
+      <li style="padding:4px 0;">• Sin acceso a Singula judicial/blacklist (pendiente de autorización).</li>
+      <li style="padding:4px 0;">• La relación padre→hijo no es confirmatoria sin CURP del padre cruzada con acta de nacimiento.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION 07: FUENTES -->
+<div class="section">
+  <div class="section-title">07 · Fuentes Utilizadas</div>
+  <table class="summary-table">
+    <thead><tr><th>Fuente</th><th>Tipo</th><th>Registros consultados</th></tr></thead>
+    <tbody>
+      <tr><td>Padrón Electoral INE 2018</td><td>Identidad</td><td>~2.9M registros nacionales</td></tr>
+      <tr><td>CheckID (SAT/CURP/RENAPO)</td><td>Fiscal</td><td>Consulta directa por CURP</td></tr>
+      <tr><td>IMSS Asegurados 2025</td><td>Laboral</td><td>Base completa</td></tr>
+      <tr><td>IMSS Segmentación</td><td>Contacto</td><td>Base completa</td></tr>
+      <tr><td>CFE Medidores</td><td>Domicilio</td><td>Base completa</td></tr>
+      <tr><td>REPUVE</td><td>Vehicular</td><td>Base completa</td></tr>
+      <tr><td>Empleadores SAT</td><td>Fiscal</td><td>Base completa</td></tr>
+      <tr><td>ATT Telcel</td><td>Telecomunicaciones</td><td>Base completa</td></tr>
+      <tr><td>14 bases bancarias</td><td>Financiera</td><td>Amex, Bancomer, Banorte, Citibanamex, HSBC, Santander, Scotiabank, etc.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <h4>Cláusula de Confidencialidad</h4>
+  <p>Este reporte contiene información sensible sujeta a protección de datos personales (Ley Federal de Protección de Datos Personales en Posesión de los Particulares). El uso de esta información es exclusivamente para fines de investigación interna. Queda prohibida su reproducción, distribución o divulgación a terceros sin autorización expresa.</p>
+  <p style="margin-top:10px;">Generado por Plataforma Encuentra · 2026-09-09</p>
+</div>
+
+</div><!-- /container -->
+
+<script>
+const nodes = new vis.DataSet([{"id": "abuela", "label": "MARIA GUADALUPE G.G.", "title": "MARIA GUADALUPE GODOY GONZALEZ\\n1937-09-30\\nAbuela Materna", "color": {"background": "#8b5cf6", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "teresa", "label": "MARIA TERESA J.G.", "title": "MARIA TERESA JIMENEZ GODOY\\n1955-04-13\\nT\u00eda Mayor", "color": {"background": "#6366f1", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "gilberto", "label": "GILBERTO J.G.", "title": "GILBERTO JIMENEZ GODOY\\n1959-02-08\\nPosible Padre", "color": {"background": "#ef4444", "border": "#fff"}, "size": 25, "shape": "diamond", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "jaime", "label": "JOSE JAIME J.G.", "title": "JOSE JAIME JIMENEZ GODOY\\n1962-07-31\\nPosible Padre", "color": {"background": "#ef4444", "border": "#fff"}, "size": 25, "shape": "diamond", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "ismael", "label": "ISMAEL J.G.", "title": "ISMAEL JIMENEZ GODOY\\n1964-09-16\\nT\u00edo", "color": {"background": "#6366f1", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "susana", "label": "SUSANA J.G.", "title": "SUSANA JIMENEZ GODOY\\n1966-03-10\\nT\u00eda", "color": {"background": "#6366f1", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "silvia", "label": "SILVIA J.G.", "title": "SILVIA JIMENEZ GODOY\\n1969-12-06\\nT\u00eda (CDMX)", "color": {"background": "#f59e0b", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "juancarlos", "label": "JUAN CARLOS J.G.", "title": "JUAN CARLOS JIMENEZ GODOY\\n1971-01-08\\nT\u00edo (CDMX)", "color": {"background": "#f59e0b", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "veronica", "label": "VERONICA J.G.", "title": "VERONICA JIMENEZ GODOY\\n1972-06-06\\nT\u00eda (CDMX)", "color": {"background": "#f59e0b", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "luiseduardo", "label": "LUIS EDUARDO J.G.", "title": "LUIS EDUARDO JIMENEZ GODOY\\n1974-10-05\\nPrimo/T\u00edo", "color": {"background": "#10b981", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "adriana", "label": "ADRIANA GUADALUPE J.G.", "title": "ADRIANA GUADALUPE JIMENEZ GODOY\\n1974-10-05\\nPrima/T\u00eda (Gemela)", "color": {"background": "#10b981", "border": "#fff"}, "size": 20, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "gabriela", "label": "GABRIELA GEORGINA J.G.", "title": "GABRIELA GEORGINA JIMENEZ GODOY\\n1987-02-23\\nSUJETO PRINCIPAL", "color": {"background": "#ec4899", "border": "#fff"}, "size": 35, "shape": "star", "font": {"color": "#e2e8f0", "size": 11}}, {"id": "jorge", "label": "JORGE GABRIEL J.G.", "title": "JORGE GABRIEL JIMENEZ GODOY\\n1991-10-05\\nPosible Hermano", "color": {"background": "#ec4899", "border": "#fff"}, "size": 25, "shape": "dot", "font": {"color": "#e2e8f0", "size": 11}}]);
+const edges = new vis.DataSet([{"from": "abuela", "to": "teresa", "label": "hija", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": false}, {"from": "abuela", "to": "gilberto", "label": "hijo", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": false}, {"from": "abuela", "to": "jaime", "label": "hijo", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": false}, {"from": "abuela", "to": "ismael", "label": "hijo", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": false}, {"from": "abuela", "to": "susana", "label": "hija", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": false}, {"from": "abuela", "to": "silvia", "label": "hija?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "abuela", "to": "juancarlos", "label": "hijo?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "abuela", "to": "veronica", "label": "hija?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "abuela", "to": "luiseduardo", "label": "hijo?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "abuela", "to": "adriana", "label": "hija?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "gilberto", "to": "gabriela", "label": "padre?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "jaime", "to": "gabriela", "label": "padre?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "gilberto", "to": "jorge", "label": "padre?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "jaime", "to": "jorge", "label": "padre?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}, {"from": "gabriela", "to": "jorge", "label": "hermanos?", "color": {"color": "#475569", "highlight": "#818cf8"}, "font": {"color": "#94a3b8", "size": 9}, "arrows": "to", "dashes": true}]);
+const container = document.getElementById('network');
+const network = new vis.Network(container, { nodes, edges }, {
+  physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -80, springLength: 150, springConstant: 0.04 } },
+  interaction: { hover: true, tooltipDelay: 200 },
+  nodes: { borderWidth: 2, shadow: true },
+  edges: { smooth: { type: 'continuous' } }
+});
+</script>
+</body>
+</html>

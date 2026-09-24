@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFE — Coordenadas a Servicios</title>
+<link rel="stylesheet" href="/css/global.css">
+<style>
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+header .nav { display: flex; gap: 12px; }
+header .nav a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+}
+header .nav a:hover { color: var(--accent2); }
+header .actions { display: flex; gap: 10px; }
+header .actions button {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+header .actions button:hover { background: var(--border); }
+main {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+section h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.field { display: flex; flex-direction: column; }
+.field label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.field input, .field select {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.buttons { display: flex; gap: 10px; margin-top: 8px; }
+button.primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+button.primary:hover { background: #3b78e6; }
+button.primary:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+button.secondary {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+button.secondary:hover { background: var(--border); }
+.nota {
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 3px solid var(--warn);
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--warn);
+  margin-top: 10px;
+}
+.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid var(--error);
+  padding: 10px 14px;
+  border-radius: 4px;
+  color: var(--error);
+  font-size: 13px;
+  margin-top: 10px;
+}
+.address-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.address-card .label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  letter-spacing: 0.3px;
+}
+.address-card .value {
+  font-size: 14px;
+  font-weight: 500;
+}
+.source-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.source-local { background: var(--accent2); color: #0f1115; }
+.source-public { background: var(--accent); color: #fff; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+th, td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  background: var(--panel2);
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  position: sticky;
+  top: 0;
+}
+tbody tr:hover { background: rgba(79, 140, 255, 0.05); }
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 30px;
+  font-style: italic;
+}
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.help {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+pre {
+  background: var(--panel2);
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 12px;
+  max-height: 200px;
+}
+.dms-helper {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.dms-helper button {
+  font-size: 11px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.dms-helper button:hover { color: var(--accent); }
+/* Page-specific classes for inline style replacements */
+.cfe-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: var(--panel2); color: var(--muted); }
+.cfe-status-bar { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+.cfe-status-icon { font-size: 18px; }
+.cfe-status-hint { font-size: 11px; margin-top: 2px; opacity: 0.8; }
+.cfe-verify-btn { margin-left: auto; padding: 4px 10px; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 4px; cursor: pointer; font-size: 11px; }
+.cfe-help-msg { font-size: 12px; margin-top: 6px; }
+.cfe-sample-label { font-size: 11px; color: var(--muted); margin-right: 6px; }
+.cfe-grid-span { grid-column: 1 / -1; }
+.cfe-display-name { font-size: 12px; opacity: 0.9; }
+.cfe-map-link { color: var(--accent); text-decoration: none; }
+.cfe-map-container { margin-top: 10px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+.cfe-map-img { display: block; width: 100%; max-width: 400px; }
+.cfe-result-summary { margin-top: 10px; color: var(--accent2); }
+.sample-coords {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.sample-coords button {
+  font-size: 11px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: monospace;
+}
+.sample-coords button:hover {
+  background: var(--border);
+  color: var(--accent2);
+}
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 20px;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>📍 CFE — Coordenadas a Servicios</h1>
+  <div class="nav">
+    <a href="/dashboard.html">← Dashboard</a>
+  </div>
+  <div class="actions">
+    <span id="nominatim-badge" class="cfe-badge">📡 Nominatim: …</span>
+    <button id="logout">Salir</button>
+  </div>
+</header>
+
+<main>
+  <div id="nom-status" class="cfe-status-bar">
+    <span class="cfe-status-icon">🌐</span>
+    <div>
+      <div><strong>Geocodificación:</strong> <span id="nom-current-source">Detectando Nominatim local...</span></div>
+      <div class="cfe-status-hint">Si está disponible, usa local (50-100ms). Si no, fallback al público (3-5s).</div>
+    </div>
+    <button id="check-nominatim" class="cfe-verify-btn">Verificar</button>
+  </div>
+
+  <section>
+    <h2>1. Coordenadas GPS</h2>
+    <div class="field mb-3">
+      <label>Pega coordenadas o link de Google Maps</label>
+      <div class="flex gap-1">
+        <input id="pega" type="text" class="flex-1"
+          placeholder="16.8114722, -99.8446944  ·  o  https://maps.app.goo.gl/…  ·  o  DMS">
+        <button class="secondary text-nowrap" id="interpretar">📥 Interpretar</button>
+      </div>
+      <div class="help">
+        Acepta un par decimal <b>de corrido</b> (<code>lat, lon</code>), coordenadas <b>DMS</b>,
+        o un <b>link de Google Maps</b> (incluye los cortos <code>maps.app.goo.gl</code>).
+        Se separan solas en latitud/longitud.
+      </div>
+      <div id="pega-msg" class="cfe-help-msg"></div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Latitud (decimal)</label>
+        <input id="lat" type="number" step="0.000001" min="-90" max="90" placeholder="16.8114722">
+      </div>
+      <div class="field">
+        <label>Longitud (decimal)</label>
+        <input id="lon" type="number" step="0.000001" min="-180" max="180" placeholder="-99.8446944">
+      </div>
+      <div class="field">
+        <label>Coordenadas DMS (opcional)</label>
+        <input id="dms" type="text" placeholder="16°48'41.3&quot;N 99°50'40.9&quot;W">
+      </div>
+    </div>
+    <div class="help">
+      💡 Tip: longitud oeste usa signo negativo. El formato DMS convierte automáticamente.
+    </div>
+    <div class="dms-helper">
+      <button data-fill="dms">📝 Llenar DMS de ejemplo</button>
+    </div>
+    <div class="sample-coords">
+      <span class="cfe-sample-label">Coordenadas de ejemplo:</span>
+      <button data-sample="16.8114722,-99.8446944">📍 Acapulco (doc CFE)</button>
+      <button data-sample="19.4326,-99.1332">📍 CDMX Centro</button>
+      <button data-sample="20.6597,-103.3496">📍 Guadalajara</button>
+      <button data-sample="21.1619,-86.8515">📍 Cancún</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Opciones de búsqueda</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Límite de resultados</label>
+        <input id="limit" type="number" min="1" max="100" value="25">
+      </div>
+      <div class="field">
+        <label>Exportar CSV</label>
+        <select id="csv">
+          <option value="0">No</option>
+          <option value="1">Sí (descargar)</option>
+        </select>
+      </div>
+    </div>
+    <div class="buttons">
+      <button class="primary" id="buscar">🔍 Buscar servicios CFE</button>
+      <button class="secondary" id="limpiar">Limpiar</button>
+    </div>
+  </section>
+
+  <section id="resultados-section" class="hidden">
+    <h2>3. Resultados</h2>
+    <div id="status"></div>
+    <div id="address-card"></div>
+    <div id="results-table"></div>
+  </section>
+</main>
+
+<footer>
+  CFE geocoding via Nominatim (local + público) · CFE base normalizada 66M filas
+</footer>
+
+<script>
+const API_URL = (() => {
+  // Mismo patrón que buscar.html
+  const host = window.location.host;
+  const proto = window.location.protocol;
+  return `${proto}//${host}`;
+})();
+
+function getToken() {
+  return localStorage.getItem("session_token");
+}
+
+async function authedFetch(url, opts = {}) {
+  const token = getToken();
+  const headers = {"Content-Type": "application/json", ...(opts.headers || {})};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const r = await fetch(url, {...opts, headers});
+  if (r.status === 401) {
+    location.href = "/login.html";
+    throw new Error("no autenticado");
+  }
+  return r;
+}
+
+function dmsToDecimal(dms) {
+  // "16°48'41.3\"N 99°50'40.9\"W" → {lat: 16.81147, lon: -99.84469}
+  const m = dms.match(/(\d+)[°](\d+)[\'](\d+(?:\.\d+)?)[\"\s]*([NSEW])\s+(\d+)[°](\d+)[\'](\d+(?:\.\d+)?)[\"\s]*([NSEW])/i);
+  if (!m) return null;
+  const [, d1, m1, s1, h1, d2, m2, s2, h2] = m;
+  let lat = +d1 + +m1/60 + +s1/3600;
+  let lon = +d2 + +m2/60 + +s2/3600;
+  if (h1.toUpperCase() === 'S') lat = -lat;
+  if (h2.toUpperCase() === 'W') lon = -lon;
+  return {lat, lon};
+}
+
+// Parser client-side: par decimal / DMS / URL de Google Maps completa.
+// Los links cortos (maps.app.goo.gl/goo.gl) no se pueden seguir desde el
+// navegador (CORS) → se resuelven en el backend (/api/v1/geo/parse).
+const DEC = "[-+]?\\d{1,3}(?:\\.\\d+)?";
+function coordsFromUrl(t) {
+  // Prioridad: pin real (!3d!4d) y coords explícitas (q=/ll=) sobre @, que es
+  // solo el centro del encuadre y en links de lugar suele estar desviado.
+  let m = t.match(new RegExp(`!3d(${DEC})!4d(${DEC})`));
+  if (m) return [+m[1], +m[2]];
+  m = t.match(new RegExp(`[?&](?:q|ll|query|center|destination|daddr|saddr|sll)=(?:loc:)?(${DEC}),(${DEC})`, "i"));
+  if (m) return [+m[1], +m[2]];
+  m = t.match(new RegExp(`/(?:place|dir)/(${DEC}),(${DEC})`));
+  if (m) return [+m[1], +m[2]];
+  m = t.match(new RegExp(`@(${DEC}),(${DEC})`));
+  if (m) return [+m[1], +m[2]];
+  return null;
+}
+function normalizarLatLon(lat, lon) {
+  if (Math.abs(lat) > 90 && Math.abs(lon) <= 90) { const t = lat; lat = lon; lon = t; }
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  return [lat, lon];
+}
+function parseLocal(text) {
+  const t = text.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) {
+    const c = coordsFromUrl(t);
+    return c ? {latlon: normalizarLatLon(c[0], c[1]), src: "url"} : {needsBackend: true};
+  }
+  if (/[°′"″]|[NSEW]\b/i.test(t)) {
+    const d = dmsToDecimal(t);
+    if (d) return {latlon: normalizarLatLon(d.lat, d.lon), src: "dms"};
+  }
+  const m = t.match(new RegExp(`(${DEC})\\s*[,;/ ]\\s*(${DEC})`));
+  if (m) return {latlon: normalizarLatLon(+m[1], +m[2]), src: "decimal"};
+  return null;
+}
+function setPegaMsg(text, ok) {
+  const el = document.getElementById("pega-msg");
+  el.textContent = text || "";
+  el.className = "cfe-help-msg " + (ok ? "text-accent2" : "text-error");
+}
+function aplicarLatLon(lat, lon, src) {
+  document.getElementById("lat").value = (+lat).toFixed(7).replace(/\.?0+$/, "");
+  document.getElementById("lon").value = (+lon).toFixed(7).replace(/\.?0+$/, "");
+  document.getElementById("dms").value = "";
+  setPegaMsg(`✅ ${lat}, ${lon}  (${src})`, true);
+}
+async function interpretarPega() {
+  const raw = document.getElementById("pega").value.trim();
+  if (!raw) { setPegaMsg("", true); return; }
+  const local = parseLocal(raw);
+  if (local && local.latlon) {
+    aplicarLatLon(local.latlon[0], local.latlon[1], local.src);
+    return;
+  }
+  // Coincidió un patrón pero quedó fuera de rango (latlon === null).
+  if (local && !local.needsBackend && "latlon" in local) {
+    setPegaMsg("⚠️ Coordenadas fuera de rango [-90,90] / [-180,180].", false);
+    return;
+  }
+  // No es URL y no matcheó nada → error local, sin ir al backend.
+  if (!/^https?:\/\//i.test(raw) && !(local && local.needsBackend)) {
+    setPegaMsg("❌ No reconocí coordenadas. Usa 'lat, lon', DMS o un link de Google Maps.", false);
+    return;
+  }
+  // URL (posible link corto) → resolver en el backend.
+  setPegaMsg("⏳ Resolviendo link…", true);
+  try {
+    const r = await authedFetch(`${API_URL}/api/v1/geo/parse?q=${encodeURIComponent(raw)}`);
+    const d = await r.json();
+    if (d.lat != null && d.lon != null) {
+      aplicarLatLon(d.lat, d.lon, d.source || "backend");
+    } else {
+      setPegaMsg(`❌ ${d.error || "no se reconoció"}${d.detail ? " — " + d.detail : ""}`, false);
+    }
+  } catch (e) {
+    setPegaMsg("❌ Error resolviendo: " + e.message, false);
+  }
+}
+document.getElementById("interpretar").addEventListener("click", interpretarPega);
+document.getElementById("pega").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); interpretarPega(); }
+});
+document.getElementById("pega").addEventListener("paste", () => {
+  // esperar a que el valor pegado esté en el input
+  setTimeout(interpretarPega, 0);
+});
+
+document.querySelectorAll("[data-sample]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const [lat, lon] = btn.dataset.sample.split(",");
+    document.getElementById("lat").value = lat;
+    document.getElementById("lon").value = lon;
+    document.getElementById("dms").value = "";
+  });
+});
+
+document.querySelectorAll("[data-fill]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.getElementById("dms").value = `16°48'41.3"N 99°50'40.9"W`;
+    document.getElementById("lat").value = "";
+    document.getElementById("lon").value = "";
+  });
+});
+
+document.getElementById("dms").addEventListener("change", (e) => {
+  const v = e.target.value.trim();
+  if (!v) return;
+  const dec = dmsToDecimal(v);
+  if (dec) {
+    document.getElementById("lat").value = dec.lat.toFixed(6);
+    document.getElementById("lon").value = dec.lon.toFixed(6);
+  }
+});
+
+document.getElementById("limpiar").addEventListener("click", () => {
+  document.getElementById("pega").value = "";
+  setPegaMsg("", true);
+  document.getElementById("lat").value = "";
+  document.getElementById("lon").value = "";
+  document.getElementById("dms").value = "";
+  document.getElementById("limit").value = "25";
+  document.getElementById("csv").value = "0";
+  document.getElementById("resultados-section").classList.add("hidden");
+});
+
+document.getElementById("buscar").addEventListener("click", async () => {
+  const lat = parseFloat(document.getElementById("lat").value);
+  const lon = parseFloat(document.getElementById("lon").value);
+  const limit = parseInt(document.getElementById("limit").value) || 25;
+  const csv = document.getElementById("csv").value;
+
+  if (isNaN(lat) || isNaN(lon)) {
+    alert("Ingresa coordenadas válidas (lat, lon)");
+    return;
+  }
+  if (Math.abs(lat) < 0.0001 && Math.abs(lon) < 0.0001) {
+    alert("Coordenadas (0, 0) no son válidas");
+    return;
+  }
+
+  const btn = document.getElementById("buscar");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Buscando...';
+
+  try {
+    const url = `${API_URL}/api/v1/cfe/coordenadas?lat=${lat}&lon=${lon}&limit=${limit}&csv=${csv}`;
+    const r = await authedFetch(url);
+    const data = await r.json();
+
+    document.getElementById("resultados-section").classList.remove("hidden");
+
+    // Status + dirección
+    const statusDiv = document.getElementById("status");
+    const addressDiv = document.getElementById("address-card");
+    const source = data.geocode_source || "?";
+    const sourceBadge = `<span class="source-badge source-${source}">${source}</span>`;
+
+    if (data.error) {
+      statusDiv.innerHTML = `<div class="error">❌ ${data.error}<br>${data.detail || ""}<br>💡 ${data.fallback || ""}</div>`;
+      addressDiv.innerHTML = "";
+    } else {
+      const addr = data.address || {};
+      const fields = [
+        {label: "Calle", value: addr.calle},
+        {label: "Colonia", value: addr.colonia},
+        {label: "CP", value: addr.cp},
+        {label: "Municipio", value: addr.municipio},
+        {label: "Estado", value: addr.estado},
+      ];
+      const html = fields
+        .filter(f => f.value)
+        .map(f => `<div><div class="label">${f.label}</div><div class="value">${f.value}</div></div>`)
+        .join("");
+      // Display name completo (de Nominatim)
+      const displayName = (data.display_name || "").trim();
+      // Lat/lon
+      const coordsStr = `📍 ${lat}, ${lon}`;
+      // Link OSM
+      const osmLink = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}`;
+      // Mini-mapa estático OSM
+      const miniMap = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=16&size=400x200&maptype=mapnik&markers=${lat},${lon},red`;
+      addressDiv.innerHTML = `
+        <div class="address-card">
+          ${html}
+          <div><div class="label">Fuente</div><div class="value">${sourceBadge} Nominatim</div></div>
+          <div class="cfe-grid-span mt-2">
+            <div class="label">Display name completo (Nominatim)</div>
+            <div class="value cfe-display-name">${displayName || "—"}</div>
+          </div>
+          <div class="cfe-grid-span flex items-center gap-3 mt-1 text-xs text-muted">
+            <span>${coordsStr}</span>
+            <a href="${osmLink}" target="_blank" rel="noopener" class="cfe-map-link">🗺️ Abrir en OpenStreetMap ↗</a>
+          </div>
+          <div class="cfe-grid-span cfe-map-container">
+            <img src="${miniMap}" alt="Mapa estático" class="cfe-map-img" onerror="this.style.display='none'" />
+          </div>
+        </div>`;
+    }
+
+    // Tabla de servicios
+    const tableDiv = document.getElementById("results-table");
+    if (data.found && data.rows && data.rows.length > 0) {
+      let html = `<div class="cfe-result-summary">✅ ${data.count} servicio(s) encontrado(s) en CFE`;
+      if (data.truncated) html += " (truncado por límite)";
+      html += " · " + data.count + " / " + limit + " máx</div>";
+      html += `<table>
+        <thead>
+          <tr>
+            <th>Num Servicio</th>
+            <th>División</th>
+            <th>Zona</th>
+            <th>CP</th>
+            <th>Nombre</th>
+            <th>Dirección</th>
+            <th>Colonia</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      for (const r of data.rows) {
+        html += `<tr>
+          <td><code>${r.num_servicio || ""}</code></td>
+          <td>${r.division || ""}</td>
+          <td>${r.zona_cod || ""} ${r.zona_nom || ""}</td>
+          <td>${r.cp || ""}</td>
+          <td>${r.nombre || ""}</td>
+          <td>${(r.direccion || "").substring(0, 50)}</td>
+          <td>${(r.colonia || "").substring(0, 40)}</td>
+        </tr>`;
+      }
+      html += "</tbody></table>";
+
+      if (data.csv) {
+        const blob = new Blob([data.csv], {type: "text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `cfe_coordenadas_${lat}_${lon}.csv`;
+        a.click();
+      }
+
+      tableDiv.innerHTML = html;
+    } else {
+      tableDiv.innerHTML = `<div class="empty">No se encontraron servicios CFE en esta ubicación.</div>`;
+    }
+
+    if (data.nota) {
+      tableDiv.innerHTML += `<div class="nota">⚠️ ${data.nota}</div>`;
+    }
+  } catch (err) {
+    alert("Error: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "🔍 Buscar servicios CFE";
+  }
+});
+
+// Logout
+document.getElementById("logout").addEventListener("click", async () => {
+  await authedFetch(`${API_URL}/api/auth/logout`, {method: "POST"});
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+});
+
+// Mostrar usuario actual
+(async () => {
+  try {
+    const r = await authedFetch(`${API_URL}/api/auth/me`);
+    const me = await r.json();
+    document.getElementById("user-badge").textContent = `👤 ${me.username || ""}`;
+  } catch {
+    document.getElementById("user-badge").textContent = "❌ no autenticado";
+  }
+})();
+</script>
+</body>
+</html>

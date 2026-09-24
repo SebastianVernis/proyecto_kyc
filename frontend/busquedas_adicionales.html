@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta name="robots" content="noindex, nofollow">
+<title>Búsquedas Adicionales — Argos OSINT</title>
+<link rel="icon" href="assets/argos-osint_favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/global.css">
+<style>
+.layout{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:50;padding:16px;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.sidebar .brand img{height:28px}
+.sidebar-section{margin-bottom:20px}
+.sidebar-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 8px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none}
+.sidebar-item:hover{color:var(--text);background:var(--panel2)}
+.sidebar-item.active{color:var(--accent2);background:rgba(110,231,183,0.08)}
+.main-area{flex:1;margin-left:240px;min-height:100vh}
+.topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;gap:12px}
+.topbar h1{margin:0;font-size:18px;font-weight:700}
+.topbar-actions{display:flex;gap:8px}
+.content{padding:24px;max-width:1100px}
+
+/* Cards */
+.search-section{margin-bottom:28px}
+.search-section h2{font-size:14px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin:0 0 12px;font-weight:600}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.provider-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;text-transform:uppercase}
+.provider-tag.singula{background:rgba(255,94,94,.2);color:#ff5e5e}
+.provider-tag.apify{background:rgba(180,92,249,.2);color:#b45cf9}
+.provider-tag.interno{background:rgba(79,140,255,.2);color:var(--accent)}
+.cache-badge{display:inline-block;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;font-family:monospace}
+.cache-fresh{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.4)}
+.cache-paid{background:rgba(255,152,0,.15);color:#ff9800;border:1px solid rgba(255,152,0,.4)}
+
+.search-form{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.search-form input{flex:1;min-width:200px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px;font-family:inherit}
+.search-form input:focus{outline:none;border-color:var(--accent)}
+
+.btn{background:linear-gradient(180deg,rgba(79,140,255,.95) 0%,rgba(59,120,235,.95) 100%);border:1px solid rgba(120,170,255,.45);color:#fff;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;min-height:36px;transition:transform 0.12s,filter 0.18s;font-family:inherit}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn.secondary{background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.02) 100%);border:1px solid rgba(255,255,255,.10);color:var(--text)}
+.btn.sm{padding:5px 10px;font-size:11px;min-height:28px}
+
+.result-box{margin-top:10px;padding:12px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;font-size:12px;max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.result-box.success{border-color:var(--accent2)}
+.result-box.error{border-color:var(--error);color:var(--error)}
+.result-box.empty{color:var(--muted);font-style:italic}
+
+.spinner{border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;width:16px;height:16px;animation:spin .8s linear infinite;display:inline-block;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-ok{background:rgba(110,231,183,.15);color:var(--accent2)}
+.badge-warn{background:rgba(245,158,11,.15);color:var(--warn)}
+.badge-err{background:rgba(239,68,68,.15);color:var(--error)}
+
+/* Profile cards inside results */
+.profile-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:10px;margin:6px 0}
+.profile-card-name{font-weight:600;font-size:13px}
+.profile-card-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.profile-card-detail{font-size:11px;margin-top:4px;color:var(--text)}
+
+@media(max-width:768px){
+  .sidebar{display:none}.main-area{margin-left:0}
+  .content{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><img src="assets/argos-osint_isotipo_mono-blanco.svg" alt="Argos"><span>ARGOS <span style="color:var(--accent2)">OSINT</span></span></div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Navegación</div>
+      <a href="/dashboard.html" class="sidebar-item"><span>📊</span> Dashboard</a>
+      <a href="/buscar.html" class="sidebar-item"><span>🔍</span> Búsqueda</a>
+      <a href="/oraculo.html" class="sidebar-item"><span>🤖</span> Oráculo</a>
+      <a href="/sujeto.html" class="sidebar-item"><span>📋</span> Expediente</a>
+      <a href="/busquedas_adicionales.html" class="sidebar-item active"><span>🌐</span> Búsquedas Ext.</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Cuenta</div>
+      <a href="/subscribe.html" class="sidebar-item"><span>💳</span> Suscripción</a>
+    </div>
+    <div style="margin-top:auto">
+      <a href="#" class="sidebar-item" id="logout-btn"><span>🚪</span> Cerrar sesión</a>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <div class="topbar">
+      <h1>🌐 Búsquedas Adicionales</h1>
+      <div class="topbar-actions">
+        <a href="/sujeto.html" class="btn sm secondary" id="btn-volver">← Expediente</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- CURP input -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-title">🎯 Sujeto de investigación</div>
+        </div>
+        <div class="search-form">
+          <input id="curp-input" placeholder="CURP (18 caracteres)" maxlength="18" style="text-transform:uppercase">
+          <button class="btn" onclick="loadValidations()">Cargar validaciones</button>
+        </div>
+        <div id="sujeto-info" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+      </div>
+
+      <!-- Singula section -->
+      <div class="search-section">
+        <h2>🔴 Singula — Inteligencia financiera</h2>
+        <div id="singula-cards"></div>
+      </div>
+
+      <!-- Apify section -->
+      <div class="search-section">
+        <h2>🟣 Apify — OSINT y redes sociales</h2>
+        <div id="apify-cards"></div>
+      </div>
+
+      <!-- Results -->
+      <div class="search-section">
+        <h2>📋 Resultados</h2>
+        <div id="results-area">
+          <div class="card" style="color:var(--muted);font-size:12px;text-align:center;padding:24px">
+            Selecciona una búsqueda y ejecútala para ver resultados aquí.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = (() => {
+  const h = location.hostname;
+  if (location.protocol === "file:" || h === "" || h === "localhost" || h === "127.0.0.1") return "http://localhost:8765";
+  return `${location.protocol}//${location.host}`;
+})();
+const params = new URLSearchParams(location.search);
+let CURP = params.get("curp") || "";
+const AUTO = params.get("auto") || "";
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const authH = () => { const t = localStorage.getItem("session_token"); return t ? {"Authorization": `Bearer ${t}`} : {}; };
+const authHJ = () => ({ "Content-Type": "application/json", ...authH() });
+
+let sujetoData = null;
+let validationDefs = [];
+
+/* ==== Auth ==== */
+async function checkAuth() {
+  try {
+    const r = await fetch(`${API_URL}/api/auth/me`, { headers: authH() });
+    const d = await r.json();
+    if (!d.ok) { location.href = "/login.html"; return false; }
+  } catch { location.href = "/login.html"; return false; }
+  return true;
+}
+
+/* ==== Load validations ==== */
+async function loadValidations() {
+  if (!(await checkAuth())) return;
+  CURP = $("curp-input").value.trim().toUpperCase();
+  if (!CURP || CURP.length !== 18) {
+    $("sujeto-info").textContent = "Ingresa una CURP válida (18 caracteres).";
+    return;
+  }
+  $("btn-volver").href = `/sujeto.html?curp=${encodeURIComponent(CURP)}`;
+
+  // Load sujeto data
+  $("sujeto-info").innerHTML = '<span class="spinner"></span> Cargando sujeto...';
+  try {
+    const r = await fetch(`${API_URL}/api/perfil/crear`, {
+      method: "POST", headers: authHJ(),
+      body: JSON.stringify({ curp: CURP }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    sujetoData = data;
+    const p = data.perfil?.padron_data || {};
+    const nombre = [p.nombre, p.paterno, p.materno].filter(Boolean).join(" ") || "Sin nombre";
+    $("sujeto-info").innerHTML = `✓ <strong>${esc(nombre)}</strong> · CURP: <code>${esc(CURP)}</code> · RFC: <code>${esc(data.perfil?.rfc || "—")}</code>`;
+  } catch (e) {
+    $("sujeto-info").innerHTML = `⚠ Error cargando sujeto: ${esc(e.message)}`;
+  }
+
+  // Load available validations
+  try {
+    const r = await fetch(`${API_URL}/api/validar`, {
+      method: "POST", headers: authHJ(),
+      body: JSON.stringify({ curp: CURP, query: "list", sujeto: {} }),
+    });
+    const data = await r.json();
+    if (data.validations) {
+      validationDefs = data.validations;
+      renderValidationCards();
+    }
+  } catch {
+    // Fallback: render default cards
+    renderDefaultCards();
+  }
+}
+
+function renderValidationCards() {
+  const singulaCards = $("singula-cards");
+  const apifyCards = $("apify-cards");
+
+  const singula = validationDefs.filter(v => v.provider === "singula");
+  const apify = validationDefs.filter(v => v.provider === "apify");
+
+  singulaCards.innerHTML = singula.length ? singula.map(v => renderCard(v)).join("") : '<div class="card" style="color:var(--muted);font-size:12px">No hay validaciones Singula disponibles.</div>';
+  apifyCards.innerHTML = apify.length ? apify.map(v => renderCard(v)).join("") : '<div class="card" style="color:var(--muted);font-size:12px">No hay validaciones Apify disponibles.</div>';
+}
+
+function renderDefaultCards() {
+  const defaults = [
+    { id: "singula-judicial", name: "Antecedentes Judiciales", provider: "singula", description: "Busca antecedentes judiciales y penales.", default_query: "" },
+    { id: "singula-blacklist", name: "Blacklists y Sanciones", provider: "singula", description: "Listas negras, OFAC, PEP y sanciones internacionales.", default_query: "" },
+    { id: "singula-email-lookup", name: "Email Lookup", provider: "singula", description: "Búsqueda de emails asociados.", default_query: "" },
+    { id: "singula-intel-basic", name: "Inteligencia Básica", provider: "singula", description: "Datos de inteligencia básica del sujeto.", default_query: "" },
+    { id: "singula-intel-premium", name: "Inteligencia Premium", provider: "singula", description: "Datos de inteligencia premium del sujeto.", default_query: "" },
+    { id: "apify-social", name: "Redes Sociales", provider: "apify", description: "Rastreo de presencia en redes sociales.", default_query: "" },
+  ];
+  validationDefs = defaults;
+  renderValidationCards();
+}
+
+function renderCard(v) {
+  const tagClass = v.provider === "singula" ? "singula" : "apify";
+  return `<div class="card" id="vcard-${v.id}">
+    <div class="card-header">
+      <div class="card-title">${esc(v.name)} <span class="provider-tag ${tagClass}">${v.provider}</span></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${esc(v.description)}</div>
+    <div class="search-form">
+      <input type="text" id="vq-${v.id}" value="${esc(v.default_query || "")}" placeholder="Query (opcional)">
+      <button class="btn" id="vbtn-${v.id}" onclick="runValidation('${v.id}')">▶ Ejecutar</button>
+    </div>
+    <div id="vresult-${v.id}" style="display:none"></div>
+  </div>`;
+}
+
+/* ==== Run validation ==== */
+async function runValidation(vId) {
+  if (!CURP) { alert("Primero ingresa una CURP"); return; }
+  const query = $(`vq-${vId}`)?.value.trim() || "";
+  const btn = $(`vbtn-${vId}`);
+  const resultDiv = $(`vresult-${vId}`);
+  const card = $(`vcard-${vId}`);
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Ejecutando...';
+  card.style.borderColor = "var(--warn)";
+  resultDiv.style.display = "block";
+  resultDiv.className = "result-box";
+  resultDiv.textContent = "Ejecutando búsqueda...";
+
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 300000);
+
+  try {
+    const s = sujetoData?.perfil?.padron_data || {};
+    const r = await fetch(`${API_URL}/api/validar`, {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: authHJ(),
+      body: JSON.stringify({
+        validation_id: vId,
+        curp: CURP,
+        query: query,
+        sujeto: {
+          nombre: s.nombre || "",
+          paterno: s.paterno || "",
+          materno: s.materno || "",
+          curp: CURP,
+          rfc: sujetoData?.perfil?.rfc || "",
+          fecnac: s.fecnac || "",
+        },
+        rfc: sujetoData?.perfil?.rfc || "",
+      }),
+    });
+    clearTimeout(tid);
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${r.status}`);
+    }
+
+    const data = await r.json();
+    card.style.borderColor = "var(--accent2)";
+    resultDiv.className = "result-box success";
+    resultDiv.innerHTML = renderResult(data, vId);
+
+    // Also add to global results area
+    addToResults(vId, data);
+  } catch (e) {
+    card.style.borderColor = "var(--error)";
+    resultDiv.className = "result-box error";
+    resultDiv.textContent = `Error: ${e.name === "AbortError" ? "Timeout (5 min)" : e.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "▶ Ejecutar";
+    clearTimeout(tid);
+  }
+}
+
+function renderResult(data, vId) {
+  const res = data?.result;
+  if (!res) return `<pre style="font-size:11px">${esc(JSON.stringify(data, null, 2))}</pre>`;
+
+  // Singula with profiles
+  if (res.sin_coincidencias_determinantes || Array.isArray(res.perfiles)) {
+    const perfiles = res.perfiles || [];
+    let html = "";
+    if (res.sin_coincidencias_determinantes) {
+      html += `<div style="color:var(--warn);font-weight:600;margin-bottom:6px">⚠ Sin coincidencias determinantes</div>`;
+      html += `<div style="color:var(--muted);font-size:11px;margin-bottom:8px">${esc(res.mensaje || "")}</div>`;
+    } else {
+      html += `<div style="color:var(--accent2);font-weight:600;margin-bottom:6px">✓ ${esc(res.mensaje || perfiles.length + " perfiles encontrados")}</div>`;
+    }
+    for (const p of perfiles) {
+      html += `<div class="profile-card">
+        <div class="profile-card-name">${esc(p.nombre || p.name || "—")}</div>
+        ${p.score != null ? `<div class="profile-card-meta">Score: ${Number(p.score).toFixed(2)}</div>` : ""}
+        ${p.fuente ? `<div class="profile-card-meta">Fuente: ${esc(p.fuente)}</div>` : ""}
+        ${p.descripcion || p.description ? `<div class="profile-card-detail">${esc(p.descripcion || p.description)}</div>` : ""}
+      </div>`;
+    }
+    return html;
+  }
+
+  // Generic JSON result
+  return `<pre style="font-size:11px;white-space:pre-wrap">${esc(JSON.stringify(data, null, 2))}</pre>`;
+}
+
+function addToResults(vId, data) {
+  const area = $("results-area");
+  // Remove placeholder
+  const placeholder = area.querySelector(".card[style]");
+  if (placeholder && placeholder.textContent.includes("Selecciona")) placeholder.remove();
+
+  const v = validationDefs.find(x => x.id === vId);
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `<div class="card-header">
+    <div class="card-title">${esc(v?.name || vId)} <span class="provider-tag ${v?.provider || 'interno'}">${v?.provider || "?"}</span></div>
+    <span class="badge badge-ok">${new Date().toLocaleTimeString()}</span>
+  </div><div class="result-box success">${renderResult(data, vId)}</div>`;
+  area.prepend(card);
+}
+
+/* ==== Auto-execute ==== */
+if (CURP && AUTO) {
+  $("curp-input").value = CURP;
+  window.addEventListener("DOMContentLoaded", async () => {
+    await loadValidations();
+    // Auto-execute if requested
+    if (AUTO && validationDefs.length) {
+      const match = validationDefs.find(v => v.id.includes(AUTO) || v.name.toLowerCase().includes(AUTO.replace(/_/g, " ")));
+      if (match) {
+        setTimeout(() => runValidation(match.id), 500);
+      }
+    }
+  });
+} else if (CURP) {
+  $("curp-input").value = CURP;
+  window.addEventListener("DOMContentLoaded", loadValidations);
+}
+
+/* ==== Logout ==== */
+document.getElementById("logout-btn").addEventListener("click", async e => {
+  e.preventDefault();
+  await fetch(`${API_URL}/api/auth/logout`, { method: "POST", headers: authH() });
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+});
+</script>
+</body>
+</html>

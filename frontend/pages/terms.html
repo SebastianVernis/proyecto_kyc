@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <title>Términos de servicio — Argos OSINT</title>
+  <link rel="icon" href="../assets/argos-osint_favicon.svg" type="image/svg+xml">
+  <style>
+:root { --bg:#0f1115;--panel:#1a1d24;--panel2:#232730;--border:#2c313c;--text:#e6e8ec;--muted:#8a93a6;--accent:#4f8cff;--accent2:#6ee7b7 }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:transparent;color:var(--text);font-size:14px;line-height:1.7}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border:1px solid transparent;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;text-decoration:none}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-secondary{background:transparent;color:var(--text);border-color:var(--border)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;font-weight:600}
+.form-input{width:100%;padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none}
+.form-input:focus{border-color:var(--accent)}
+select.form-input{appearance:none}
+textarea.form-input{resize:vertical;min-height:80px}
+
+    .legal{max-width:800px;margin:0 auto;padding:40px 24px 80px}
+    .legal h1{font-size:28px;margin-bottom:8px}
+    .legal .updated{color:var(--muted);font-size:13px;margin-bottom:32px}
+    .legal h2{font-size:18px;margin-top:32px;margin-bottom:12px;color:var(--accent2)}
+    .legal h3{font-size:15px;margin-top:24px;margin-bottom:8px}
+    .legal p,.legal li{font-size:14px;color:var(--muted);margin-bottom:12px}
+    .legal ul,.legal ol{padding-left:24px;margin-bottom:16px}
+    .legal li{margin-bottom:6px}
+    .back{display:inline-block;margin-bottom:24px;color:var(--muted);font-size:13px}
+  
+/* --- Argos OSINT Portal Background --- */
+.argos-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse 80% 75% at 50% 50%, #0f1115 0%, #080C20 60%, #05081A 100%)}
+.argos-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.argos-bg::after{content:"";position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.argos-bg--quiet canvas{opacity:.45}
+@media (prefers-reduced-motion:reduce){.argos-bg canvas{opacity:.45}}
+body > *:not(.argos-bg) { position: relative; z-index: 1; }
+
+</style>
+</head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+  <div class="legal">
+    <a href="/" class="back">← Volver al inicio</a>
+    <h1>Términos y Condiciones de Servicio</h1>
+    <p class="updated">Última actualización: 3 de septiembre de 2026</p>
+
+    <h2>1. Aceptación de los términos</h2>
+    <p>Al acceder y utilizar la plataforma Argos OSINT (en adelante "la Plataforma"), usted acepta estar sujeto a estos Términos y Condiciones. Si no está de acuerdo, no debe utilizar la Plataforma.</p>
+
+    <h2>2. Descripción del servicio</h2>
+    <p>Argos OSINT es una plataforma de inteligencia de fuentes abiertas para profesionales. El servicio incluye:</p>
+    <ul>
+      <li>Consulta de bases de datos federadas (340M+ registros)</li>
+      <li>Búsqueda por identidad (nombre, CURP, RFC, teléfono, dirección)</li>
+      <li>Rastreo OSINT de redes sociales y presencia digital</li>
+      <li>Consultas conversacionales mediante oráculo de IA</li>
+      <li>Generación de reportes KYC con hallazgos y score de riesgo</li>
+      <li>Validación de identidad vía Tlaloc, CheckID y Singula</li>
+    </ul>
+
+    <h2>3. Registro y aprobación</h2>
+    <h3>3.1 Proceso de registro</h3>
+    <p>El registro requiere aprobación del administrador. Las cuentas quedan en estado "pendiente" hasta su aprobación. Argos OSINT se reserva el derecho de rechazar registros sin explicación.</p>
+    <h3>3.2 Verificación KYC</h3>
+    <p>Los usuarios pueden solicitar verificación de identidad mediante escaneo de INE/CURP a través de Singula. Las verificaciones quedan pendientes de aprobación administrativa.</p>
+    <h3>3.3 Seguridad</h3>
+    <p>Contraseñas con PBKDF2-SHA512, sesiones HttpOnly, API keys con AES-256-GCM.</p>
+
+    <h2>4. Suscripciones y pagos</h2>
+    <h3>4.1 Planes</h3>
+    <p>Básico ($29 USD/mes), Profesional ($99 USD/mes), Empresarial ($299 USD/mes), Corporativo ($500 USD/mes). Precios no incluyen impuestos.</p>
+    <h3>4.2 Límites de uso</h3>
+    <p>Cada plan tiene límites mensuales de búsquedas y rastreos. Los límites se resetean el primer día de cada mes.</p>
+    <h3>4.3 Garantía de reembolso</h3>
+    <p>7 días desde la compra. Contacte a soporte@argos-osint.com.</p>
+    <h3>4.4 Cancelación</h3>
+    <p>Puede cancelar en cualquier momento. La cancelación es efectiva al final del período actual.</p>
+
+    <h2>5. Uso aceptable</h2>
+    <ul>
+      <li>Utilizar la Plataforma solo para fines legítimos de investigación</li>
+      <li>No compartir credenciales con terceros no autorizados</li>
+      <li>No intentar acceder a datos de otros usuarios</li>
+      <li>No realizar ingeniería inversa del software</li>
+      <li>No usar la Plataforma para actividades ilegales</li>
+    </ul>
+
+    <h2>6. Propiedad intelectual</h2>
+    <p>La Plataforma es propiedad de Argos OSINT. Los datos que usted consulta no son de su propiedad; solo tiene derecho a usarlos para fines legítimos de investigación.</p>
+
+    <h2>7. Privacidad</h2>
+    <p>El tratamiento de datos se rige por nuestra <a href="/privacy.html">Política de Privacidad</a>.</p>
+
+    <h2>8. Limitación de responsabilidad</h2>
+    <p>Argos OSINT proporciona datos de fuentes abiertas como herramienta de apoyo. Los resultados deben ser verificados por un profesional. No nos hacemos responsables por decisiones tomadas basándose únicamente en los datos de la Plataforma.</p>
+
+    <h2>9. Disponibilidad</h2>
+    <p>Nos esforzamos por mantener la Plataforma disponible 24/7. Los planes Corporativo incluyen SLA de 99.9%.</p>
+
+    <h2>10. Modificaciones</h2>
+    <p>Cambios significativos serán notificados con 30 días de anticipación.</p>
+
+    <h2>11. Ley aplicable</h2>
+    <p>Estos Términos se rigen por las leyes de los Estados Unidos Mexicanos.</p>
+
+    <h2>12. Contacto</h2>
+    <ul>
+      <li>Correo: <a href="mailto:legal@argos-osint.com">legal@argos-osint.com</a></li>
+      <li>Teléfono: <a href="tel:+525512345678">+52 55 1234 5678</a></li>
+    </ul>
+  </div>
+<script>
+(function(){
+  const wrap = document.querySelector('.argos-bg');
+  if (!wrap) return;
+  const cv = wrap.querySelector('canvas');
+  const ctx = cv.getContext('2d');
+  const quiet = wrap.classList.contains('argos-bg--quiet');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = quiet || reduce;
+  const PLATA = '201,205,213', AMBAR = '232,180,74';
+  let W, H, dpr, nodes = [], amber = [];
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function build(){
+    const n = Math.round((W * H) / (quiet ? 44000 : 22000));
+    nodes = [];
+    for (let i = 0; i < n; i++){
+      nodes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12,
+        r: 1 + Math.random() * 1.4,
+        a: .25 + Math.random() * .45
+      });
+    }
+    amber = [];
+    const spots = [[.18,.28],[.80,.22],[.72,.78]];
+    spots.forEach(([fx,fy]) => amber.push({ x: W*fx + (Math.random()-.5)*80, y: H*fy + (Math.random()-.5)*80, t: Math.random()*Math.PI*2 }));
+  }
+  function centerFade(x, y){
+    const dx = (x - W/2) / (W*.45), dy = (y - H/2) / (H*.45);
+    const d = Math.min(1, Math.sqrt(dx*dx + dy*dy));
+    return .25 + .75 * d * d;
+  }
+  const LINK = 150;
+  function draw(t){
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < nodes.length; i++){
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++){
+        const b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y, d2 = dx*dx + dy*dy;
+        if (d2 < LINK*LINK){
+          const k = 1 - Math.sqrt(d2) / LINK;
+          const f = centerFade((a.x+b.x)/2, (a.y+b.y)/2);
+          ctx.strokeStyle = 'rgba('+PLATA+','+(k * .16 * f).toFixed(3)+')';
+          ctx.lineWidth = .8;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+    }
+    for (const p of nodes){
+      const f = centerFade(p.x, p.y);
+      ctx.fillStyle = 'rgba('+PLATA+','+(p.a * f).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      if (!still){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -10) p.x = W + 10; if (p.x > W + 10) p.x = -10;
+        if (p.y < -10) p.y = H + 10; if (p.y > H + 10) p.y = -10;
+      }
+    }
+    for (const s of amber){
+      const pulse = still ? .5 : (.5 + .5 * Math.sin(t * .0009 + s.t));
+      nodes.forEach(p => {
+        const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy);
+        if (d < LINK * 1.3){
+          ctx.strokeStyle = 'rgba('+AMBAR+','+(.10 + .12 * pulse) * (1 - d/(LINK*1.3))+')';
+          ctx.lineWidth = .9;
+          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        }
+      });
+      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 26);
+      g.addColorStop(0, 'rgba('+AMBAR+','+(.22 + .18 * pulse).toFixed(3)+')');
+      g.addColorStop(1, 'rgba('+AMBAR+',0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba('+AMBAR+','+(.75 + .25 * pulse).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 2.6, 0, Math.PI*2); ctx.fill();
+    }
+    if (!still) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', () => { resize(); if (still) draw(0); });
+  resize();
+  still ? draw(0) : requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

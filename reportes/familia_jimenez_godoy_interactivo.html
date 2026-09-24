@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investigacion Familia Jimenez Godoy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#0a0a1a;color:#e0e0e0;line-height:1.5;font-size:11pt}
+.header{background:linear-gradient(135deg,#0f3460,#1a1a2e);padding:20px 30px;border-bottom:2px solid #00d4ff}
+.header h1{color:#00d4ff;font-size:28pt}
+.header .meta{color:#888;font-size:11pt;margin-top:4px}
+nav{background:#16213e;border-bottom:1px solid #333;position:sticky;top:0;z-index:100;display:flex;gap:0;overflow-x:auto}
+nav a{color:#7ec8e3;text-decoration:none;padding:12px 20px;font-size:11pt;white-space:nowrap;border-bottom:2px solid transparent;transition:.2s}
+nav a:hover,nav a.active{color:#00d4ff;border-bottom-color:#00d4ff;background:rgba(0,212,255,.05)}
+section{padding:20px 30px;max-width:1400px;margin:0 auto}
+h2{color:#00d4ff;font-size:18pt;margin:20px 0 10px;border-bottom:1px solid #333;padding-bottom:5px}
+h3{color:#7ec8e3;font-size:13pt;margin:12px 0 6px}
+.card{background:#16213e;border:1px solid #333;border-radius:8px;padding:14px 18px;margin:8px 0;transition:.2s;font-size:10pt}
+.card:hover{border-color:#00d4ff;box-shadow:0 0 12px rgba(0,212,255,.15)}
+.card-hl{border-left:4px solid #00d4ff}
+.card-g{border-left:4px solid #2ecc71}
+.card-w{border-left:4px solid #f39c12}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:10pt}
+th{background:#0f3460;color:#00d4ff;text-align:left;padding:8px 12px;position:sticky;top:40px;z-index:50;font-size:10pt}
+td{padding:6px 12px;border-bottom:1px solid #222;font-size:10pt}
+tr:hover td{background:rgba(0,212,255,.05)}
+.label{color:#7ec8e3;font-weight:600}
+.email{color:#2ecc71}
+.phone{color:#f1c40f}
+.sueldo{color:#2ecc71}
+.link{color:#3498db;text-decoration:none}
+.link:hover{text-decoration:underline}
+.tag{display:inline-block;background:#0f3460;color:#00d4ff;padding:2px 6px;border-radius:3px;font-size:8pt;margin:1px}
+.small{font-size:8pt;color:#999}
+.cfe{font-family:'Courier New',monospace;font-size:9pt;background:#0a0a1a;padding:3px 6px;border-radius:3px;color:#f39c12}
+.flex{display:flex;gap:12px;flex-wrap:wrap}
+.flex>div{flex:1;min-width:280px}
+
+/* Family Tree */
+.tree-container{overflow:auto;padding:20px 0}
+.tree svg{display:block;margin:0 auto}
+.tree svg .node{cursor:pointer;transition:.2s}
+.tree svg .node:hover rect{stroke:#00d4ff;stroke-width:2.5;filter:drop-shadow(0 0 8px rgba(0,212,255,.4))}
+.tree svg .node:hover text{fill:#fff}
+.tree svg .highlight rect{stroke:#00d4ff;stroke-width:2.5}
+.tree svg .partner rect{stroke:#2ecc71}
+.tree svg .twins rect{stroke:#f39c12;stroke-dasharray:4,2}
+
+/* Tooltip */
+.tooltip{position:fixed;background:#16213e;border:1px solid #00d4ff;border-radius:8px;padding:14px 18px;max-width:400px;z-index:1000;display:none;box-shadow:0 4px 20px rgba(0,0,0,.6);font-size:11pt;pointer-events:none}
+.tooltip h4{color:#00d4ff;margin-bottom:6px}
+.tooltip .row{margin:3px 0}
+.tooltip .lbl{color:#7ec8e3;font-weight:600;display:inline-block;min-width:70px}
+
+/* Search */
+.search-box{background:#16213e;border:1px solid #333;border-radius:6px;padding:10px 16px;color:#e0e0e0;font-size:12pt;width:400px;margin:10px 0}
+.search-box:focus{outline:none;border-color:#00d4ff}
+
+/* CFE Grid */
+.cfe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:8px}
+.cfe-item{background:#0a0a1a;border:1px solid #333;border-radius:6px;padding:10px 14px;font-size:10pt}
+.cfe-item .name{color:#e0e0e0;font-weight:600;font-size:10pt}
+.cfe-item .num{color:#f39c12;font-family:monospace;font-size:11pt}
+
+/* R2 Links */
+.r2-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.r2-item{background:#16213e;border:1px solid #333;border-radius:6px;padding:12px 16px;text-decoration:none;color:#3498db;transition:.2s;font-size:11pt}
+.r2-item:hover{border-color:#3498db;background:#1a2a4e}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:2000;display:none;align-items:center;justify-content:center}
+.modal{background:#16213e;border:1px solid #00d4ff;border-radius:12px;padding:28px;max-width:550px;width:90%;max-height:80vh;overflow-y:auto;font-size:11pt}
+.modal h3{color:#00d4ff;margin-bottom:12px}
+.modal .close{position:absolute;top:10px;right:16px;color:#888;cursor:pointer;font-size:18pt}
+.modal .close:hover{color:#fff}
+
+@media(max-width:768px){section{padding:12px 16px}nav{flex-wrap:nowrap}}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>INVESTIGACION FAMILIAR — JIMENEZ GODOY</h1>
+<div class="meta">Sujeto: <strong>GABRIELA GEORGINA JIMENEZ GODOY</strong> — CURP: JIGG870223MJCMDB08 — 15/09/2026 — 26 hermanos • 5 parejas • 77 cuentas CFE • 14 bases</div>
+</div>
+
+<nav>
+<a href="#arbol">Arbol Genealogico</a>
+<a href="#relaciones">Relaciones</a>
+<a href="#hermanos">Hermanos</a>
+<a href="#parejas">Parejas</a>
+<a href="#bancos">Bancos</a>
+<a href="#cfe">CFE</a>
+<a href="#direcciones">Direcciones</a>
+<a href="#docs">Documentos R2</a>
+</nav>
+
+<div class="tooltip" id="tooltip"></div>
+
+<!-- ARBOL GENEALOGICO -->
+<section id="arbol">
+<h2>Arbol Genealogico Interactivo</h2>
+<p class="small">Haz clic en cualquier nodo para ver detalles. Arrastra para mover. Scroll para zoom.</p>
+<input type="text" class="search-box" placeholder="Buscar familiar..." oninput="filterTree(this.value)">
+<div class="tree-container">
+<div class="tree" id="familyTree"></div>
+</div>
+</section>
+
+<!-- RELACIONES -->
+<section id="relaciones">
+<h2>Mapa de Relaciones</h2>
+<div id="relationsMap" class="tree-container"></div>
+</section>
+
+<!-- HERMANOS -->
+<section id="hermanos">
+<h2>26 Hermanos — Datos Completos</h2>
+<table id="hermanosTable">
+<tr><th>#</th><th>Nombre</th><th>Nac.</th><th>RFC</th><th>NSS</th><th>Afore</th><th>Tel</th><th>Email</th><th>Empleo</th><th>Sueldo</th></tr>
+</table>
+</section>
+
+<!-- PAREJAS -->
+<section id="parejas">
+<h2>Esposos / Parejas Confirmados</h2>
+<div id="parejasList"></div>
+</section>
+
+<!-- BANCOS -->
+<section id="bancos">
+<h2>Cuentas Bancarias</h2>
+<table>
+<tr><th>Titular</th><th>Banco</th><th>Cuenta</th><th>RFC</th><th>Telefono</th><th>Domicilio</th><th>CP</th></tr>
+<tr><td>MARIA FERNANDA JIMENEZ GODOY</td><td>Banorte</td><td>—</td><td>JIGF880830Q17</td><td class="phone">0445536604167</td><td>LAS FLORES, TLACOPAC</td><td>1760</td></tr>
+<tr><td>ARGELIA PATRICIA LANDEROS SILVA</td><td>Santander</td><td>740001233440</td><td>LASA730902KE3</td><td class="phone">38120130</td><td>ZARAGOZA 15 A</td><td>45955</td></tr>
+<tr><td>DOMINGO JAVIER GARCIA MANZO</td><td>Santander</td><td>—</td><td>GAMD550706IH7</td><td class="phone">10578826</td><td>CASTELLANOS Y TAPIA 978</td><td>44719</td></tr>
+</table>
+</section>
+
+<!-- CFE -->
+<section id="cfe">
+<h2>77 Cuentas CFE — Numeros de Servicio</h2>
+<p class="small">Click para copiar el numero de servicio</p>
+<div class="cfe-grid" id="cfeGrid"></div>
+</section>
+
+<!-- DIRECCIONES -->
+<section id="direcciones">
+<h2>9 Direcciones Familiares</h2>
+<div id="direccionesList"></div>
+</section>
+
+<!-- DOCUMENTOS -->
+<section id="docs">
+<h2>Documentos en R2</h2>
+<div class="r2-grid" id="r2Grid"></div>
+</section>
+
+<footer style="text-align:center;padding:20px;color:#555;font-size:8pt;border-top:1px solid #222">
+Plataforma Encuentra — 15/09/2026
+</footer>
+
+<script>
+const R2='https://pub-b5822c10dd6643bfbb73c3bba5df5226.r2.dev/familia-jimenez-godoy';
+
+// === DATA ===
+const siblings=[
+{n:1,name:'MARIA TERESA',born:'1955-04-13',sex:'M',rfc:'—',nss:'—',afore:'—',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 44330, GDL',cfe:[],partner:null},
+{n:2,name:'ALICIA',born:'1957-08-10',sex:'M',rfc:'JIGA570810F40',nss:'54795714739',afore:'INVERCAP',tel:'—',email:'—',emp:'—',sal:'—',addr:'C Puerto Melaque 1691, CP 44710',cfe:[],partner:{name:'DOMINGO JAVIER GARCIA MANZO',born:'1955-07-06',rfc:'GAMD550706IH7',nss:'04755527704',tel:'10578826',emp:'NICSA MAV SA de CV',sal:'$12,880',child:'NOHEMI G. GARCIA J. (1989)'}},
+{n:3,name:'GILBERTO',born:'1959-02-08',sex:'H',rfc:'JIGG590208ER9',nss:'54785917391',afore:'INVERCAP',tel:'3334695998',email:'—',emp:'Cristino Alvarado Huerta',sal:'$16,350',addr:'CP 44330, GDL',cfe:['474110316811','436130303733'],partner:null},
+{n:4,name:'FERNANDO',born:'1960-10-17',sex:'H',rfc:'JIGF6010176Z6',nss:'54796012943',afore:'XXI BANORTE',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 45615, GDL',cfe:['501120706496'],partner:null},
+{n:5,name:'JOSE JAIME',born:'1962-07-31',sex:'H',rfc:'JIGJ620731SZ3',nss:'04876207772',afore:'XXI BANORTE',tel:'36385887',email:'—',emp:'Serv. Sol. Rocofam SA de CV',sal:'$65,529',addr:'CP 44320, GDL',cfe:['440110804920'],partner:null},
+{n:6,name:'ISMAEL',born:'1964-09-16',sex:'H',rfc:'JIGI640916LQ6',nss:'04946401363',afore:'INVERCAP',tel:'3334074151',email:'ismaeljimenezgodoy1120@gmail.com',emp:'Laboratorios Sophia SA de CV',sal:'$67,459',addr:'CP 44320, GDL',cfe:['435170306330'],partner:null},
+{n:7,name:'SUSANA',born:'1966-03-10',sex:'M',rfc:'JIGS660310EB4',nss:'04846666347',afore:'BANAMEX',tel:'3312996247',email:'susangood1003@gmail.com',emp:'Ana M. Valencia del Rio',sal:'$38,344',addr:'CP 44320, GDL',cfe:['440130304311','440020106018'],partner:null},
+{n:8,name:'JOSE ALBERTO',born:'1967-08-14',sex:'H',rfc:'JIGA670814G29',nss:'04886751744',afore:'XXI BANORTE',tel:'3318638050',email:'—',emp:'Nuevos Serv. Administrativos SC',sal:'$127,313',addr:'C Mision San Antonio 6144, CP 45020',cfe:[],partner:{name:'ARGELIA PATRICIA LANDEROS SILVA',born:'1973-09-02',rfc:'LASA730902KE3',tel:'38120130',acct:'Santander 740001233440'}},
+{n:9,name:'LUIS EDUARDO',born:'1974-10-05',sex:'H',rfc:'JIGL741005NR4',nss:'04987445311',afore:'COPPEL',tel:'3314195903',email:'—',emp:'Coppel SA de CV',sal:'$35,603',addr:'CP 44320, GDL',cfe:['437120702440','505050305249'],partner:null,twin:'ADRIANA G.'},
+{n:10,name:'ADRIANA G.',born:'1974-10-05',sex:'M',rfc:'JIGA7410054U0',nss:'04907485934',afore:'AZTECA',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 44330, GDL',cfe:[],partner:null,twin:'LUIS EDUARDO'},
+{n:11,name:'DULCE ISABEL',born:'1976-10-09',sex:'M',rfc:'—',nss:'—',afore:'—',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 45654, GDL',cfe:['501190608076','437100701048','437100700998'],partner:null},
+{n:12,name:'CORAZON DE MARIA',born:'1978-07-18',sex:'M',rfc:'—',nss:'—',afore:'ISSSTE',tel:'—',email:'—',emp:'ISSSTE BASE',sal:'$2,814',addr:'CP 45615, GDL',cfe:['501090608613','435181206221'],partner:null},
+{n:13,name:'GABRIELA G.',born:'1987-02-23',sex:'M',rfc:'JIGG870223KC0',nss:'39098702531',afore:'PENSIONISSSTE',tel:'—',email:'—',emp:'BSCW S A P I de CV',sal:'$26,120',addr:'CP 02940, CDMX',cfe:[],partner:null,ref:true},
+{n:14,name:'CESAR IVAN',born:'1987-12-30',sex:'H',rfc:'JIGC8712308P4',nss:'75068771320',afore:'BANAMEX',tel:'3312198924',email:'cesarivanjimenezgodoy03@gmail.com',emp:'Jabil Circuit de Mexico',sal:'$35,601',addr:'CP 45220, GDL',cfe:['501200905589'],partner:null},
+{n:15,name:'MARIA FERNANDA',born:'1988-08-30',sex:'M',rfc:'JIGF880830Q17',nss:'—',afore:'—',tel:'0445536604167',email:'—',emp:'BSCW S A P I de CV',sal:'$26,120',addr:'CP 01760, CDMX',cfe:[],partner:null},
+{n:16,name:'MARIA JESUS',born:'1988-10-21',sex:'M',rfc:'—',nss:'—',afore:'—',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 48825, Jalisco',cfe:[],partner:null},
+{n:17,name:'FLORENCIO',born:'1990-07-28',sex:'H',rfc:'JIGF900728KF1',nss:'02189065093',afore:'COPPEL',tel:'3348155483',email:'alex115andermym@gmail.com',emp:'—',sal:'—',addr:'CP 48825, Jalisco',cfe:[],partner:{name:'NEREDI VALDOVINOS VERDIN',born:'1992-05-23'}},
+{n:18,name:'JESSICA DENIS',born:'1991-10-02',sex:'M',rfc:'JIGJ911002GS6',nss:'—',afore:'—',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 44940, GDL',cfe:[],partner:null},
+{n:19,name:'ANA KAREN',born:'1993-10-28',sex:'M',rfc:'JIGA931028M84',nss:'04129381440',afore:'PS BANORTE',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 45190, GDL',cfe:[],partner:null},
+{n:20,name:'IVAN JHOVANY',born:'1994-06-25',sex:'H',rfc:'JIGI9406254C0',nss:'02179454703',afore:'BANAMEX',tel:'3324029644',email:'jhonway251994@gmail.com',emp:'Hospital Mexico Americano SC',sal:'$62,563',addr:'CP 48800, Jalisco',cfe:['185150900042'],partner:null},
+{n:21,name:'EDGAR OMAR',born:'1996-08-30',sex:'H',rfc:'JIGE9608305V6',nss:'18159696154',afore:'SURA',tel:'3312214849',email:'edgar_jgodoy@hotmail.com',emp:'Sist. Intermun. Agua Potable',sal:'$66,599',addr:'CP 45190, GDL',cfe:[],partner:null},
+{n:22,name:'FELIPE DE J.',born:'1998-02-14',sex:'H',rfc:'JIGF980214NN7',nss:'05159892974',afore:'XXI BANORTE',tel:'3318391057',email:'—',emp:'Sist. Intermun. Agua Potable',sal:'$125,617',addr:'CP 45190, GDL',cfe:[],partner:null},
+{n:23,name:'VIANEY G.',born:'1999-01-11',sex:'M',rfc:'—',nss:'—',afore:'—',tel:'—',email:'—',emp:'—',sal:'—',addr:'CP 45655, GDL',cfe:[],partner:null,triplet:true},
+{n:24,name:'LUIS FERNANDO',born:'1999-01-11',sex:'H',rfc:'JIGL9901112Y7',nss:'38179951009',afore:'SURA',tel:'3332586885',email:'fernando.jimg@hotmail.com',emp:'Redesenvia SA de CV',sal:'$42,679',addr:'CP 45655, GDL',cfe:[],partner:null,triplet:true},
+{n:25,name:'SAID ALEXIS',born:'1999-01-11',sex:'H',rfc:'JIGS990111CD7',nss:'03159956576',afore:'BANAMEX',tel:'3122451306',email:'alex.sajg@gmail.com',emp:'Grupo Emp. Mape de Occidente',sal:'$35,089',addr:'CP 45655, GDL',cfe:[],partner:null,triplet:true},
+{n:26,name:'KAREN LIZBETH',born:'2000-02-21',sex:'M',rfc:'JIGK0002212E3',nss:'51160080555',afore:'XXI BANORTE',tel:'—',email:'—',emp:'Gomsa Integradora S A P I',sal:'$61,182',addr:'CP 48800, Jalisco',cfe:[],partner:null}
+];
+
+const cfeData=[
+{n:'SUSANA JIMENEZ GODOY',s:'440130304311'},{n:'SUSANA JIMENEZ GODOY',s:'440020106018'},
+{n:'JOSE JAIME JIMENEZ GODOY',s:'440110804920'},{n:'GILBERTO JIMENEZ GODOY',s:'474110316811'},
+{n:'GILBERTO JIMENEZ GODOY',s:'436130303733'},{n:'FERNANDO JIMENEZ GODOY',s:'501120706496'},
+{n:'ISMAEL JIMENEZ GODOY',s:'435170306330'},{n:'LUIS EDUARDO JIMENEZ GODOY',s:'437120702440'},
+{n:'LUIS EDUARDO JIMENEZ GODOY',s:'505050305249'},{n:'IVAN MANUEL JIMENEZ GODOY',s:'501131105346'},
+{n:'IVAN MANUEL JIMENEZ GODOY',s:'501050321443'},{n:'IVAN MANUEL JIMENEZ GODOY',s:'507050902843'},
+{n:'IVAN MANUEL JIMENEZ GODOY',s:'507040301876'},{n:'IVAN MANUEL JIMENEZ GODOY',s:'437040212697'},
+{n:'IVAN MANUEL JIMENEZ GODOY',s:'437050216160'},{n:'IVAN MANUEL JIMENEZ GODOY',s:'437050108146'},
+{n:'CORAZON DE MARIA JIMENEZ GODOY',s:'501090608613'},{n:'CORAZON DE MARIA JIMENEZ GODOY',s:'435181206221'},
+{n:'IVAN JHOVANI JIMENEZ GODOY',s:'185150900042'},{n:'DULCE ISABEL JIMENEZ GODOY',s:'501190608076'},
+{n:'DULCE ISABEL JIMENEZ GODOY',s:'437100701048'},{n:'DULCE ISABEL JIMENEZ GODOY',s:'437100700998'},
+{n:'CESAR IVAN JIMENEZ GODOY',s:'501200905589'},{n:'MAYRA FABIOLA JIMENEZ GODOY',s:'573120800965'},
+{n:'JOSE IVAN JIMENEZ GODOY',s:'966191001291'},{n:'MARIA GUADALUPE JIMENEZ GODOY',s:'502010303058'},
+{n:'MARIA GUADALUPE JIMENEZ GODOY',s:'502050404108'},{n:'MARIA GUADALUPE JIMENEZ GODOY',s:'502061006805'},
+{n:'MARIA GUADALUPE JIMENEZ GODOY',s:'502020106714'},{n:'MARIA GUADALUPE JIMENEZ GODOY',s:'502080504832'},
+{n:'MARIA GUADALUPE JIMENEZ GODOY',s:'502201100246'},{n:'JUAN MARTIN JIMENEZ GODOY',s:'485100400085'},
+{n:'J JESUS JIMENEZ GODOY',s:'485060800450'},{n:'RODOLFO JIMENEZ GODOY',s:'147080700718'},
+{n:'LUZ MAREL JIMENEZ GODOY',s:'487070908928'},{n:'LUZ MAREL JIMENEZ GODOY',s:'502140604041'},
+{n:'OFELIA JIMENEZ GODOY',s:'538860701944'},{n:'ANTONIO JIMENEZ GODOY',s:'485770800106'},
+{n:'GRACIELA JIMENEZ GODOY',s:'330040600809'},{n:'GRACIELA JIMENEZ GODOY',s:'331061006059'},
+{n:'GRACIELA JIMENEZ GODOY',s:'330000131806'},{n:'SILVIA JIMENEZ GODOY',s:'973100806078'},
+{n:'SILVIA JIMENEZ GODOY',s:'485041101044'},{n:'SILVIA JIMENEZ GODOY',s:'485140501216'},
+{n:'SILVIA JIMENEZ GODOY',s:'485110800570'},{n:'ANA KARINA JIMENEZ GODOY',s:'326160602751'},
+{n:'ANA KARINA JIMENEZ GODOY',s:'326210201800'},{n:'JESUS JIMENEZ GODOY',s:'533061011054'},
+{n:'ADELINA JIMENEZ GODOY',s:'533021211611'},{n:'MANUEL ALBERTO JIMENEZ GODOY',s:'732161103510'},
+{n:'MANUEL ALBERTO JIMENEZ GODOY',s:'737080100941'},{n:'JULIA JIMENEZ GODOY',s:'279970200210'},
+{n:'JUAN CARLOS JIMENEZ GODOY',s:'264180303704'},{n:'ELIZABETH JIMENEZ GODOY',s:'515121106582'},
+{n:'LILIANA JIMENEZ GODOY',s:'986940201481'},{n:'DIANA JIMENEZ GODOY',s:'679030323273'},
+{n:'VIRGINIA JIMENEZ GODOY',s:'150100303100'},{n:'VIRGINIA JIMENEZ GODOY',s:'10740165874'},
+{n:'MARGARITA ISABEL JIMENEZ GODOY',s:'9200802818'},{n:'OCTAVIO JIMENEZ GODOY',s:'487110212191'},
+{n:'JORGE ANTONIO JIMENEZ GODOY',s:'297190802976'},{n:'AMPARO JIMENEZ GODOY',s:'849050803720'},
+{n:'AMPARO JIMENEZ GODOY',s:'886011014451'},{n:'AMPARO JIMENEZ GODOY',s:'849061100879'},
+{n:'SERGIO JIMENEZ GODOY',s:'172160503349'},{n:'SERGIO JIMENEZ GODOY',s:'172160905919'},
+{n:'SERGIO JIMENEZ GODOY',s:'173121001499'},{n:'SERGIO JIMENEZ GODOY',s:'173160402468'},
+{n:'SERGIO JIMENEZ GODOY',s:'172080801071'},{n:'SERGIO JIMENEZ GODOY',s:'172140304901'},
+{n:'SERGIO JIMENEZ GODOY',s:'156980303365'},{n:'SERGIO JIMENEZ GODOY',s:'156960400275'},
+{n:'LUIS EDUARDO JIMENEZ GODOY',s:'505051001855'},{n:'MANUEL JIMENEZ GODOY',s:'40070301107'},
+{n:'MANUEL JIMENEZ GODOY',s:'40910831757'},{n:'MANUEL JIMENEZ GODOY',s:'40990211584'},
+{n:'MANUEL JIMENEZ GODOY',s:'40031100692'},{n:'HERLINDA JIMENEZ GODOY',s:'40091201374'}
+];
+
+const r2Files=[
+{name:'Reporte unificado',file:'reporte_unificado.pdf'},
+{name:'Acta nacimiento GABRIELA',file:'acta_nacimiento_GABRIELA.pdf'},
+{name:'Reporte familia KYC',file:'reporte_familia_KYC.pdf'},
+{name:'GABRIELA KYC',file:'gabriela_KYC.pdf'},
+{name:'GABRIELA GODOY CASTILLON KYC',file:'gabriela_godoy_castillon_KYC.pdf'},
+{name:'JORGE JAVIER JIMENEZ ALCARAZ KYC',file:'jorge_javier_jimenez_alcaraz_KYC.pdf'},
+{name:'Familia consolidado',file:'familia_jimenez_godoy_consolidado.pdf'},
+{name:'CFE servicios (TXT)',file:'cfe_servicios.txt'}
+];
+
+// === RENDER TABLE ===
+const tb=document.getElementById('hermanosTable');
+siblings.forEach(s=>{
+const tr=document.createElement('tr');
+if(s.ref)tr.style.background='#0f3460';
+tr.innerHTML=`<td>${s.n}</td><td${s.ref?' style="color:#00d4ff;font-weight:bold"':''}>${s.name}${s.twin?' ◆':''}${s.triplet?' ◆':''}</td><td>${s.born.slice(0,4)}</td><td>${s.rfc}</td><td>${s.nss}</td><td>${s.afore}</td><td class="${s.tel!=='—'?'phone':''}">${s.tel}</td><td class="${s.email!=='—'?'email':''}">${s.email}</td><td>${s.emp}</td><td class="${s.sal!=='—'?'sueldo':''}">${s.sal}</td>`;
+tr.style.cursor='pointer';
+tr.onclick=()=>showModal(s);
+tb.appendChild(tr);
+});
+
+// === RENDER CFE ===
+const cg=document.getElementById('cfeGrid');
+cfeData.forEach(c=>{
+const d=document.createElement('div');
+d.className='cfe-item';
+d.innerHTML=`<div class="name">${c.n}</div><div class="num">${c.s}</div>`;
+d.style.cursor='pointer';
+d.onclick=()=>{navigator.clipboard.writeText(c.s);d.style.borderColor='#2ecc71';setTimeout(()=>d.style.borderColor='#333',1000)};
+cg.appendChild(d);
+});
+
+// === RENDER R2 ===
+const rg=document.getElementById('r2Grid');
+r2Files.forEach(f=>{
+const a=document.createElement('a');
+a.className='r2-item';
+a.href=`${R2}/${f.file}`;
+a.target='_blank';
+a.innerHTML=`📄 ${f.name}<br><span class="small">${f.file}</span>`;
+rg.appendChild(a);
+});
+
+// === RENDER PAREJAS ===
+const pl=document.getElementById('parejasList');
+const partners=siblings.filter(s=>s.partner);
+partners.forEach(s=>{
+const d=document.createElement('div');
+d.className='card card-g';
+const p=s.partner;
+d.innerHTML=`<h3>${s.name} + ${p.name}</h3>
+<span class="label">Dir:</span> ${s.addr}<br>
+${p.rfc?`<span class="label">RFC:</span> ${p.rfc} `:''}
+${p.tel?`<span class="label">Tel:</span> <span class="phone">${p.tel}</span> `:''}
+${p.nss?`<span class="label">NSS:</span> ${p.nss}`:''}<br>
+${p.emp?`<span class="label">Empleo:</span> ${p.emp} `:''}
+${p.sal?`<span class="label">Sueldo:</span> <span class="sueldo">${p.sal}</span> `:''}
+${p.acct?`<span class="label">Cuenta:</span> ${p.acct}`:''}<br>
+${p.child?`<span class="label">Hijo:</span> ${p.child}`:''}`;
+pl.appendChild(d);
+});
+
+// === RENDER DIRECCIONES ===
+const dirs=[
+{name:'Casa familiar',addr:'C Montes Marcianos 2029, CP 44320',people:'JOSE (padre), MARIA G. (madre), MARIA TERESA, GILBERTO, JOSE JAIME, ISMAEL, SUSANA, ADRIANA, LUIS EDUARDO, MARIA DE J. CARDENAS, MIRIAM M. J. CARDENAS'},
+{name:'ALICIA',addr:'C Puerto Melaque 1691, CP 44710',people:'DOMINGO GARCIA MANZO, ALICIA, NOHEMI (hija)'},
+{name:'HUGO + TRILLIZOS',addr:'Cto. Paso de los Toros 106, CP 45655',people:'HUGO JIMENEZ RAZON, MARIA DEL ROCIO GODOY, VIANEY, LUIS F., SAID'},
+{name:'IVAN MANUEL',addr:'Cam. S. Cruz del Valle 89B, CP 45615',people:'ISABEL GODOY MARTINEZ, IVAN MANUEL, ELIZABETH ESTRADA, CORAZON DE M.'},
+{name:'JOSE ALBERTO',addr:'C Mision San Antonio 6144, CP 45020',people:'JOSE ALBERTO, ARGELIA LANDEROS'},
+{name:'ANA KAREN / EDGAR / FELIPE',addr:'C Vicente Guerrero 34 A, CP 45190',people:'FELIPE J. MEDINA, INDELISA GODOY, ANA KAREN, EDGAR, FELIPE DE J.'},
+{name:'FLORENCIO',addr:'C Primavera 14, CP 48825',people:'OTILIA GODOY, FLORENCIO, NEREDI VALDOVINOS'},
+{name:'MARIA JESUS',addr:'C Las Azucenas 2, CP 48825',people:'HERMINIO PELAYO, MARIA JESUS'},
+{name:'KAREN LIZBETH',addr:'C Juarez 200, CP 48800',people:'BERNARDINO ALDAY, KAREN LIZBETH'}
+];
+const dl=document.getElementById('direccionesList');
+dirs.forEach(d=>{
+const c=document.createElement('div');
+c.className='card';
+c.innerHTML=`<h3>${d.name}</h3><span class="label">Dir:</span> ${d.addr}<br><span class="label">Personas:</span> ${d.people}`;
+dl.appendChild(c);
+});
+
+// === FAMILY TREE (SVG) ===
+function buildTree(){
+const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+svg.setAttribute('viewBox','0 0 1400 700');
+svg.style.cssText='width:100%;height:auto;background:#0a0a1a;border-radius:8px';
+
+const nodeW=120,nodeH=48,gap=10,parentY=30,gen1Y=100,gen2Y=220,gen3Y=350,gen4Y=480;
+
+function addNode(x,y,name,born,extra,cls,sex){
+const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+g.setAttribute('class','node '+(cls||''));
+g.setAttribute('data-name',name.toLowerCase());
+const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+r.setAttribute('x',x);r.setAttribute('y',y);r.setAttribute('width',nodeW);r.setAttribute('height',nodeH);
+r.setAttribute('rx',5);r.setAttribute('fill','#16213e');r.setAttribute('stroke','#333');r.setAttribute('stroke-width',1);
+const t1=document.createElementNS('http://www.w3.org/2000/svg','text');
+t1.setAttribute('x',x+nodeW/2);t1.setAttribute('y',y+15);t1.setAttribute('text-anchor','middle');
+t1.setAttribute('fill',sex==='M'?'#e0e0e0':'#e0e0e0');t1.setAttribute('font-size','8');t1.setAttribute('font-weight','bold');
+t1.textContent=name;
+const t2=document.createElementNS('http://www.w3.org/2000/svg','text');
+t2.setAttribute('x',x+nodeW/2);t2.setAttribute('y',y+28);t2.setAttribute('text-anchor','middle');
+t2.setAttribute('fill','#888');t2.setAttribute('font-size','7');
+t2.textContent=born+(extra?' '+extra:'');
+g.appendChild(r);g.appendChild(t1);g.appendChild(t2);
+g.onclick=()=>{const s=siblings.find(s=>s.name.startsWith(name.split(' ')[0]));if(s)showModal(s)};
+svg.appendChild(g);
+return{x,y,w:nodeW,h:nodeH};
+}
+
+function line(x1,y1,x2,y2){
+const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+l.setAttribute('stroke','#444');l.setAttribute('stroke-width',1);
+svg.appendChild(l);
+}
+
+// Parents
+addNode(440,parentY,'JOSE J. VARGAS','1931','','','H');
+addNode(560,parentY,'MARIA G. GODOY','1937','','','M');
+line(535,parentY+nodeH/2,560,parentY+nodeH/2);
+line(530,parentY+nodeH,530,gen1Y-5);
+
+// Gen 1 row
+const g1=[
+{n:'MARIA TERESA',b:'1955',s:'M'},{n:'ALICIA',b:'1957',s:'M',p:'+GARCIA'},
+{n:'GILBERTO',b:'1959',s:'H'},{n:'FERNANDO',b:'1960',s:'H'},
+{n:'JOSE JAIME',b:'1962',s:'H'},{n:'ISMAEL',b:'1964',s:'H'},
+{n:'SUSANA',b:'1966',s:'M'},{n:'JOSE ALBERTO',b:'1967',s:'H',p:'+LANDEROS'}
+];
+const startX=30;
+g1.forEach((p,i)=>{
+const x=startX+i*(nodeW+gap);
+line(x+nodeW/2,gen1Y-5,x+nodeW/2,gen1Y);
+addNode(x,gen1Y,p.n,p.b,p.p||'',p.s==='M'?'':'',p.s);
+});
+line(startX,gen1Y-5,startX+7*(nodeW+gap)+nodeW,gen1Y-5);
+
+// Gen 2 row
+const g2=[
+{n:'LUIS EDUARDO',b:'1974',s:'H',c:'t'},{n:'ADRIANA G.',b:'1974',s:'M',c:'t'},
+{n:'DULCE ISABEL',b:'1976',s:'M'},{n:'CORAZON DE M.',b:'1978',s:'M'},
+{n:'GABRIELA G.',b:'1987',s:'M',c:'h'},{n:'CESAR IVAN',b:'1987',s:'H'},
+{n:'MARIA FERNANDA',b:'1988',s:'M'},{n:'MARIA JESUS',b:'1988',s:'M'},
+{n:'FLORENCIO',b:'1990',s:'H',p:'+VALDOVINOS'}
+];
+line(530,gen1Y+nodeH,530,gen2Y-5);
+const g2start=20;
+g2.forEach((p,i)=>{
+const x=g2start+i*(nodeW+gap);
+line(x+nodeW/2,gen2Y-5,x+nodeW/2,gen2Y);
+addNode(x,gen2Y,p.n,p.b,p.p||'',p.c==='h'?'highlight':p.c==='t'?'twins':'',p.s);
+});
+line(g2start,gen2Y-5,g2start+8*(nodeW+gap)+nodeW,gen2Y-5);
+
+// Gen 3 row
+const g3=[
+{n:'JESSICA DENIS',b:'1991',s:'M'},{n:'ANA KAREN',b:'1993',s:'M'},
+{n:'IVAN JHOVANY',b:'1994',s:'H'},{n:'EDGAR OMAR',b:'1996',s:'H'},
+{n:'FELIPE DE J.',b:'1998',s:'H'},{n:'VIANEY G.',b:'1999',s:'M',c:'t'},
+{n:'LUIS FERNANDO',b:'1999',s:'H',c:'t'},{n:'SAID ALEXIS',b:'1999',s:'H',c:'t'},
+{n:'KAREN LIZBETH',b:'2000',s:'M'}
+];
+line(530,gen2Y+nodeH,530,gen3Y-5);
+const g3start=20;
+g3.forEach((p,i)=>{
+const x=g3start+i*(nodeW+gap);
+line(x+nodeW/2,gen3Y-5,x+nodeW/2,gen3Y);
+addNode(x,gen3Y,p.n,p.b,'',p.c==='t'?'twins':'',p.s);
+});
+line(g3start,gen3Y-5,g3start+8*(nodeW+gap)+nodeW,gen3Y-5);
+
+// Legend
+const lg=document.createElementNS('http://www.w3.org/2000/svg','g');
+const lgr=document.createElementNS('http://www.w3.org/2000/svg','rect');
+lgr.setAttribute('x',20);lgr.setAttribute('y',gen4Y);lgr.setAttribute('width',1060);lgr.setAttribute('height',50);
+lgr.setAttribute('rx',8);lgr.setAttribute('fill','#16213e');lgr.setAttribute('stroke','#333');
+lg.appendChild(lgr);
+const lt=document.createElementNS('http://www.w3.org/2000/svg','text');
+lt.setAttribute('x',550);lt.setAttribute('y',gen4Y+20);lt.setAttribute('text-anchor','middle');
+lt.setAttribute('fill','#00d4ff');lt.setAttribute('font-size','9');lt.setAttribute('font-weight','bold');
+lt.textContent='● verde=pareja ◆ naranja=gemelos/trillizos ● azul=sujeto de referencia';
+lg.appendChild(lt);
+const lt2=document.createElementNS('http://www.w3.org/2000/svg','text');
+lt2.setAttribute('x',550);lt2.setAttribute('y',gen4Y+38);lt2.setAttribute('text-anchor','middle');
+lt2.setAttribute('fill','#666');lt2.setAttribute('font-size','8');
+lt2.textContent='26 hermanos • 5 parejas confirmadas • 13 direcciones • 77 cuentas CFE';
+lg.appendChild(lt2);
+svg.appendChild(lg);
+
+document.getElementById('familyTree').innerHTML='';
+document.getElementById('familyTree').appendChild(svg);
+}
+buildTree();
+
+// === TOOLTIP ===
+const tip=document.getElementById('tooltip');
+document.querySelectorAll('.node').forEach(n=>{
+n.addEventListener('mouseenter',e=>{
+const name=n.getAttribute('data-name');
+const s=siblings.find(s=>s.name.toLowerCase().startsWith(name));
+if(!s)return;
+tip.innerHTML=`<h4>${s.name}</h4>
+<div><span class="lbl">Nacimiento:</span> ${s.born}</div>
+<div><span class="lbl">RFC:</span> ${s.rfc}</div>
+<div><span class="lbl">Tel:</span> ${s.tel}</div>
+<div><span class="lbl">Email:</span> ${s.email}</div>
+<div><span class="lbl">Direccion:</span> ${s.addr}</div>
+${s.partner?`<div style="margin-top:4px;color:#2ecc71"><strong>+ ${s.partner.name}</strong></div>`:''}`;
+tip.style.display='block';
+tip.style.left=Math.min(e.clientX+15,window.innerWidth-360)+'px';
+tip.style.top=(e.clientY+15)+'px';
+});
+n.addEventListener('mouseleave',()=>tip.style.display='none');
+});
+
+// === FILTER ===
+function filterTree(q){
+q=q.toLowerCase();
+document.querySelectorAll('.node').forEach(n=>{
+const name=n.getAttribute('data-name');
+n.style.opacity=!q||name.includes(q)?1:0.2;
+});
+}
+
+// === MODAL ===
+function showModal(s){
+const m=document.getElementById('modal')||createModal();
+m.querySelector('.modal').innerHTML=`
+<span class="close" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+<h3>${s.name} ${s.ref?'★ SUJETO ★':''}</h3>
+<div class="row"><span class="label">Nacimiento:</span> ${s.born}</div>
+<div class="row"><span class="label">RFC:</span> ${s.rfc}</div>
+<div class="row"><span class="label">NSS:</span> ${s.nss}</div>
+<div class="row"><span class="label">Afore:</span> ${s.afore}</div>
+<div class="row"><span class="label">Telefono:</span> <span class="phone">${s.tel}</span></div>
+<div class="row"><span class="label">Email:</span> <span class="email">${s.email}</span></div>
+<div class="row"><span class="label">Direccion:</span> ${s.addr}</div>
+<div class="row"><span class="label">Empleo:</span> ${s.emp}</div>
+<div class="row"><span class="label">Sueldo:</span> <span class="sueldo">${s.sal}</span></div>
+${s.cfe.length?`<div class="row"><span class="label">CFE:</span> ${s.cfe.map(c=>`<span class="cfe">${c}</span>`).join(' ')}</div>`:''}
+${s.partner?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #333"><strong style="color:#2ecc71">Pareja: ${s.partner.name}</strong>
+<div class="row"><span class="label">RFC:</span> ${s.partner.rfc||'—'}</div>
+<div class="row"><span class="label">Tel:</span> ${s.partner.tel||'—'}</div>
+${s.partner.emp?`<div class="row"><span class="label">Empleo:</span> ${s.partner.emp}</div>`:''}
+${s.partner.sal?`<div class="row"><span class="label">Sueldo:</span> <span class="sueldo">${s.partner.sal}</span></div>`:''}
+${s.partner.child?`<div class="row"><span class="label">Hijo:</span> ${s.partner.child}</div>`:''}
+</div>`:''}`;
+m.style.display='flex';
+}
+function createModal(){
+const d=document.createElement('div');
+d.id='modal';
+d.className='modal-overlay';
+d.innerHTML='<div class="modal" style="position:relative"></div>';
+d.onclick=e=>{if(e.target===d)d.style.display='none'};
+document.body.appendChild(d);
+return d;
+}
+
+// === NAV HIGHLIGHT ===
+const sections=document.querySelectorAll('section');
+const navLinks=document.querySelectorAll('nav a');
+window.addEventListener('scroll',()=>{
+let current='';
+sections.forEach(s=>{if(window.scrollY>=s.offsetTop-100)current=s.id});
+navLinks.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+current)});
+});
+</script>
+</body>
+</html>

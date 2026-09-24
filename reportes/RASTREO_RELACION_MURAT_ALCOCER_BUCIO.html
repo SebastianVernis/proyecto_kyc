@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Rastreo Situacional — Murat / Alcocer / Bucio — Mariana y Meza</title>
+
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       margin: 0; padding: 20px; background: #f3f4f6; color: #1f2937; }
+.container { max-width: 1200px; margin: 0 auto; background: white;
+             padding: 32px; border-radius: 12px;
+             box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+h1 { font-size: 28px; margin-bottom: 8px; color: #111827; }
+h2 { font-size: 20px; color: #1f2937; border-bottom: 2px solid #e5e7eb;
+     padding-bottom: 8px; margin-top: 32px; }
+h3 { font-size: 16px; color: #374151; margin-top: 24px; }
+h4 { font-size: 13px; color: #4b5563; margin-top: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+             gap: 12px; margin: 16px 0; }
+.meta-cell { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb; }
+.meta-cell .k { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+.meta-cell .v { font-size: 16px; font-weight: 600; color: #111827; }
+.subject-card { background: #f9fafb; border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+.subject-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.subject-id { color: white; font-weight: bold; padding: 6px 10px; border-radius: 6px;
+              font-size: 16px; min-width: 32px; text-align: center; }
+.subject-name { font-size: 16px; font-weight: 600; }
+.subject-rol { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+.subject-curp { font-size: 12px; color: #6b7280; }
+table.kv { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 13px; }
+table.kv td { padding: 4px 8px; border-bottom: 1px solid #e5e7eb; }
+table.kv td.k { color: #6b7280; font-weight: 500; width: 35%; }
+.ai-section { background: #f0f9ff; border-left: 4px solid #2563eb;
+              padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+.ai-section h3 { margin-top: 0; color: #1e40af; }
+.ai-section pre { white-space: pre-wrap; font-family: inherit;
+                  line-height: 1.6; color: #1f2937; }
+.fuentes-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.fuente-chip { background: #dbeafe; color: #1e40af; padding: 4px 10px;
+               border-radius: 4px; font-size: 12px; font-family: monospace; }
+.graph-container { text-align: center; margin: 16px 0; }
+code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px;
+       font-size: 12px; color: #1f2937; }
+</style>
+
+</head>
+<body>
+<div class="container">
+
+<h1>🔍 Reporte de Rastreo Situacional con IA</h1>
+<p style="color:#6b7280;margin-bottom:24px;">Endpoint <code>POST /api/v1/rastreo/relacion</code> · Caso: Ataque digital 12-ago-2026 contra Mariana Rodr&iacute;guez Cant&uacute; y Miguel Alfonso Meza Aguilar</p>
+
+<h2>Metadatos del an&aacute;lisis</h2>
+
+<div class="meta-grid">
+  <div class="meta-cell"><div class="k">Timestamp</div><div class="v" style="font-size:11pt;">2026-08-18T02:10:49</div></div>
+  <div class="meta-cell"><div class="k">Duraci&oacute;n total</div><div class="v">311,067 ms</div></div>
+  <div class="meta-cell"><div class="k">Sujetos enriquecidos</div><div class="v">5</div></div>
+  <div class="meta-cell"><div class="k">Hechos analizados</div><div class="v">4</div></div>
+  <div class="meta-cell"><div class="k">Modelo IA</div><div class="v" style="font-size:11pt;">gpt-oss:20b</div></div>
+  <div class="meta-cell"><div class="k">Tokens IA</div><div class="v">2891 in / 1600 out</div></div>
+</div>
+
+
+<h3>Fuentes consultadas</h3>
+<div class="fuentes-list"><span class="fuente-chip">api_imss_asegurado</span><span class="fuente-chip">api_imss_salud</span><span class="fuente-chip">api_xwalk</span><span class="fuente-chip">apify_kyc</span><span class="fuente-chip">broker_singula</span><span class="fuente-chip">padron_ine</span></div>
+
+<h2>Grafo de Relaciones (5 nodos · 13 aristas)</h2>
+<div class="graph-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" style="border:1px solid #e5e7eb;background:#f8fafc;border-radius:8px;"><line x1="500.0" y1="250.0" x2="361.8033988749895" y2="440.21130325903073" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="430.90169943749476" y="345.10565162951536" font-size="9" fill="#475569" text-anchor="middle">conferencia_prensa</text><line x1="500.0" y1="250.0" x2="361.8033988749895" y2="440.21130325903073" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="430.90169943749476" y="345.10565162951536" font-size="9" fill="#475569" text-anchor="middle">conferencia_prensa</text><line x1="361.8033988749895" y1="440.21130325903073" x2="138.1966011250105" y2="132.4429495415054" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="250.0" y="286.32712640026807" font-size="9" fill="#475569" text-anchor="middle">denuncia_fgr</text><line x1="500.0" y1="250.0" x2="361.8033988749895" y2="440.21130325903073" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="430.90169943749476" y="345.10565162951536" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="500.0" y1="250.0" x2="138.19660112501055" y2="367.55705045849464" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="319.0983005625053" y="308.7785252292473" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="500.0" y1="250.0" x2="138.1966011250105" y2="132.4429495415054" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="319.09830056250524" y="191.2214747707527" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="500.0" y1="250.0" x2="361.80339887498945" y2="59.78869674096927" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="430.9016994374947" y="154.89434837048464" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="361.8033988749895" y1="440.21130325903073" x2="138.19660112501055" y2="367.55705045849464" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="250.00000000000003" y="403.88417685876266" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="361.8033988749895" y1="440.21130325903073" x2="138.1966011250105" y2="132.4429495415054" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="250.0" y="286.32712640026807" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="361.8033988749895" y1="440.21130325903073" x2="361.80339887498945" y2="59.78869674096927" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="361.8033988749895" y="250.0" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="138.19660112501055" y1="367.55705045849464" x2="138.1966011250105" y2="132.4429495415054" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="138.19660112501052" y="250.00000000000003" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="138.19660112501055" y1="367.55705045849464" x2="361.80339887498945" y2="59.78869674096927" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="250.0" y="213.67287359973196" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><line x1="138.1966011250105" y1="132.4429495415054" x2="361.80339887498945" y2="59.78869674096927" stroke="#94a3b8" stroke-width="1.5" opacity="0.7"/><text x="249.99999999999997" y="96.11582314123734" font-size="9" fill="#475569" text-anchor="middle">ataque_digital</text><circle cx="500.0" cy="250.0" r="38" fill="#dc2626" stroke="white" stroke-width="3"/><text x="500.0" y="255.0" font-size="16" fill="white" text-anchor="middle" font-weight="bold">A</text><text x="500.0" y="308.0" font-size="10" fill="#1f2937" text-anchor="middle">ALEJANDRO MURAT HINOJOSA</text><circle cx="361.8033988749895" cy="440.21130325903073" r="38" fill="#2563eb" stroke="white" stroke-width="3"/><text x="361.8033988749895" y="445.21130325903073" font-size="16" fill="white" text-anchor="middle" font-weight="bold">B</text><text x="361.8033988749895" y="498.21130325903073" font-size="10" fill="#1f2937" text-anchor="middle">ANABEL ALCOCER CRUZ</text><circle cx="138.19660112501055" cy="367.55705045849464" r="38" fill="#16a34a" stroke="white" stroke-width="3"/><text x="138.19660112501055" y="372.55705045849464" font-size="16" fill="white" text-anchor="middle" font-weight="bold">C</text><text x="138.19660112501055" y="425.55705045849464" font-size="10" fill="#1f2937" text-anchor="middle">ERIK BUCIO URBINA</text><circle cx="138.1966011250105" cy="132.4429495415054" r="38" fill="#7c3aed" stroke="white" stroke-width="3"/><text x="138.1966011250105" y="137.4429495415054" font-size="16" fill="white" text-anchor="middle" font-weight="bold">V1</text><text x="138.1966011250105" y="190.4429495415054" font-size="10" fill="#1f2937" text-anchor="middle">MARIANA RODRIGUEZ CANTU</text><circle cx="361.80339887498945" cy="59.78869674096927" r="38" fill="#7c3aed" stroke="white" stroke-width="3"/><text x="361.80339887498945" y="64.78869674096927" font-size="16" fill="white" text-anchor="middle" font-weight="bold">V2</text><text x="361.80339887498945" y="117.78869674096927" font-size="10" fill="#1f2937" text-anchor="middle">MIGUEL ALFONSO MEZA AGUIL</text></svg></div>
+
+<h3>Detalle de aristas</h3>
+<table class="kv">
+<tr style="background:#f8fafc;"><td class="k">Source</td><td class="k">Target</td><td class="k">Tipo</td><td class="k">Fecha</td><td class="k">Descripci&oacute;n</td></tr>
+<tr><td><code>A</code></td><td><code>B</code></td><td>conferencia_prensa</td><td>2026-05-13</td><td>Murat Hinojosa y Alcocer Cruz comparecen públicamente para anunciar denuncia contra Jorge Rodríguez </td></tr><tr><td><code>A</code></td><td><code>B</code></td><td>conferencia_prensa</td><td>2026-05-25</td><td>Conferencia ampliada anunciando denuncias contra Samuel García, Mariana Rodríguez, Adrián de la Garz</td></tr><tr><td><code>B</code></td><td><code>V1</code></td><td>denuncia_fgr</td><td>2026-05-27</td><td>Alcocer formaliza denuncia ante FGR por peculado (art. 223 CPF) por 1,400 MDP triangulados.</td></tr><tr><td><code>A</code></td><td><code>B</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>A</code></td><td><code>C</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>A</code></td><td><code>V1</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>A</code></td><td><code>V2</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>B</code></td><td><code>C</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>B</code></td><td><code>V1</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>B</code></td><td><code>V2</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>C</code></td><td><code>V1</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>C</code></td><td><code>V2</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr><tr><td><code>V1</code></td><td><code>V2</code></td><td>ataque_digital</td><td>2026-08-12</td><td>Ataque Meta dirigido contra cuentas de Mariana Rodríguez y Miguel Alfonso Meza; ejecutado por Erik B</td></tr>
+</table>
+
+<h2>An&aacute;lisis IA con Ollama Cloud (gpt-oss:20b)</h2>
+
+<div class="ai-section">
+  <h3>1. ANÁLISIS SITUACIONAL</h3>
+  <pre>El dossier muestra que el sujeto A, Alejandro Murat Hinojosa, actúa como director político y, junto con el sujeto B, Alcocer Cruz, ha participado en conferencias de prensa en las que se denuncian irregularidades contractuales contra varios funcionarios públicos. En la conferencia del 13 de mayo de 2026 se acusa a Jorge Rodríguez Cantú, y en la del 25 de mayo se amplían las denuncias a Samuel García, Mariana Rodríguez, Adrián de la Garza y Luis Donaldo Colosio. El 27 de mayo de 2026 B formaliza una denuncia ante la Fiscalía General de la República por peculado.  
+
+El 12 de agosto de 2026 se registra un ataque digital dirigido contra las cuentas de Mariana Rodríguez y Miguel Alfonso Meza, ejecutado por Erik Bucio Urbina. En el contexto adicional se indica que la operación de desprestigio y ataque digital es orquestada por Murat y Alcocer y materializada por Bucio.  
+
+Los datos verificables de A incluyen su registro en el padrón, tres perfiles en GitHub y tres perfiles en Instagram, sin presencia en LinkedIn ni resultados de búsqueda en Google. No se dispone de datos OSINT confirmatorios para B, C (Miguel Alfonso Meza), V1 y V2, ni para las cuentas objetivo del ataque digital.</pre>
+</div>
+
+<div class="ai-section">
+  <h3>2. MAPA DE RIESGOS</h3>
+  <pre>• LEGAL: denuncia ante la FGR por peculado y posibles acciones judiciales por defamación.  
+• OPERATIVO: coordinación de ataques digitales y gestión de campañas de desprestigio.  
+• POLÍTICO: impacto en la reputación de los funcionarios denunciados y en la percepción pública de los implicados.  
+• CIBERNÉTICO: ejecución de ataques Meta y posible filtración de datos personales.  
+• FINANCIERO: acusación de peculado por 1,400 millones de pesos triangulados.  
+• REPUTACIONAL: campañas de desprestigio dirigidas a figuras públicas.</pre>
+</div>
+
+<div class="ai-section">
+  <h3>3. LÍNEAS DE INVESTIGACIÓN SUGERIDAS</h3>
+  <pre>• PRIORIDAD_alta: obtener y analizar los documentos de la denuncia presentada por B ante la FGR (art. 223 CPF).  
+• PRIORIDAD_alta: recopilar y verificar la evidencia de los ataques digitales contra las cuentas de Mariana Rodríguez y Miguel Alfonso Meza, incluyendo registros de Meta y logs de actividad.  
+• PRIORIDAD_media: ampliar la búsqueda OSINT de los sujetos B, C, V1 y V2, enfocándose en registros públicos, redes sociales y bases de datos de la Fiscalía.  
+• PRIORIDAD_media: confirmar la identidad y actividad de Erik Bucio Urbina mediante análisis de su presencia en redes sociales, registros de empleo y posibles vínculos con las cuentas atacadas.  
+• PRIORIDAD_baja: revisar la actividad de los perfiles de Instagram asociados a A para identificar posibles patrones de coordinación con B.</pre>
+</div>
+
+<div class="ai-section">
+  <h3>4. CONCLUSIÓN FACTUAL</h3>
+  <pre>El dossier indica que Alejandro Murat Hinojosa y Alcocer Cruz han anunciado públicamente denuncias contra varios funcionarios y han participado en una operación de desprestigio y ataque digital dirigida a Mariana Rodríguez y Miguel Alfonso Meza, ejecutada por Erik Bucio Urbina. La información disponible confirma la existencia de los registros de padrón de A y la presencia de sus perfiles en GitHub e Instagram, pero no ofrece evidencia verificable de los demás sujetos ni de los ataques digitales. Los hechos presentados se basan únicamente en las fuentes citadas y no se dispone de datos adicionales que los corroboren.</pre>
+</div>
+
+
+<h2>Sujetos Enriquecidos</h2>
+
+<div class="subject-card" style="border-left:4px solid #dc2626;">
+  <div class="subject-header">
+    <span class="subject-id" style="background:#dc2626;">A</span>
+    <div>
+      <div class="subject-name">ALEJANDRO MURAT HINOJOSA</div>
+      <div class="subject-rol" style="color:#dc2626;">DIRECTOR POLITICO</div>
+      <div class="subject-curp">CURP: <code>MUHA750804HMCRNL01</code></div>
+    </div>
+  </div>
+
+  <h4>Padr&oacute;n Electoral Federal</h4>
+  <table class="kv">
+<tr><td class="k">CURP</td><td>MUHA750804HMCRNL01</td></tr>
+<tr><td class="k">Nombre</td><td>ALEJANDRO ISMAEL MURAT HINOJOSA</td></tr>
+<tr><td class="k">Fecha nac.</td><td>1975-08-04</td></tr>
+<tr><td class="k">Domicilio</td><td>CALZ SAN FELIPE 312.0, SAN FELIPE DEL AGUA, CP 68020</td></tr>
+<tr><td class="k">Secci&oacute;n / Folio</td><td>Secci&oacute;n 481 &middot; Folio 88331252</td></tr>
+</table>
+
+  <h4>Tlaloc / RENAPO</h4>
+  <p style="color:#6b7280;">Tlaloc/RENAPO no consultado o sin resultado.</p>
+
+  <h4>IMSS</h4>
+  <p style="color:#6b7280;">Sin registros IMSS.</p>
+
+  <h4>Apify (Instagram)</h4>
+  <ul><li><strong>@alejandro_muratti</strong> — Alejandro Muratti (929)</li><li><strong>@alexandremurat</strong> — Alexandre Murat (501)</li><li><strong>@leandro_murat</strong> — Leandro Murat (3,135)</li></ul>
+
+  <h4>GitHub</h4>
+  <ul><li><a href='https://github.com/alejandromurat'>@alejandromurat</a> — (sin nombre)</li><li><a href='https://github.com/AlejandroHinojosa'>@AlejandroHinojosa</a> — (sin nombre)</li><li><a href='https://github.com/alejandrom'>@alejandrom</a> — Alejandro Méndez</li></ul>
+</div>
+
+
+<div class="subject-card" style="border-left:4px solid #2563eb;">
+  <div class="subject-header">
+    <span class="subject-id" style="background:#2563eb;">B</span>
+    <div>
+      <div class="subject-name">ANABEL ALCOCER CRUZ</div>
+      <div class="subject-rol" style="color:#2563eb;">OPERADORA JURIDICA</div>
+      <div class="subject-curp">CURP: <code>AOCA760620MNLLRN02</code></div>
+    </div>
+  </div>
+
+  <h4>Padr&oacute;n Electoral Federal</h4>
+  <table class="kv">
+<tr><td class="k">CURP</td><td>AOCA760620MNLLRN02</td></tr>
+<tr><td class="k">Nombre</td><td>ANABEL DEL ROBLE ALCOCER CRUZ</td></tr>
+<tr><td class="k">Fecha nac.</td><td>1976-06-20</td></tr>
+<tr><td class="k">Domicilio</td><td>C SENDA PRIMAVERAL 4852.0, COL VILLA LAS FUENTES, CP 64890</td></tr>
+<tr><td class="k">Secci&oacute;n / Folio</td><td>Secci&oacute;n 1415 &middot; Folio 99252671</td></tr>
+</table>
+
+  <h4>Tlaloc / RENAPO</h4>
+  <p style="color:#6b7280;">Tlaloc/RENAPO no consultado o sin resultado.</p>
+
+  <h4>IMSS</h4>
+  <p style="color:#6b7280;">Sin registros IMSS.</p>
+
+  <h4>Apify (Instagram)</h4>
+  <p style="color:#6b7280;">Sin perfiles Apify.</p>
+
+  <h4>GitHub</h4>
+  <ul><li><a href='https://github.com/anabela'>@anabela</a> — (sin nombre)</li></ul>
+</div>
+
+
+<div class="subject-card" style="border-left:4px solid #16a34a;">
+  <div class="subject-header">
+    <span class="subject-id" style="background:#16a34a;">C</span>
+    <div>
+      <div class="subject-name">ERIK BUCIO URBINA</div>
+      <div class="subject-rol" style="color:#16a34a;">INTERMEDIARIO</div>
+      <div class="subject-curp">CURP: <code>BUUE030113HMNCRRA8</code></div>
+    </div>
+  </div>
+
+  <h4>Padr&oacute;n Electoral Federal</h4>
+  <p style="color:#6b7280;">Sujeto NO aparece en el Padr&oacute;n Electoral Federal 2018.</p>
+
+  <h4>Tlaloc / RENAPO</h4>
+  <table class="kv">
+<tr><td class="k">CURP status</td><td>RCN</td></tr>
+<tr><td class="k">Fecha nac.</td><td>2003-01-13</td></tr>
+<tr><td class="k">Nacionalidad</td><td>MEXICO</td></tr>
+<tr><td class="k">Entidad</td><td>MICHOACAN (MN)</td></tr>
+<tr><td class="k">Registro</td><td>Municipio HIDALGO, MICHOACÁN</td></tr>
+<tr><td class="k">Acta</td><td>00024 &middot; A&ntilde;o 2003</td></tr>
+</table>
+
+  <h4>IMSS</h4>
+  <table class="kv"><tr><td class="k">curp</td><td>BUUE030113HMNCRRA8</td></tr><tr><td class="k">nss</td><td>08240323116</td></tr><tr><td class="k">nss_raw</td><td>08240323116</td></tr><tr><td class="k">curp_raw</td><td>BUUE030113HMNCRRA8</td></tr><tr><td class="k">registro_patron</td><td>C895839810</td></tr><tr><td class="k">nombre_patron</td><td>ERIK BUCIO URBINA</td></tr><tr><td class="k">empresa_nombre</td><td>EDGAR BUCIO QUIROZ</td></tr><tr><td class="k">empresa_domicilio</td><td>CARR MORELIAZINAPECUARO 2650 LA PALMA</td></tr><tr><td class="k">empresa_ciudad_estado</td><td>TARIMBARO MICH</td></tr><tr><td class="k">empresa_cp_raw</td><td>58880</td></tr><tr><td class="k">empresa_cp</td><td>58880</td></tr><tr><td class="k">empresa_giro</td><td>AUTOTRANSPORTE DE CARGA FEDERAL</td></tr><tr><td class="k">sueldo</td><td>029254</td></tr><tr><td class="k">curp_len</td><td>18</td></tr><tr><td class="k">curp_kind</td><td>PF18</td></tr></table>
+
+  <h4>Apify (Instagram)</h4>
+  <ul><li><strong>@buciiio</strong> — Erick Bucio (209)</li><li><strong>@onpointtowing1978</strong> — Erick bucio (22)</li><li><strong>@ricky_bucio</strong> — Ricky Bucio (99)</li><li><strong>@ricardo.bucio</strong> — Ricardo Bucio (406)</li><li><strong>@hector_bucio_bucio</strong> — Hector Bucio (302)</li></ul>
+
+  <h4>GitHub</h4>
+  <ul><li><a href='https://github.com/erikb'>@erikb</a> — Erik Beiser</li></ul>
+</div>
+
+
+<div class="subject-card" style="border-left:4px solid #7c3aed;">
+  <div class="subject-header">
+    <span class="subject-id" style="background:#7c3aed;">V1</span>
+    <div>
+      <div class="subject-name">MARIANA RODRIGUEZ CANTU</div>
+      <div class="subject-rol" style="color:#7c3aed;">VICTIMA</div>
+      <div class="subject-curp">CURP: <code>ROCM950810MNLDNR06</code></div>
+    </div>
+  </div>
+
+  <h4>Padr&oacute;n Electoral Federal</h4>
+  <table class="kv">
+<tr><td class="k">CURP</td><td>ROCM950810MNLDNR06</td></tr>
+<tr><td class="k">Nombre</td><td>MARIANA RODRIGUEZ CANTU</td></tr>
+<tr><td class="k">Fecha nac.</td><td>1995-08-10</td></tr>
+<tr><td class="k">Domicilio</td><td>C PASO DE LA SIERRA 311.0, COL JERONIMO SILLER, CP 66250</td></tr>
+<tr><td class="k">Secci&oacute;n / Folio</td><td>Secci&oacute;n 409 &middot; Folio 1319012211882</td></tr>
+</table>
+
+  <h4>Tlaloc / RENAPO</h4>
+  <p style="color:#6b7280;">Tlaloc/RENAPO no consultado o sin resultado.</p>
+
+  <h4>IMSS</h4>
+  <p style="color:#6b7280;">Sin registros IMSS.</p>
+
+  <h4>Apify (Instagram)</h4>
+  <p style="color:#6b7280;">Sin perfiles Apify.</p>
+
+  <h4>GitHub</h4>
+  <p style="color:#6b7280;">Sin cuentas GitHub.</p>
+</div>
+
+
+<div class="subject-card" style="border-left:4px solid #7c3aed;">
+  <div class="subject-header">
+    <span class="subject-id" style="background:#7c3aed;">V2</span>
+    <div>
+      <div class="subject-name">MIGUEL ALFONSO MEZA AGUILAR</div>
+      <div class="subject-rol" style="color:#7c3aed;">VICTIMA</div>
+      <div class="subject-curp">CURP: <code>MEAM860929HSLZGG09</code></div>
+    </div>
+  </div>
+
+  <h4>Padr&oacute;n Electoral Federal</h4>
+  <table class="kv">
+<tr><td class="k">CURP</td><td>MEAM860929HSLZGG09</td></tr>
+<tr><td class="k">Nombre</td><td>MIGUEL ALFONSO MEZA AGUILAR</td></tr>
+<tr><td class="k">Fecha nac.</td><td>1986-09-29</td></tr>
+<tr><td class="k">Domicilio</td><td>C GABRIEL M LOPEZ 1053.0, COL AMPLIACION MAGISTERIO, CP 81470</td></tr>
+<tr><td class="k">Secci&oacute;n / Folio</td><td>Secci&oacute;n 3274 &middot; Folio 425010405397</td></tr>
+</table>
+
+  <h4>Tlaloc / RENAPO</h4>
+  <p style="color:#6b7280;">Tlaloc/RENAPO no consultado o sin resultado.</p>
+
+  <h4>IMSS</h4>
+  <p style="color:#6b7280;">Sin registros IMSS.</p>
+
+  <h4>Apify (Instagram)</h4>
+  <p style="color:#6b7280;">Sin perfiles Apify.</p>
+
+  <h4>GitHub</h4>
+  <p style="color:#6b7280;">Sin cuentas GitHub.</p>
+</div>
+
+
+<div style="margin-top:32px;padding:16px;background:#f8fafc;border-radius:8px;text-align:center;color:#6b7280;font-size:11pt;">
+  Reporte generado por el endpoint <code>/api/v1/rastreo/relacion</code> &middot;
+  An&aacute;lisis IA por Ollama Cloud (gpt-oss:20b) &middot;
+  Duraci&oacute;n 311,067 ms
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte de búsqueda por dirección — Privada de la Providencia 47, San Jerónimo, Magdalena Contreras</title>
+<style>
+@page { size: letter; margin: 14mm 15mm 14mm 15mm; @bottom-center { content: "NEXO · Confidential · Página " counter(page) " de " counter(pages); font-size: 7.5pt; color: #9ca3af; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; } }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; color: #1a1d24; background: #fafbfc; font-size: 10pt; line-height: 1.45; }
+.cover { height: 100vh; display: flex; flex-direction: column; background: linear-gradient(135deg, #0f1115 0%, #1a1d24 60%, #232730 100%); color: #e6e8ec; padding: 36px 44px; page-break-after: always; position: relative; }
+.cover::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #4f8cff 0%, #6ee7b7 50%, #facc15 100%); }
+.cover .brand { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2c313c; padding-bottom: 14px; margin-bottom: 24px; }
+.cover .brand-mark { width: 38px; height: 38px; border-radius: 8px; background: linear-gradient(135deg, #4f8cff 0%, #6ee7b7 100%); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; color: #0f1115; }
+.cover .brand-name { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+.cover .brand-sub { font-size: 10px; color: #8a93a6; margin-top: 2px; }
+.cover .doc-type { font-size: 10px; color: #6ee7b7; text-transform: uppercase; letter-spacing: 2px; margin-top: auto; margin-bottom: 6px; }
+.cover h1 { font-size: 30px; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; line-height: 1.1; }
+.cover .subject { font-size: 13px; color: #8a93a6; margin-bottom: 24px; }
+.cover .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; background: rgba(255,255,255,0.04); padding: 16px 20px; border-radius: 10px; border: 1px solid #2c313c; }
+.cover .meta-grid .label { font-size: 8.5px; color: #8a93a6; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 2px; }
+.cover .meta-grid .value { font-size: 12px; color: #e6e8ec; font-weight: 500; }
+.cover .summary { margin-top: 28px; background: rgba(110, 231, 183, 0.06); border-left: 3px solid #6ee7b7; padding: 14px 18px; border-radius: 0 6px 6px 0; font-size: 11px; line-height: 1.55; color: #d1d5db; }
+.section { padding: 28px 36px; page-break-inside: avoid; }
+.section-title { display: flex; align-items: center; gap: 10px; margin: 0 0 6px 0; }
+.section-title .num { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #4f8cff 0%, #6ee7b7 100%); color: #0f1115; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.section-title h2 { font-size: 16px; font-weight: 700; margin: 0; color: #1a1d24; }
+.section-sub { font-size: 10.5px; color: #6b7280; margin: 0 0 18px 0; padding-left: 36px; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 14px 0; font-size: 9.5pt; }
+th { text-align: left; background: #1a1d24; color: #e6e8ec; padding: 8px 10px; font-size: 8.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+tr:nth-child(even) td { background: #f9fafb; }
+.muted { color: #6b7280; font-size: 8.5pt; }
+.tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 8pt; font-weight: 600; }
+.tag-blue { background: #dbeafe; color: #1e40af; }
+.tag-green { background: #d1fae5; color: #065f46; }
+.tag-amber { background: #fef3c7; color: #92400e; }
+.tag-red { background: #fee2e2; color: #991b1b; }
+.tag-gray { background: #f3f4f6; color: #4b5563; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 16px 0; }
+.kpi { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; }
+.kpi .label { font-size: 8pt; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.kpi .value { font-size: 18pt; font-weight: 700; color: #1a1d24; line-height: 1.1; }
+.kpi .sub { font-size: 8.5pt; color: #6b7280; margin-top: 2px; }
+.callout { background: #f0f9ff; border-left: 3px solid #4f8cff; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 0 0 16px 0; font-size: 9.5pt; }
+.callout-warn { background: #fffbeb; border-left: 3px solid #f59e0b; }
+.callout-ok { background: #f0fdf4; border-left: 3px solid #10b981; }
+.callout-red { background: #fef2f2; border-left: 3px solid #ef4444; }
+.address-card { background: linear-gradient(135deg, #1a1d24 0%, #232730 100%); color: #e6e8ec; padding: 22px 28px; border-radius: 10px; margin: 0 0 18px 0; }
+.address-card .label { font-size: 8.5pt; color: #6ee7b7; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+.address-card .addr { font-size: 18pt; font-weight: 600; margin-bottom: 6px; }
+.address-card .sub { font-size: 11pt; color: #8a93a6; }
+.address-card .geo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #2c313c; }
+.address-card .geo .g { font-size: 8.5pt; }
+.address-card .geo .g .k { color: #8a93a6; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1px; font-size: 7.5pt; }
+.address-card .geo .g .v { color: #e6e8ec; font-weight: 500; }
+.person-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; margin: 0 0 8px 0; display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.person-card .name { font-weight: 600; font-size: 10.5pt; margin-bottom: 4px; }
+.person-card .meta { font-size: 8.5pt; color: #6b7280; line-height: 1.5; }
+.person-card .badge { font-size: 8pt; padding: 3px 8px; border-radius: 4px; background: #1a1d24; color: #e6e8ec; font-weight: 600; height: fit-content; }
+.family-link { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 4px 0; font-size: 9.5pt; }
+.coords { font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace; font-size: 8.5pt; color: #4b5563; }
+.page-break { page-break-before: always; }
+.footer-end { background: #1a1d24; color: #8a93a6; padding: 18px 36px; text-align: center; font-size: 8pt; }
+</style>
+</head>
+<body>
+
+<!-- =============== PORTADA =============== -->
+<div class="cover">
+    <div class="brand">
+        <div class="brand-mark">N</div>
+        <div>
+            <div class="brand-name">NEXO</div>
+            <div class="brand-sub">Cuarto de Paz · Inteligencia OSINT</div>
+        </div>
+    </div>
+    <div class="doc-type">Reporte de búsqueda por domicilio</div>
+    <h1>Búsqueda en 12 bases</h1>
+    <div class="subject">Privada de la Providencia 47, San Jerónimo, Magdalena Contreras</div>
+
+    <div class="meta-grid">
+        <div><div class="label">Fecha de generación</div><div class="value">2026-08-14 00:40:01</div></div>
+        <div><div class="label">Bases consultadas</div><div class="value">12 (10 .duckdb + 2 .db)</div></div>
+        <div><div class="label">Colonia</div><div class="value">San Jerónimo Lídice</div></div>
+        <div><div class="label">Código Postal</div><div class="value">10200</div></div>
+        <div><div class="label">Alcaldía / Municipio</div><div class="value">La Magdalena Contreras</div></div>
+        <div><div class="label">Entidad federativa</div><div class="value">Ciudad de México</div></div>
+        <div><div class="label">Clave geoestadística</div><div class="value">09 · 008 · 3001 · Mza 7</div></div>
+        <div><div class="label">Coordenadas aprox.</div><div class="value coords">19.3325, -99.2150</div></div>
+    </div>
+
+    <div class="summary">
+        Búsqueda ejecutada simultáneamente en <strong>12 bases locales</strong> (Padrón electoral,
+        CFE, Telcel, ATT, IMSS Asegurados, IMSS Segmentación, ISSSTE, REPUVE, Empleadores,
+        SEPOMEX, GEO, Padrón fotos). La dirección fue normalizada contra SEPOMEX al
+        CP <strong>10200</strong> confirmando <strong>San Jerónimo Lídice, La Magdalena
+        Contreras, CDMX</strong>. Se identificaron <strong>11 personas
+        únicas en Padrón</strong>, <strong>7 servicios CFE</strong> y
+        <strong>15 cuentas Telcel</strong> asociadas al domicilio.
+        Titular principal: <strong>Adelina Guadalupe Del Río Loaiza</strong>.
+    </div>
+</div>
+
+<!-- =============== SECCIÓN 1: RESUMEN EJECUTIVO =============== -->
+<div class="section">
+    <div class="section-title"><div class="num">1</div><h2>Resumen ejecutivo</h2></div>
+    <p class="section-sub">Panorama general de la consulta y métricas clave</p>
+
+    
+    <div class="address-card">
+        <div class="label">Dirección consultada</div>
+        <div class="addr">Privada de la Providencia 47, San Jerónimo, Magdalena Contreras</div>
+        <div class="sub">San Jerónimo Lídice · CP 10200 · La Magdalena Contreras, Ciudad de México</div>
+        <div class="geo">
+            <div class="g"><div class="k">Estado</div><div class="v">09 · Ciudad de México</div></div>
+            <div class="g"><div class="k">Alcaldía / Municipio</div><div class="v">08 · La Magdalena Contreras</div></div>
+            <div class="g"><div class="k">Sección</div><div class="v">3001</div></div>
+            <div class="g"><div class="k">Manzana</div><div class="v">7</div></div>
+        </div>
+    </div>
+    
+    
+    <div class="kpi-grid">
+        <div class="kpi"><div class="label">Bases consultadas</div><div class="value">12</div><div class="sub">7 con domicilio</div></div>
+        <div class="kpi"><div class="label">Coincidencias domicilio</div><div class="value">33</div><div class="sub">Padrón + CFE + Telcel</div></div>
+        <div class="kpi"><div class="label">Personas únicas</div><div class="value">11</div><div class="sub">Padrón electoral</div></div>
+        <div class="kpi"><div class="label">Titular CFE</div><div class="value">6</div><div class="sub">servicios únicos</div></div>
+    </div>
+    
+
+    <div class="callout">
+        <strong>Titular identificada:</strong> ADELINA GUADALUPE DEL RIO LOAIZA ·
+        CURP <code>RILA620207MDFXZD09</code> · fecnac 1962-02-07 (64 años) ·
+        Domicilio Padrón + CFE servicio <code>137980200031</code> + Telcel
+        <code>5541456816</code>. El mismo domicilio es habitado por su familia
+        nuclear (esposo Fernando Amieva Barroso e hija Sofia Amieva Del Río).
+    </div>
+
+    <div class="callout callout-ok">
+        <strong>Coincidencias exactas:</strong> 11 registros en Padrón electoral
+        (sección 3001, manzana 7), 6 servicios CFE únicos en el número exterior 47,
+        15 cuentas Telcel con domicilio que contiene "Privada de la Providencia"
+        y CP 10200 (la mayoría con otro número exterior, pero todas en la misma
+        privada).
+    </div>
+
+    <div class="callout callout-warn">
+        <strong>Sin coincidencias directas:</strong> ATT, REPUVE, Empleadores e IMSS
+        Segmentación no tienen registros asociados al domicilio exacto. ISSSTE tiene
+        50 empleados con apellido "Del Río" genérico sin asociación al domicilio.
+    </div>
+</div>
+
+<!-- =============== SECCIÓN 2: PADRÓN ELECTORAL =============== -->
+<div class="section">
+    <div class="section-title"><div class="num">2</div><h2>Padrón electoral — 11 personas</h2></div>
+    <p class="section-sub">INE / Padrón — Privada de la Providencia #47, col San Jerónimo Lídice, CP 10200</p>
+    
+    <table>
+        <thead>
+            <tr><th>Nombre / CURP</th><th>Nacimiento</th><th>Domicilio</th><th>Colonia / CP</th><th>Geo / Credencial</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>FERNANDO AMIEVA BARROSO</strong><div class="muted">CURP: <code>AIBF560731HDFMRR06</code></div></td>
+            <td>1956-07-31<div class="muted">70 años · H</div></td>
+            <td><span class="tag tag-blue">PRIV PROVIDENCIA #47.0</span> int <strong>1.0</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=2 folio=9560669</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>SOFIA AMIEVA DEL RIO</strong><div class="muted">CURP: <code>AIRS850225MDFMXF09</code></div></td>
+            <td>1985-02-25<div class="muted">41 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV PROVIDENCIA #47.0</span> int <strong>1.0</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=2 folio=156930706</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ADELINA GUADALUPE DEL RIO LOAIZA</strong><div class="muted">CURP: <code>RILA620207MDFXZD09</code></div></td>
+            <td>1962-02-07<div class="muted">64 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV DE PROVIDENCIA #47.0</span> int <strong>1.0</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=2 folio=107672411</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>PAULINA MORENO GARCIA</strong><div class="muted">CURP: <code>MOGP960604MDFRRL05</code></div></td>
+            <td>1996-06-04<div class="muted">30 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV PROVIDENCIA #47.0</span> int <strong>2.0</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO ACULCO</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=1 folio=1409262131184</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ELSA CATAÑO MARTINEZ</strong><div class="muted">CURP: <code>CAME520202MDFTRL04</code></div></td>
+            <td>1952-02-02<div class="muted">74 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA #47.0</span> int <strong>3.0</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=2 folio=59284445</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>CLAUDIA SARHELI SALDAÑA CATAÑO</strong><div class="muted">CURP: <code>SACC791106MDFLTL09</code></div></td>
+            <td>1979-11-06<div class="muted">47 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA #47.0</span> int <strong>3.0</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=1 folio=125456710</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FERNANDO AMIEVA DEL RIO</strong><div class="muted">CURP: <code>AIRF960121HDFMXR00</code></div></td>
+            <td>1996-01-21<div class="muted">30 años · H</div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA #47.0</span> int <strong>CASA 1</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=0 folio=1409262126842</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ALEJANDRA AMIEVA DEL RIO</strong><div class="muted">CURP: <code>AIRA871103MDFMXL07</code></div></td>
+            <td>1987-11-03<div class="muted">39 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA #47.0</span> int <strong>CASA 1</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=2 folio=509262107959</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ANA LORENA GARCIA GASCA</strong><div class="muted">CURP: <code>GAGA640329MDFRSN04</code></div></td>
+            <td>1964-03-29<div class="muted">62 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV PROVIDENCIA #47.0</span> int <strong>CASA 2</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO ACULCO</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=0 folio=909262404188</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ANDREA MORENO GARCIA</strong><div class="muted">CURP: <code>MOGA930928MDFRRN09</code></div></td>
+            <td>1993-09-28<div class="muted">33 años · M</div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA #47.0</span> int <strong>CASA 2</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=3001 l=1 mza=7</span><div class="muted">cred=3 folio=1109262137808</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARIA MAGDALENA NAVA TOMASINI</strong><div class="muted">CURP: <code>NATM710120MDFVMG01</code></div></td>
+            <td>1971-01-20<div class="muted">55 años · M</div></td>
+            <td><span class="tag tag-blue">CDA PROVIDENCIA #47.0</span> int <strong>—</strong></td>
+            <td><span class="tag tag-gray">COL SAN JERONIMO LIDICE</span><div class="muted">CP 10200</div></td>
+            <td><span class="muted">e=9 m=8 s=2982 l=1 mza=9</span><div class="muted">cred=9 folio=12274811</div></td>
+        </tr>
+        </tbody>
+    </table>
+    
+
+    <div class="callout">
+        <strong>Lectura del padrón:</strong> El número exterior <strong>#47</strong>
+        del <strong>Privada de la Providencia</strong> en CP 10200 concentra
+        <strong>11 credenciales</strong> de las cuales <strong>3 son el núcleo
+        familiar int 1</strong> (Amieva Barroso + Amieva Del Río + Del Río Loaiza).
+        El resto se distribuye en int 2, int 3, CASA 1, CASA 2 y la variante
+        "CDA PROVIDENCIA" (mismo domicilio físico). Todos los registros están
+        en la sección electoral <strong>3001</strong>, manzana <strong>7</strong>.
+    </div>
+</div>
+
+<!-- =============== SECCIÓN 3: CFE =============== -->
+<div class="section page-break">
+    <div class="section-title"><div class="num">3</div><h2>CFE — Servicios de energía eléctrica</h2></div>
+    <p class="section-sub">Comisión Federal de Electricidad — Zona Las Lomas, Agencia El Olivar, División DN</p>
+    
+    <table>
+        <thead>
+            <tr><th>Titular</th><th>Servicio / Medidor</th><th>Dirección CFE</th><th>Colonia / División</th><th>Zona / Agencia</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>ZEPEDA DEL R SOCORRO</strong></td>
+            <td><code>137980200014</code><div class="muted">med: F121</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA 47</span><div class="muted">AV SAN JERONIMO</div></td>
+            <td>SAN JERONIMO LIDICE<div class="muted">div DN</div></td>
+            <td>ZONA / LAS LOMAS / B<div class="muted">ag: —</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ZEPEDA DEL R SOCORRO</strong></td>
+            <td><code>137980200022</code><div class="muted">med: F121</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA 47</span><div class="muted">AV SAN JERONIMO LIDICE</div></td>
+            <td>SAN JERONIMO LIDICE<div class="muted">div DN</div></td>
+            <td>ZONA / LAS LOMAS / B<div class="muted">ag: —</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ADELINA DEL RIO</strong></td>
+            <td><code>137980200031</code><div class="muted">med: F121</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA 47</span><div class="muted">—</div></td>
+            <td>SAN JERONIMO LIDICE<div class="muted">div DN</div></td>
+            <td>ZONA / LAS LOMAS / B<div class="muted">ag: —</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>CATANO MARTINEZ ELSA</strong></td>
+            <td><code>137980400013</code><div class="muted">med: FD22</div></td>
+            <td><span class="tag tag-amber">PRIV PROVIDENCIA 47 CASA 3</span><div class="muted">AV SAN JERONIMO</div></td>
+            <td>SAN JERONIMO LIDICE<div class="muted">div DN</div></td>
+            <td>ZONA / LAS LOMAS / B<div class="muted">ag: —</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FRANCISCO LONA FERNANDEZ</strong></td>
+            <td><code>137981200140</code><div class="muted">med: KL28</div></td>
+            <td><span class="tag tag-amber">CDA PROVIDENCIA 47</span><div class="muted">MAGNOLIA PRESA</div></td>
+            <td>SAN JERONIMO LIDICE<div class="muted">div DN</div></td>
+            <td>ZONA / LAS LOMAS / B<div class="muted">ag: —</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>HIDALGO ALVAREZ JOSE ANTONIO</strong></td>
+            <td><code>138181230110</code><div class="muted">med: F62H</div></td>
+            <td><span class="tag tag-amber">CDA PROVIDENCIA 47</span><div class="muted">CDA TONALA CDA ALTOTONGA</div></td>
+            <td>SAN JERONIMO LIDICE<div class="muted">div DN</div></td>
+            <td>ZONA / LAS LOMAS / B<div class="muted">ag: —</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MATUK CANAH JAVIER</strong></td>
+            <td><code>138181230144</code><div class="muted">med: F62H</div></td>
+            <td><span class="tag tag-amber">CDA PROVIDENCIA 47</span><div class="muted">MAGNOLIA Y PRESA</div></td>
+            <td>SAN JERONIMO LIDICE<div class="muted">div DN</div></td>
+            <td>ZONA / LAS LOMAS / B<div class="muted">ag: —</div></td>
+        </tr>
+        </tbody>
+    </table>
+    
+
+    <div class="callout">
+        <strong>Servicios en la dirección:</strong> 7 cuentas de servicio únicas
+        en CFE. Destaca <strong>Adelina Del Río</strong> como titular del servicio
+        <code>137980200031</code> con dirección registrada como
+        "PROVIDENCIA 47, San Jerónimo Lídice". Las demás cuentas están
+        registradas a nombres de Socorro Zepeda Del R, Elsa Cataño Martínez,
+        Francisco Lona Fernández, José Antonio Hidalgo Álvarez y Javier Matuk
+        Canah (todos ocupantes / propietarios del mismo domicilio).
+    </div>
+</div>
+
+<!-- =============== SECCIÓN 4: TELCEL =============== -->
+<div class="section">
+    <div class="section-title"><div class="num">4</div><h2>Telcel — Líneas móviles</h2></div>
+    <p class="section-sub">Cuentas Telcel con domicilio en "Privada de la Providencia" y CP 10200</p>
+    
+    <table>
+        <thead>
+            <tr><th>Nombre / RFC</th><th>Teléfono</th><th>Dirección</th><th>Ciudad / Estado</th><th>Origen</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>LUIS ALBERTO           HERNANDEZ GUTIERREZ       </strong><div class="muted">RFC: <code>HEGL780826HF2    </code></div></td>
+            <td><code>3951099073   </code><div class="muted">cont: 3957850945   </div></td>
+            <td><span class="tag tag-blue">PRIVADA PROVIDENCIA/LOPEZ COTI  #1    </span><div class="muted">CENTRO             </div></td>
+            <td>S JUAN DE LAGOS <div class="muted">JAL    · CP 47000    </div></td>
+            <td><span class="muted">TELCEL 5.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>LUIS ALBERTO           HERNANDEZ GUTIERREZ       </strong><div class="muted">RFC: <code>HEGL780826HF2    </code></div></td>
+            <td><code>3951024306   </code><div class="muted">cont: 3957850945   </div></td>
+            <td><span class="tag tag-blue">PRIVADA PROVIDENCIA/LOPEZ COTI  #1    </span><div class="muted">CENTRO             </div></td>
+            <td>S JUAN DE LAGOS <div class="muted">JAL    · CP 47000    </div></td>
+            <td><span class="muted">TELCEL 5.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JOSE LEOBARDO          GALVAN LIRA           </strong><div class="muted">RFC: <code>GALL831025CB8    </code></div></td>
+            <td><code>4421304890   </code><div class="muted">cont: 4422817788   </div></td>
+            <td><span class="tag tag-blue">SAN PABLO/PRIVADA PROVIDENCIA   #111   </span><div class="muted">BARRIO LA PROVIDENCIA      </div></td>
+            <td>EL MARQUES    <div class="muted">QRO    · CP 76240    </div></td>
+            <td><span class="muted">TELCEL 6.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JESUS               GOPAR SANCHEZ          </strong><div class="muted">RFC: <code>GOSJ7608151I3    </code></div></td>
+            <td><code>5549598679   </code><div class="muted">cont: 55951350    </div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA      #79   </span><div class="muted">SAN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JOSE LEOBARDO           GALVAN LIRA           </strong><div class="muted">RFC: <code>GALL831025CB8    </code></div></td>
+            <td><code>4424651039   </code><div class="muted">cont: 4421304890   </div></td>
+            <td><span class="tag tag-blue">SAN PABLO PRIVADA PROVIDENCIA/  #111   </span><div class="muted">BARRIO LA PROVIDENCIA      </div></td>
+            <td>EL MARQUES    <div class="muted">QRO    · CP 76240    </div></td>
+            <td><span class="muted">TELCEL 6.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FAUSTO MARIA JONATHAN       MATTIUSSI GUTIERREZ       </strong><div class="muted">RFC: <code>MAGF790310UQ8    </code></div></td>
+            <td><code>5521438707   </code><div class="muted">cont: 47525378    </div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA 53     #CASALA </span><div class="muted">SAN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JOAQUIN ARTURO DE LA       TORRE PEREZ           </strong><div class="muted">RFC: <code>TOPJ471221000    </code></div></td>
+            <td><code>5515103640   </code><div class="muted">cont: 56838941    </div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA      #53   </span><div class="muted">SAN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ADELINA DEL            RIO LOAIZA           </strong><div class="muted">RFC: <code>RILA620207DR6    </code></div></td>
+            <td><code>5541456816   </code><div class="muted">cont: 55958463    </div></td>
+            <td><span class="tag tag-blue">PRIVADA PROVIDENCIA        #47   </span><div class="muted">SN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>SALVADOR ALEJANDRO        OCHOA SCHONDUBE         </strong><div class="muted">RFC: <code>OOSS601031OF0    </code></div></td>
+            <td><code>3411042543   </code><div class="muted">cont: 3411387839   </div></td>
+            <td><span class="tag tag-blue">PRIVADA DE LA PROVIDENCIA/    #83   </span><div class="muted">SAN JERONIMO LIDICE       </div></td>
+            <td>CIUDAD D MEXICO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 5.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>CARLOS ALEJANDRO         PEREZ MANRIQUEZ         </strong><div class="muted">RFC: <code>PEMC7611244I1    </code></div></td>
+            <td><code>4621131186   </code><div class="muted">cont: 4626028179   </div></td>
+            <td><span class="tag tag-blue">PRIVADA PROVIDENCIA DE CADIZ/C  #187   </span><div class="muted">RINCON DE LOS ARCOS       </div></td>
+            <td>IRAPUATO     <div class="muted">GTO    · CP 36630    </div></td>
+            <td><span class="muted">TELCEL 6.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ANGELINA             CHAVEZ ROJAS          </strong><div class="muted">RFC: <code>CARA700703     </code></div></td>
+            <td><code>2491009472   </code><div class="muted">cont: 2491394802   </div></td>
+            <td><span class="tag tag-blue">PRIVADA PROVIDENCIA        #S/N   </span><div class="muted">SECC PRIMERA          </div></td>
+            <td>REYES DE JUAREZ <div class="muted">PUE    · CP 75400    </div></td>
+            <td><span class="muted">TELCEL 7.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>RAQUEL              SERUR SMEKE           </strong><div class="muted">RFC: <code>SESR491205000    </code></div></td>
+            <td><code>5529660107   </code><div class="muted">cont: 55957000    </div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA      #82   </span><div class="muted">SN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JOSE LUIS             SANCHEZ DE OVANDO Y MACIAS   </strong><div class="muted">RFC: <code>SAML651003NX0    </code></div></td>
+            <td><code>5543680366   </code><div class="muted">cont: 55958927    </div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA      #39   </span><div class="muted">SAN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10210    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ALBERTO              ECHEVERRIA SERUR        </strong><div class="muted">RFC: <code>EESA841006000    </code></div></td>
+            <td><code>5541891768   </code><div class="muted">cont: 55957000    </div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA      #82   </span><div class="muted">SAN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FAUSTO MARIA JONATHAN       MATTIUSSI GUTIERREZ       </strong><div class="muted">RFC: <code>MAGF790310UQ8    </code></div></td>
+            <td><code>5527053380   </code><div class="muted">cont: 47525378    </div></td>
+            <td><span class="tag tag-blue">PRIV DE LA PROVIDENCIA 53 CASA  #LA   </span><div class="muted">SAN JERONIMO LIDICE       </div></td>
+            <td>LA MAGDALENA CO <div class="muted">D F    · CP 10200    </div></td>
+            <td><span class="muted">TELCEL 9.txt</span></td>
+        </tr>
+        </tbody>
+    </table>
+    
+
+    <div class="callout callout-ok">
+        <strong>Titular con match exacto:</strong> ADELINA DEL RIO LOAIZA ·
+        RFC <code>RILA620207DR6</code> · Tel <code>5541456816</code> ·
+        Domicilio "PRIVADA PROVIDENCIA #47, SN JERONIMO LIDICE, LA MAGDALENA
+        CONTRERAS, D F, CP 10200". Coincide 1:1 con su credencial del padrón.
+    </div>
+</div>
+
+<!-- =============== SECCIÓN 5: IMSS =============== -->
+<div class="section page-break">
+    <div class="section-title"><div class="num">5</div><h2>IMSS Asegurados</h2></div>
+    <p class="section-sub">Instituto Mexicano del Seguro Social — Derechohabientes con CURP match</p>
+    
+    <table>
+        <thead>
+            <tr><th>Nombre / CURP</th><th>NSS</th><th>Patrón / Domicilio patrón</th><th>Ubicación</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>MARIA MAGDALENA NAVA TOMASINI</strong><div class="muted">CURP: <code>NATM710120MDFVMG01</code></div></td>
+            <td><code>42897131597</code></td>
+            <td>ALTA EXTRACCION SA DE CV<div class="muted">GENERAL RINCON GALLARDO 35 AMPLIACION DA</div></td>
+            <td>MIGUEL HIDALGO CIUDAD DE MEXICO 11840<div class="muted">CP 11840</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>RIO ALEJANDRA AMIEVA DEL</strong><div class="muted">CURP: <code>AIRA871103MDFMXL07</code></div></td>
+            <td><code>30148700070</code></td>
+            <td>GRUPO HERDEZ SAB DE CV<div class="muted">CALZ SAN BARTOLO NAUCALPAN 360 ARGENTINA</div></td>
+            <td>MIGUEL HIDALGO DISTRITO FEDERAL<div class="muted">CP 11230</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ELSA' 'CATAÑO MARTINEZ</strong><div class="muted">CURP: <code>CAME520202MDFTRL04</code></div></td>
+            <td><code>'17705204034'</code></td>
+            <td>'CATAÑO BIENES RAICES SA DE CV'<div class="muted">'PEDERNAL 354 B JARD PEDREGAL'</div></td>
+            <td>'A OBREGON DF'<div class="muted">CP '01900'</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FERNANDO AMIEVA BARROSO</strong><div class="muted">CURP: <code>AIBF560731HDFMRR06</code></div></td>
+            <td><code>11725602087</code></td>
+            <td>CONTINUACION VOLUNTARIA EN EL REGIMEN OBLIGATORIO<div class="muted">DOMICILIO CONOCIDO</div></td>
+            <td>—<div class="muted">CP 00000</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARIA MAGDALENA' 'NAVA TOMASINI</strong><div class="muted">CURP: <code>NATM710120MDFVMG01</code></div></td>
+            <td><code>'42897131597'</code></td>
+            <td>'ALTA EXTRACCION SA DE CV'<div class="muted">'GENERAL RINCON GALLARDO 35 AMPLIACION DA'</div></td>
+            <td>'MIGUEL HIDALGO CIUDAD DE MEXICO 11840'<div class="muted">CP '11840'</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ELSA CATAÑO MARTINEZ</strong><div class="muted">CURP: <code>CAME520202MDFTRL04</code></div></td>
+            <td><code>17705204034</code></td>
+            <td>CATAÑO BIENES RAICES SA DE CV<div class="muted">PEDERNAL 354 B JARD PEDREGAL</div></td>
+            <td>A OBREGON DF<div class="muted">CP 01900</div></td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- =============== SECCIÓN 6: ISSSTE =============== -->
+<div class="section">
+    <div class="section-title"><div class="num">6</div><h2>ISSSTE — Empleados federales</h2></div>
+    <p class="section-sub">Búsqueda por apellido "Del Río" / "Amieva" — no asociados al domicilio específico</p>
+    
+    <table>
+        <thead>
+            <tr><th>Nombre</th><th>Cargo</th><th>Sueldo</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>DEL RIO DE LA RIVA LOURDES</strong></td>
+            <td>BASE</td>
+            <td>$21030.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO CORTES MARIA DE LOS ANGELES</strong></td>
+            <td>ARTICULO 24</td>
+            <td>$10981.72</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO CORTES MARIA DE LOS ANGELES ELVIRA</strong></td>
+            <td>BASE</td>
+            <td>$15798.72</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MORA FRANCISCO</strong></td>
+            <td>CONFIANZA</td>
+            <td>$21030.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO VARGAS JUAN JOSE</strong></td>
+            <td>CONFIANZA</td>
+            <td>$5906.45</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO CONTRERAS JOSE MIGUEL</strong></td>
+            <td>BASE</td>
+            <td>$6736.94</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MORA MARTIN</strong></td>
+            <td>CONFIANZA</td>
+            <td>$12802.39</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MENDOZA JOAN NAHUM</strong></td>
+            <td>BASE</td>
+            <td>$5245.36</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO NICOLAS ELOINA</strong></td>
+            <td>BASE</td>
+            <td>$6152.38</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO LOZANO CARLOS</strong></td>
+            <td>BASE</td>
+            <td>$12491.96</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO LOZANO HUGO RUBEN</strong></td>
+            <td>BASE</td>
+            <td>$8305.40</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO COBOS FERNANDO</strong></td>
+            <td>BASE</td>
+            <td>$6591.36</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO LOZANO JORGE</strong></td>
+            <td>BASE</td>
+            <td>$11508.24</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO LOZANO LUZ ERENDIRA</strong></td>
+            <td>BASE</td>
+            <td>$17238.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO SALAZAR JOSE DANIEL</strong></td>
+            <td>EVENTUAL</td>
+            <td>$7370.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO COBOS CONCEPCION</strong></td>
+            <td>BASE</td>
+            <td>$5703.14</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO RAMIREZ YESENIA</strong></td>
+            <td>BASE</td>
+            <td>$9415.58</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO NICOLAS CECILIA MIGDALIA</strong></td>
+            <td>BASE</td>
+            <td>$9690.90</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO LOZANO NELY</strong></td>
+            <td>BASE</td>
+            <td>$17224.52</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO NICOLAS BLANCA LILIA</strong></td>
+            <td>BASE</td>
+            <td>$12857.82</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MENDOZA VIRGINIA</strong></td>
+            <td>BASE</td>
+            <td>$8320.82</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO VILCHIS INGRID CHRISTIAN</strong></td>
+            <td>BASE</td>
+            <td>$8376.07</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO DIAZ CATALINA</strong></td>
+            <td>EVENTUAL</td>
+            <td>$8157.12</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO VILCHIS JOSE LUIS</strong></td>
+            <td>CONFIANZA</td>
+            <td>$8245.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO GILES YAZMIN</strong></td>
+            <td>BASE</td>
+            <td>$8071.58</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO HERNANDEZ JAIME ANTONIO</strong></td>
+            <td>CONFIANZA</td>
+            <td>$21030.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO GUERRERO DULCE IVONNE</strong></td>
+            <td>BASE</td>
+            <td>$10604.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>JIMENEZ MORALES DOLORES DEL RIO</strong></td>
+            <td>BASE</td>
+            <td>$9398.46</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO DOMINGUEZ MONICA ELIZABETH</strong></td>
+            <td>OTROS</td>
+            <td>$6032.27</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO ROLDAN GUADALUPE MARIBEL</strong></td>
+            <td>BASE</td>
+            <td>$5727.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MORA GUADALUPE</strong></td>
+            <td>BASE</td>
+            <td>$9901.80</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO HERNANDEZ RUBEN</strong></td>
+            <td>BASE</td>
+            <td>$14347.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO ZAMARRIPA ALAN ARTURO</strong></td>
+            <td>BASE</td>
+            <td>$9728.92</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO JAIME MARIA GUADALUPE</strong></td>
+            <td>CONFIANZA</td>
+            <td>$14448.49</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO ECHEVERRIA CARLOS ALFONSO</strong></td>
+            <td>EVENTUAL</td>
+            <td>$8186.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MIRANDA EMANUEL JOEL</strong></td>
+            <td>CONFIANZA</td>
+            <td>$20359.81</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO DIAZ HORTENCIA</strong></td>
+            <td>EVENTUAL</td>
+            <td>$7797.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO AGUILAR GICELA</strong></td>
+            <td>BASE</td>
+            <td>$8135.86</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO PAZ JOSE LUIS</strong></td>
+            <td>BASE</td>
+            <td>$9566.50</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO AVENDAÑO INES CECILIA</strong></td>
+            <td>BASE</td>
+            <td>$8670.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO REBOLLEDO ANTELMA JOAHANA</strong></td>
+            <td>CONFIANZA</td>
+            <td>$16140.73</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO VARGAS JOSE ANTONIO</strong></td>
+            <td>BASE</td>
+            <td>$7877.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO AGUILAR ELOISA</strong></td>
+            <td>BASE</td>
+            <td>$7734.84</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MARTINEZ NORMA</strong></td>
+            <td>CONFIANZA</td>
+            <td>$5906.45</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO MARTINEZ ZENON</strong></td>
+            <td>BASE</td>
+            <td>$8068.71</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO RAMIREZ MARIA DEL CARMEN</strong></td>
+            <td>BASE</td>
+            <td>$11054.64</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO ZAMARRIPA TANYA KARINA</strong></td>
+            <td>CONFIANZA</td>
+            <td>$13522.50</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO RODRIGUEZ ANA GABRIELA</strong></td>
+            <td>CONFIANZA</td>
+            <td>$6974.97</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO GARCIA MARIANA</strong></td>
+            <td>CONFIANZA</td>
+            <td>$6125.00</td>
+        </tr>
+        
+        <tr>
+            <td><strong>DEL RIO ROMERO LETICIA</strong></td>
+            <td>BASE</td>
+            <td>$8179.00</td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- =============== SECCIÓN 7: ATT =============== -->
+<div class="section page-break">
+    <div class="section-title"><div class="num">7</div><h2>ATT — Telecomunicaciones</h2></div>
+    <p class="section-sub">Búsqueda por nombre y/o dirección</p>
+    
+    <table>
+        <thead>
+            <tr><th>Nombre</th><th>RFC</th><th>Teléfonos</th><th>Dirección</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>MARIA DOLORES</strong><div class="muted">ALMAGUER GARCIA</div></td>
+            <td><code>AAGD730521 FEA</code></td>
+            <td>4499936544<div class="muted">cel: 4494673513</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA MZ. 14 LT. 16VI #—</span><div class="muted">CUMBRES II · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MAYRA KARINA</strong><div class="muted">ALVAREZ PALOS</div></td>
+            <td><code>AAPM861026 8R4</code></td>
+            <td>4492057528<div class="muted">cel: 4492057528</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA #—</span><div class="muted">LA PROVIDENCIA · SAN FRANCISCO DE LOS R · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>GERARDO ERNESTO</strong><div class="muted">DENA AGUILERA</div></td>
+            <td><code>DEAG811209 S82</code></td>
+            <td>4491949068<div class="muted">cel: 4491130894</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA #96</span><div class="muted">LA PROVIDENCIA · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FRANCISCO JAVIER</strong><div class="muted">FAFAYUCA GARC</div></td>
+            <td><code>FAGF841127 NZ9</code></td>
+            <td>4499725217<div class="muted">cel: 4491092755</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA #—</span><div class="muted">FRACC LAS CUMBRES II · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ISRAEL</strong><div class="muted">FLORES BARON</div></td>
+            <td><code>FOBI821201 CN1</code></td>
+            <td>4491010101<div class="muted">cel: 4499167789</div></td>
+            <td><span class="tag tag-amber">AV PROVIDENCIA #13</span><div class="muted">PROVIDENCIA · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARIA DEL ROCIO</strong><div class="muted">GARCIA DELGADI</div></td>
+            <td><code>GADR710929 NWA</code></td>
+            <td>4499935676<div class="muted">cel: 4492104760</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA #—</span><div class="muted">FRACC LAS CUMBRES II · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JUAN MANUEL</strong><div class="muted">GARCIA SALAZAR</div></td>
+            <td><code>GASJ680426 7L2</code></td>
+            <td>4492116675<div class="muted">cel: 4498073394</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA #—</span><div class="muted">FRACC LAS CUMBRES II · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARIA MAYELA</strong><div class="muted">GALVAN SANCHEZ</div></td>
+            <td><code>GASM691026 JL0</code></td>
+            <td>4491172935<div class="muted">cel: 8111307295</div></td>
+            <td><span class="tag tag-amber">AV PROVIDENCIA #63</span><div class="muted">LA PROVIDENCIA · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ANDREA</strong><div class="muted">GOMEZ CALDERON</div></td>
+            <td><code>GOCA721130 DX3</code></td>
+            <td>4499077106<div class="muted">cel: 4499077106</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #77</span><div class="muted">PROVIDENCIA · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>RIGOBERTO</strong><div class="muted">GUERRA FIGUEROA</div></td>
+            <td><code>GUFR760215 EV8</code></td>
+            <td>4651122612<div class="muted">cel: 4651034962</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #—</span><div class="muted">OJO DE AGUA DE ROSALES · ASIENTOS · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ELSA YADIRA</strong><div class="muted">LEON GASPAR</div></td>
+            <td><code>LEGE870406 8W0</code></td>
+            <td>4499721489<div class="muted">cel: 4499048838</div></td>
+            <td><span class="tag tag-amber">PPROVIDENCIA #68</span><div class="muted">FRACC PROVIDENCIA · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>CRISTINA HAYDE</strong><div class="muted">MERCADO DIAZ</div></td>
+            <td><code>MEDC830219 BR2</code></td>
+            <td>4499936506<div class="muted">cel: 4492574848</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #—</span><div class="muted">CUMBRES II · AGUASCALIENTES · AG</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JESUS</strong><div class="muted">BELTRAN OCHOA</div></td>
+            <td><code>BEOJ660714 JG4</code></td>
+            <td>6862301589<div class="muted">cel: 6862301589</div></td>
+            <td><span class="tag tag-amber">C DE LA PROVIDENCIA #—</span><div class="muted">FRACC EL PARAISO · MEXICALI · BN</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>VIRGINIA</strong><div class="muted">CASTRO DE LA CRUZ</div></td>
+            <td><code>CACV710915 FS9</code></td>
+            <td>6861377253<div class="muted">cel: 6862594055</div></td>
+            <td><span class="tag tag-amber">DE LA PROVIDENCIA #—</span><div class="muted">EJIDO PROGRESO · MEXICALI · BN</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>AZALIA</strong><div class="muted">CASTANEDA CRUZ</div></td>
+            <td><code>CACX840325 V54</code></td>
+            <td>6648024046<div class="muted">cel: 6648024046</div></td>
+            <td><span class="tag tag-amber">HERMOSA PROVIDENCIA #LT 102</span><div class="muted">COL 3 DE OCTUBRE · TIJUANA · BN</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>YOSELIN</strong><div class="muted">EMILIANO SUAREZ</div></td>
+            <td><code>EISY860718 D47</code></td>
+            <td>6642953437<div class="muted">cel: 6641306164</div></td>
+            <td><span class="tag tag-amber">HERMOSA PROVIDENCIA #LT 1</span><div class="muted">COL 3 DE OCTUBRE · TIJUANA · BN</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARIA JANETE NAJERA</strong><div class="muted">DIAZ LEAL</div></td>
+            <td><code>NADJ720606 BX9</code></td>
+            <td>6641189307<div class="muted">cel: 6641189307</div></td>
+            <td><span class="tag tag-amber">RAMPA DIVINA PROVIDENCIA #—</span><div class="muted">LAS MARGARITAS · TIJUANA · BN</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ZOEL</strong><div class="muted">PEREZ RAMIREZ</div></td>
+            <td><code>PERZ790207 764</code></td>
+            <td>6645042486<div class="muted">cel: 6645042486</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #5</span><div class="muted">FRACC GARCIA · TIJUANA · BN</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MIRNA</strong><div class="muted">BAEZ LUGO</div></td>
+            <td><code>BALM750808 H68</code></td>
+            <td>6241234368<div class="muted">cel: 6241353185</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA #LT15</span><div class="muted">FRACC MONTE REAL · LOS CABOS · BS</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JUAN ANTONIO</strong><div class="muted">CAMARENA COLMENAR</div></td>
+            <td><code>CACJ820907 GX7</code></td>
+            <td>6151520565<div class="muted">cel: 6151559361</div></td>
+            <td><span class="tag tag-amber">AND VIA PROVIDENCIA #—</span><div class="muted">RANCHERIA · MULEGE · BS</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>EFREN</strong><div class="muted">LUQUE FIGUEROA</div></td>
+            <td><code>LUFE680215 SPA</code></td>
+            <td>6241575706<div class="muted">cel: 6241575706</div></td>
+            <td><span class="tag tag-amber">LA PROVIDENCIA #LTE 1</span><div class="muted">FRACC MONTERREAL RESIDENCI · LOS CABOS · BS</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>GUADALUPE ANDRADE</strong><div class="muted">GARCIA PELAE</div></td>
+            <td><code>AAGG531203 BN5</code></td>
+            <td>5556628377<div class="muted">cel: 5520861323</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #—</span><div class="muted">COL FLORIDA · ALVARO OBREGON · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ROBERTO</strong><div class="muted">ALMADA GALVAN</div></td>
+            <td><code>AAGR650907 LI9</code></td>
+            <td>5553350345<div class="muted">cel: 5553302054</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #408</span><div class="muted">DEL VALLE · BENITO JUAREZ · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>PEDRO</strong><div class="muted">ACEVEDO SANCHEZ</div></td>
+            <td><code>AESP640519 9KA</code></td>
+            <td>5513032569<div class="muted">cel: 5513032569</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #7</span><div class="muted">DEL VALLE · BENITO JUAREZ · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>GREGORIO</strong><div class="muted">ARMIENTA DIMAS</div></td>
+            <td><code>AIDG451210 AW2</code></td>
+            <td>7221963465<div class="muted">cel: 5537545790</div></td>
+            <td><span class="tag tag-amber">1RA CDA PROVIDENCIA #—</span><div class="muted">PUEBLO SANTIAGO AHUIZOTLA · AZCAPOTZALCO · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>GUSTAVO</strong><div class="muted">ALONSO GARCIA</div></td>
+            <td><code>AOGG740320 8Y7</code></td>
+            <td>5559186913<div class="muted">cel: 5529806725</div></td>
+            <td><span class="tag tag-amber">3 DE PROVIDENCIA #L2</span><div class="muted">AMPL LOS OLIVOS · TLAHUAC · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>PATRICIA</strong><div class="muted">AGUIRRE PORTILLO</div></td>
+            <td><code>AUPP610425 8RA</code></td>
+            <td>5558406824<div class="muted">cel: 5518707324</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA 121 #DTO</span><div class="muted">LOS OLIVOS · TLAHUAC · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>DANIELA</strong><div class="muted">BLAS AVILES</div></td>
+            <td><code>BAAD890831 656</code></td>
+            <td>5556770044<div class="muted">cel: 5541891890</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA 121 #DPTO 204</span><div class="muted">COL LOS OLIVOS · TLAHUAC · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARIA DEL ROSARIO LO</strong><div class="muted">BASURTO L</div></td>
+            <td><code>BALR540512 RK5</code></td>
+            <td>5555362089<div class="muted">cel: 5518474808</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #603</span><div class="muted">COL DEL VALLE CENTRO · BENITO JUAREZ · DF</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>HILARIA</strong><div class="muted">BARRERA PATRICIO</div></td>
+            <td><code>BAPH731102 DR2</code></td>
+            <td>5555592416<div class="muted">cel: 5585069250</div></td>
+            <td><span class="tag tag-amber">PROVIDENCIA #—</span><div class="muted">COL DEL VALLE CENTRO · BENITO JUAREZ · DF</div></td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- =============== SECCIÓN 8: REPUVE =============== -->
+<div class="section">
+    <div class="section-title"><div class="num">8</div><h2>REPUVE — Registro vehicular</h2></div>
+    <p class="section-sub">Búsqueda por nombre del propietario</p>
+    
+    <table>
+        <thead>
+            <tr><th>Propietario</th><th>Placa</th><th>Vehículo</th><th>Dirección</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>JUAN ESCALONA PEREZ</strong><div class="muted">RFC: <code>EAPJ600308PQ9</code></div></td>
+            <td><code>XV35533</code></td>
+            <td>CHRYSLER 2000<div class="muted">GUINDA</div></td>
+            <td><span class="tag tag-amber">C AMATLAN 412. . PALMA SOLA POZA RICA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JOSE LUIS PAEZ BALLONA</strong><div class="muted">RFC: <code>PABL750307415</code></div></td>
+            <td><code>YGY4691</code></td>
+            <td>NISSAN 1977<div class="muted">VERDE</div></td>
+            <td><span class="tag tag-amber">CONOCIDO JTO PABLO PAEZ FLORES 0. . CHIXTLA TLACOTEPEC DE MEJIA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>OSCAR EDUARDO DEL RIO ECHANOVE</strong><div class="muted">RFC: <code>RIEO630415G82</code></div></td>
+            <td><code>YJU1384</code></td>
+            <td>VOLKSWAGEN 2012<div class="muted">GRIS PLATINO ME</div></td>
+            <td><span class="tag tag-amber">C 12 21 8. FRACC COSTA VERDE VERACRUZ</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ALEJANDRO ESCALONA CABRERA</strong><div class="muted">RFC: <code>EACA750814C65</code></div></td>
+            <td><code>XV35459</code></td>
+            <td>FORD 1996<div class="muted">ROJA</div></td>
+            <td><span class="tag tag-amber">C DOMICILIO CONOCIDO 0. . LA PIEDAD CAZONES DE HERRERA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JUAN BALLONA VELA</strong><div class="muted">RFC: <code>BAVJ930515MS0</code></div></td>
+            <td><code>YGY4618</code></td>
+            <td>NISSAN 1989<div class="muted">BLANCO</div></td>
+            <td><span class="tag tag-amber">CONOCIDO LA CAROLINA 0 0. TOMATLANCILLO SOCHIAPA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JORGE DEL RIO GARCIA</strong><div class="muted">RFC: <code>RIGJ6808193D0</code></div></td>
+            <td><code>XU57804</code></td>
+            <td>CHEVROLET 2010<div class="muted">BLANCO NEVADA</div></td>
+            <td><span class="tag tag-amber">CAMINO AL PUEBLO DE LAS FLORES 273 10. RDCIAL LOS BAMBUES FORTIN</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>GUSTAVO AMIEVA BALMORI</strong><div class="muted">RFC: <code>AIBG810924EE1</code></div></td>
+            <td><code>3SDV8</code></td>
+            <td>ITALIKA 2009<div class="muted">BLACK</div></td>
+            <td><span class="tag tag-amber">AVE AVENIDA 9 BIS ENTRE CALLES 18 Y 1803. . SAN JOSE CORDOBA</span><div class="muted">tel: 7124222</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>PEDRO BALLONA CAUDILLO</strong><div class="muted">RFC: <code>BACP6212164G8</code></div></td>
+            <td><code>2SZX5</code></td>
+            <td>ITALIKA 2008<div class="muted">RED</div></td>
+            <td><span class="tag tag-amber">PRIV DE NORTE 12 NUM 19. . SAN CARLOS ORIZABA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>DAMARIS CELIA SANJUAN ESCALONA</strong><div class="muted">RFC: <code>SAED760414HW2</code></div></td>
+            <td><code>YHT6383</code></td>
+            <td>VOLKSWAGEN 2004<div class="muted">PLATA</div></td>
+            <td><span class="tag tag-amber">C GABRIEL HERNANDEZ 5. . AQUILES SERDAN NOGALES</span><div class="muted">tel: 7272296</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>RUBEN CONTRERAS BALLONA</strong><div class="muted">RFC: <code>COBR611017LY8</code></div></td>
+            <td><code>XW09991</code></td>
+            <td>CHEVROLET 1985<div class="muted">BLANCO</div></td>
+            <td><span class="tag tag-amber">CONOCIDO BARRANCA DE JAMAPA 0 0. S/C CALCAHUALCO</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FABIAN GREGORIO PAMPLONA BURELO</strong><div class="muted">RFC: <code>PABF630120B29</code></div></td>
+            <td><code>YHV9751</code></td>
+            <td>CHEVROLET 1995<div class="muted">VINO</div></td>
+            <td><span class="tag tag-amber">C ZAFIRO 512. . LA VICTORIA COATZACOALCOS</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARIO BALLONA RIVERA</strong><div class="muted">RFC: <code>BARM420119DKA</code></div></td>
+            <td><code>XW24188</code></td>
+            <td>CHEVROLET 2003<div class="muted">AZUL OBSCURO</div></td>
+            <td><span class="tag tag-amber">CONOCIDO DOM CONOCIDO 0. . PASO GAVILAN PASO DEL MACHO</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ROSA LAURA DE LA CRUZ AMIEVA</strong><div class="muted">RFC: <code>CUAR5804193E4</code></div></td>
+            <td><code>YJV6838</code></td>
+            <td>VOLKSWAGEN 2012<div class="muted">PLATA REFLEX</div></td>
+            <td><span class="tag tag-amber">C JAZMINES 8. . JUAN DE LA LUZ ENRIQUEZ COATEPEC</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>REYNALDO COGCO BALLONA</strong><div class="muted">RFC: <code>COBR8101068C8</code></div></td>
+            <td><code>XW27259</code></td>
+            <td>FORD 1990<div class="muted">BEIGE</div></td>
+            <td><span class="tag tag-amber">C 12 ENTRE AVE 4 Y 6 565. . HUATUSCO DE CHICUELLAR HUATUSCO</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>MARCELA DEL RIO GOLFFIER</strong><div class="muted">RFC: <code>RIGM870114NE4</code></div></td>
+            <td><code>YJU4540</code></td>
+            <td>VOLKSWAGEN 2012<div class="muted">ROJO TORNADO</div></td>
+            <td><span class="tag tag-amber">C AV MANUEL AVILA CAMACHO 207. . LAS MARAVILLAS SAN RAFAEL</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>LUCIA CUEVAS ESCALONA</strong><div class="muted">RFC: <code>CUEL601024IV3</code></div></td>
+            <td><code>YJV5702</code></td>
+            <td>NISSAN 2005<div class="muted">BLANCO POLAR</div></td>
+            <td><span class="tag tag-amber">C JESUS CARRANZA 6. . UNE PRI XALAPA</span><div class="muted">tel: 8401386</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>JOSE ALBERTO CARRERA AMIEVA</strong><div class="muted">RFC: <code>CAAA9308094N4</code></div></td>
+            <td><code>YJS8391</code></td>
+            <td>HONDA 2012<div class="muted">PLATA DIAMANTE</div></td>
+            <td><span class="tag tag-amber">C CJON DEL LAUREL 27. . LOS ALAMOS FORTIN</span><div class="muted">tel: 7168453</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ALFREDO THOMAS DEL RIO</strong><div class="muted">RFC: <code>TORA730323AG0</code></div></td>
+            <td><code>YJG5536</code></td>
+            <td>FORD 1999<div class="muted">VERDE</div></td>
+            <td><span class="tag tag-amber">C BENITO JUARES 10 0. LAS MARAVILLAS SAN RAFAEL</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ROBERTO ELOY GONZALEZ BALLONA</strong><div class="muted">RFC: <code>GOBR741201G62</code></div></td>
+            <td><code>YJG5720</code></td>
+            <td>NISSAN 1998<div class="muted">BLANCO</div></td>
+            <td><span class="tag tag-amber">C RIO PEÐASCAL 688 0. LOMAS DE RIO MEDIO VERACRUZ</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FELIPE DE JESUS BALLONA COYOTLA</strong><div class="muted">RFC: <code>BACF740716C95</code></div></td>
+            <td><code>YKH5292</code></td>
+            <td>NISSAN 1993<div class="muted">NEGRO</div></td>
+            <td><span class="tag tag-amber">C 48 NORTE MZA 25 LT 8 COL. RESERVA TERRITORIAL. HUATUSCO</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>INES PEREZ ESCALONA</strong><div class="muted">RFC: <code>PEEI7101217X3</code></div></td>
+            <td><code>YJY5906</code></td>
+            <td>CHRYSLER 1992<div class="muted">NEGRO</div></td>
+            <td><span class="tag tag-amber">C JOSE MARIA MORELES Y PAVON 0. . LAZARO CARDENAS TIHUATLAN</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>OSCAR BALLONA OLMOS</strong><div class="muted">RFC: <code>BAOO721106J90</code></div></td>
+            <td><code>XW25666</code></td>
+            <td>FORD 1982<div class="muted">VERDE Y AZUL</div></td>
+            <td><span class="tag tag-amber">C MORELOS ABAJO DEL MINISTERIO PBCO 20. . LAS FLORES TEZONAPA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>OTHON OMAR DEL RIO VAZQUEZ</strong><div class="muted">RFC: <code>RIVO750729681</code></div></td>
+            <td><code>XV96436</code></td>
+            <td>FORD 2004<div class="muted">ROJO BRILLANTE</div></td>
+            <td><span class="tag tag-amber">C CALLE 4 315. . CAZONES POZA RICA</span><div class="muted">tel: 825360</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>RAUL VAZQUEZ BALLONA</strong><div class="muted">RFC: <code>VABR681019HL3</code></div></td>
+            <td><code>YJV2304</code></td>
+            <td>VOLKSWAGEN 2012<div class="muted">BLANCO CANDY</div></td>
+            <td><span class="tag tag-amber">C PRIV URUGUAY 9. . CERRO COLORADO XALAPA</span><div class="muted">tel: 8404276</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>FRANCISCO JUNCAL DEL RIO</strong><div class="muted">RFC: <code>JURF570311FK8</code></div></td>
+            <td><code>YGP9084</code></td>
+            <td>VOLKSWAGEN 1990<div class="muted">ROJO</div></td>
+            <td><span class="tag tag-amber">C CLL SALVADOR DIAZ MIRON 0. . CENTRO ALAMO TEMAPACHE</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>CRESCENCIO OSORIO ESCALONA</strong><div class="muted">RFC: <code>OOEC490624CY2</code></div></td>
+            <td><code>YJK6325</code></td>
+            <td>DODGE 1999<div class="muted">VINO</div></td>
+            <td><span class="tag tag-amber">C CALLE SANTA CRUZ 0. . EL SILVATO TEZONAPA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ARTURO DEL RIO BASORA</strong><div class="muted">RFC: <code>RIBA641224KA0</code></div></td>
+            <td><code>YJT2110</code></td>
+            <td>VOLKSWAGEN 2007<div class="muted">AZUL GRAFITO</div></td>
+            <td><span class="tag tag-amber">C RIO SAN MARCOS 14. . JARDINES DE TUXPAN TUXPAN DE R.C.</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>TEODORO RODRIGUEZ BALLONA</strong><div class="muted">RFC: <code>ROBT681109S70</code></div></td>
+            <td><code>XU45772</code></td>
+            <td>CHEVROLET 2002<div class="muted">AZUL MARINO</div></td>
+            <td><span class="tag tag-amber">C GUADALUPE VICTORIA 18 72 0. . LA ESPERANZA COATZACOALCOS</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ALFREDO GARCIA ESCALONA</strong><div class="muted">RFC: <code>GAEA601222394</code></div></td>
+            <td><code>XV96329</code></td>
+            <td>FORD 1964<div class="muted">VINO</div></td>
+            <td><span class="tag tag-amber">C SIMON BOLIVAR 316. . FLORES MAGON POZA RICA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        
+        <tr>
+            <td><strong>ISIDORO MARTIN DE LA FUENTE ESCALONA</strong><div class="muted">RFC: <code>FUEI660404IC1</code></div></td>
+            <td><code>YJL7917</code></td>
+            <td>NISSAN 1982<div class="muted">AZUL</div></td>
+            <td><span class="tag tag-amber">C CALLE 4 ESQ CAUVILLE 28. . MOCTEZUMA ORIZABA</span><div class="muted">tel: 0</div></td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- =============== SECCIÓN 9: MAPA Y UBICACIÓN =============== -->
+<div class="section page-break">
+    <div class="section-title"><div class="num">9</div><h2>Ubicación geográfica</h2></div>
+    <p class="section-sub">San Jerónimo Lídice, La Magdalena Contreras, CDMX</p>
+
+    <div class="callout">
+        <strong>Localización:</strong> La dirección consultada se ubica en la
+        alcaldía <strong>La Magdalena Contreras</strong>, al sur-poniente de la
+        Ciudad de México. La colonia <strong>San Jerónimo Lídice</strong> es una
+        zona residencial consolidada con CP <strong>10200</strong>, sección
+        electoral <strong>3001</strong>, manzana <strong>7</strong>.
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi"><div class="label">Latitud</div><div class="value coords">19.3325</div><div class="sub">Norte</div></div>
+        <div class="kpi"><div class="label">Longitud</div><div class="value coords">-99.2150</div><div class="sub">Oeste</div></div>
+        <div class="kpi"><div class="label">Clave estado</div><div class="value">09</div><div class="sub">CDMX</div></div>
+        <div class="kpi"><div class="label">Clave municipio</div><div class="value">008</div><div class="sub">Magdalena Contreras</div></div>
+    </div>
+
+    <div class="callout">
+        <strong>Clave geoestadística completa (Padrón):</strong>
+        Estado <code>09</code> · Municipio <code>008</code> ·
+        Sección <code>3001</code> · Localidad <code>1</code> ·
+        Manzana <code>7</code> (int 1-3) y <code>9</code> (CDA PROVIDENCIA).
+    </div>
+</div>
+
+<!-- =============== SECCIÓN 10: HALLAZGOS Y CONCLUSIONES =============== -->
+<div class="section">
+    <div class="section-title"><div class="num">10</div><h2>Hallazgos y conclusiones</h2></div>
+    <p class="section-sub">Síntesis OSINT de la búsqueda por domicilio</p>
+
+    <h3 style="font-size: 12pt; margin: 14px 0 8px 0;">Personas núcleo (int 1)</h3>
+    <div class="family-link">
+        <strong>• FERNANDO AMIEVA BARROSO</strong> · CURP <code>AIBF560731HDFMRR06</code> ·
+        70 años, masculino · Padrón int 1 · CFE no directo · IMSS asegurado NSS <code>11725602087</code>
+    </div>
+    <div class="family-link">
+        <strong>• ADELINA GUADALUPE DEL RIO LOAIZA</strong> · CURP <code>RILA620207MDFXZD09</code> ·
+        64 años, femenina · Padrón int 1 · CFE servicio <code>137980200031</code> · Telcel
+        <code>5541456816</code> · <strong>TITULAR</strong>
+    </div>
+    <div class="family-link">
+        <strong>• SOFIA AMIEVA DEL RIO</strong> · CURP <code>AIRS850225MDFMXF09</code> ·
+        41 años, femenina · Padrón int 1
+    </div>
+    <div class="family-link">
+        <strong>• FERNANDO AMIEVA DEL RIO</strong> · CURP <code>AIRF960121HDFMXR00</code> ·
+        30 años, masculino · Padrón CASA 1 (mismo domicilio)
+    </div>
+    <div class="family-link">
+        <strong>• ALEJANDRA AMIEVA DEL RIO</strong> · CURP <code>AIRA871103MDFMXL07</code> ·
+        39 años, femenina · Padrón CASA 1 (mismo domicilio)
+    </div>
+
+    <h3 style="font-size: 12pt; margin: 18px 0 8px 0;">Otros ocupantes (int 2, int 3, CASA 2)</h3>
+    <ul style="font-size: 9.5pt; line-height: 1.7; padding-left: 20px;">
+        <li><strong>PAULINA MORENO GARCIA</strong> · CURP <code>MOGP960604MDFRRL05</code> · 30 años · int 2</li>
+        <li><strong>ELSA CATAÑO MARTINEZ</strong> · CURP <code>CAME520202MDFTRL04</code> · 74 años · int 3 · CFE <code>137980400013</code></li>
+        <li><strong>CLAUDIA SARHELI SALDAÑA CATAÑO</strong> · CURP <code>SACC791106MDFLTL09</code> · 47 años · int 3</li>
+        <li><strong>ANA LORENA GARCIA GASCA</strong> · CURP <code>GAGA640329MDFRSN04</code> · 62 años · CASA 2</li>
+        <li><strong>ANDREA MORENO GARCIA</strong> · CURP <code>MOGA930928MDFRRN09</code> · 33 años · CASA 2</li>
+        <li><strong>MARIA MAGDALENA NAVA TOMASINI</strong> · CURP <code>NATM710120MDFVMG01</code> · 55 años · CDA PROVIDENCIA 47 (mismo domicilio físico)</li>
+    </ul>
+
+    <h3 style="font-size: 12pt; margin: 18px 0 8px 0;">Servicios públicos asociados</h3>
+    <ul style="font-size: 9.5pt; line-height: 1.7; padding-left: 20px;">
+        <li><strong>CFE (energía):</strong> 7 servicios · Zona Las Lomas, Agencia El Olivar, División DN</li>
+        <li><strong>Telcel (móvil):</strong> 15 cuentas con domicilio Privada de la Providencia · CP 10200</li>
+        <li><strong>IMSS (seguro social):</strong> 6 derechohabientes directos identificados por CURP</li>
+    </ul>
+
+    <div class="callout callout-ok" style="margin-top: 18px;">
+        <strong>Conclusión:</strong> El domicilio <strong>Privada de la Providencia
+        #47, San Jerónimo Lídice, La Magdalena Contreras, CP 10200</strong> está
+        plenamente confirmado en Padrón electoral, CFE y Telcel. La familia
+        <strong>Amieva-Del Río</strong> (Fernando, Adelina, Sofía, Fernando Jr.,
+        Alejandra) es el núcleo del domicilio. El número 47 es una propiedad
+        horizontal con al menos 3 departamentos (int 1, 2, 3) más anexos tipo
+        "CASA 1" y "CASA 2".
+    </div>
+
+    <h3 style="font-size: 12pt; margin: 18px 0 8px 0;">Cobertura de búsqueda</h3>
+    <table>
+        <thead><tr><th>Base</th><th>Registros</th><th>Match</th><th>Tipo</th></tr></thead>
+        <tbody>
+            <tr><td>SEPOMEX</td><td>CP 10200</td><td><span class="tag tag-green">✓</span></td><td>Validación CP/colonia</td></tr>
+            <tr><td>Padrón electoral</td><td>11</td><td><span class="tag tag-green">✓</span></td><td>Personas con credencial</td></tr>
+            <tr><td>CFE</td><td>7</td><td><span class="tag tag-green">✓</span></td><td>Servicios de energía</td></tr>
+            <tr><td>Telcel</td><td>15</td><td><span class="tag tag-green">✓</span></td><td>Líneas móviles</td></tr>
+            <tr><td>IMSS Asegurados</td><td>6</td><td><span class="tag tag-green">✓</span></td><td>Derechohabientes (por CURP)</td></tr>
+            <tr><td>ISSSTE</td><td>50</td><td><span class="tag tag-amber">parcial</span></td><td>Apellido "Del Río" sin asociar al domicilio</td></tr>
+            <tr><td>ATT</td><td>30</td><td><span class="tag tag-amber">parcial</span></td><td>Por nombre, no por dirección</td></tr>
+            <tr><td>REPUVE</td><td>30</td><td><span class="tag tag-amber">parcial</span></td><td>Por nombre del propietario</td></tr>
+            <tr><td>IMSS Segmentación</td><td>0</td><td><span class="tag tag-red">—</span></td><td>Sin domicilio, solo clínico</td></tr>
+            <tr><td>Empleadores</td><td>0</td><td><span class="tag tag-red">—</span></td><td>Sin match</td></tr>
+            <tr><td>fotos.duckdb</td><td>0</td><td><span class="tag tag-red">—</span></td><td>Sin domicilio</td></tr>
+            <tr><td>geo.db / auth.db</td><td>0</td><td><span class="tag tag-red">—</span></td><td>Soporte (CP/auth)</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- =============== FOOTER =============== -->
+<div class="footer-end">
+    Reporte generado automáticamente por NEXO · Cuarto de Paz OSINT ·
+    2026-08-14 00:40:01 ·
+    Fuentes: 12 bases locales (Padrón, CFE, Telcel, ATT, IMSS, ISSSTE, REPUVE, Empleadores, SEPOMEX, GEO, fotos, auth)
+</div>
+
+</body>
+</html>

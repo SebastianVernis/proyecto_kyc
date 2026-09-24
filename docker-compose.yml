@@ -1,0 +1,74 @@
+# ── docker-compose.yml — Plataforma KYC ────────────────────────────────────────
+# Fase 1: Backend solamente.
+# Fase 2: Se agrega db-gateway.
+# ────────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ═══ Backend Python (servir.py) ══════════════════════════════════════════════
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: kyc-backend
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    volumes:
+      # Bases DuckDB — montadas en /bases (auth.py resuelve ROOT.parent/bases)
+      - ./bases:/bases
+      # Frontend estático
+      - ./frontend:/app/frontend:ro
+    environment:
+      - PADRON_DB_PATH=/bases/padron_v1.duckdb
+      - BASES_DIR=/bases
+      - AUTH_DB_PATH=/bases/auth.db
+      - API_PORT=8765
+      - LOG_LEVEL=INFO
+      - NOMINATIM_LOCAL_URL=http://host.docker.internal:8088
+      - NOMINATIM_PUBLIC_URL=https://nominatim.openstreetmap.org
+    env_file:
+      - backend/.env
+    networks:
+      - kyc-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(3); s.connect(('localhost',8765)); s.close()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # ═══ DB-Gateway (Fase 2) ═════════════════════════════════════════════════════
+  gateway:
+    build:
+      context: .
+      dockerfile: db-gateway/Dockerfile
+    container_name: kyc-gateway
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./bases:/bases:ro
+    environment:
+      - BASES_DIR=/bases
+      - GATEWAY_PORT=8001
+      - GATEWAY_SHARED_SECRET=${GATEWAY_SHARED_SECRET:-changeme}
+    networks:
+      - kyc-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(3); s.connect(('localhost',8001)); s.close()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+networks:
+  kyc-net:
+    driver: bridge

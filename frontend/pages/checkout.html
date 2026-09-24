@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src https://elements.clip.mx https://sdk.clip.mx; script-src 'self' 'unsafe-inline' https://sdk.clip.mx https://tools.clip.mx https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.prod.website-files.com; connect-src 'self' https://elements.clip.mx https://tools.clip.mx https://api.payclip.com;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Checkout — Argos OSINT</title>
+  <link rel="icon" href="../assets/argos-osint_favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .checkout-content{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;gap:32px;max-width:1100px;margin:0 auto;width:100%}
+    .checkout-summary{flex:1;max-width:500px}
+    .checkout-payment{width:380px;flex-shrink:0}
+    .checkout-summary h1{font-size:22px;margin-bottom:8px}
+    .checkout-summary .sub{color:var(--muted);margin-bottom:24px;font-size:14px}
+    .plan-detail{background:var(--panel);border:2px solid var(--accent2);border-radius:10px;padding:24px;margin-bottom:24px}
+    .plan-detail-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .plan-detail h2{font-size:18px}
+    .plan-detail .price{font-size:28px;font-weight:800;color:var(--accent2)}
+    .plan-detail .price span{font-size:13px;font-weight:400;color:var(--muted)}
+    .benefits-list{list-style:none;padding:0;margin:0}
+    .benefits-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted)}
+    .benefits-list li:last-child{border-bottom:none}
+    .benefits-list li .check{color:var(--accent2);font-weight:700;flex-shrink:0;width:18px;text-align:center}
+    .benefits-list li strong{color:var(--text)}
+    .payment-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:24px}
+    .payment-box h3{margin-bottom:16px;font-size:15px}
+    .order-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid var(--border)}
+    .order-row:last-child{border-bottom:none}
+    .order-row .lbl{color:var(--muted)}
+    .order-row.total{font-weight:700;font-size:16px}
+    .order-row.total .val{color:var(--accent2)}
+    .clip-btn{text-align:center;margin:20px 0;min-height:60px;display:flex;align-items:center;justify-content:center}
+    .clip-btn a{display:inline-block;transition:transform 0.2s}
+    .clip-btn a:hover{transform:scale(1.02)}
+    .clip-btn img{height:56px}
+    .guarantee{background:rgba(110,231,183,0.06);border:1px solid rgba(110,231,183,0.15);border-radius:6px;padding:12px;margin-top:16px;font-size:12px;color:var(--accent2);text-align:center}
+    .terms-note{text-align:center;margin-top:12px;font-size:11px;color:var(--muted)}
+    .terms-note a{color:var(--accent)}
+    @media(max-width:800px){.checkout-content{flex-direction:column;align-items:center;padding:20px 16px}.checkout-summary{max-width:100%}.checkout-payment{width:100%}}
+    .loading-overlay{position:fixed;inset:0;background:rgba(15,17,21,0.92);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:20px}
+    .loading-overlay.active{display:flex}
+    .loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+    .loading-text{font-size:15px;color:var(--text);font-weight:600}
+    .loading-sub{font-size:13px;color:var(--muted);text-align:center;max-width:300px}
+    .loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+    @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+    .pulse{animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+    .cta-center{text-align:center;margin-top:12px}
+    .cta-link{font-size:13px;color:var(--muted)}
+    .order-summary{margin-bottom:16px}
+    .section-gap{margin-top:20px}
+    .clip-wrap{margin:16px 0;min-height:200px}
+    .payment-error{display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:10px;font-size:13px;color:#fca5a5;margin-bottom:12px}
+    .pay-spinner{display:none}
+    .security-badge{text-align:center;margin-top:12px;font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
+    .security-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2)}
+  </style>
+  <script src="https://sdk.clip.mx/js/clip-sdk.js"></script>
+  </head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+  <div class="page">
+    <header class="page-header">
+      <div class="brand"><img src="../assets/argos-osint_isotipo_mono-blanco.svg" alt="Argos" class="brand-logo"><span>ARGOS <span class="brand-accent">OSINT</span></span></div>
+      <a href="/subscribe.html" class="btn btn-ghost btn-sm">← Cambiar plan</a>
+    </header>
+    <main class="checkout-content">
+      <div class="checkout-summary">
+        <h1>Confirma tu suscripción</h1>
+        <p class="sub">Revisa los beneficios de tu plan antes de proceder al pago.</p>
+        <div class="plan-detail" id="plan-detail">
+          <div class="plan-detail-header"><h2 id="plan-name">—</h2><div class="price" id="plan-price">—</div></div>
+          <ul class="benefits-list" id="benefits-list"></ul>
+        </div>
+        <div class="cta-center"><a href="/subscribe.html" class="cta-link">¿Necesitas otro plan? Ver opciones</a></div>
+      </div>
+      <div class="checkout-payment">
+        <div class="payment-box">
+          <h3>Resumen del pedido</h3>
+          <div class="order-summary">
+            <div class="order-row"><span class="lbl">Plan</span><span id="order-plan">—</span></div>
+            <div class="order-row"><span class="lbl">Facturación</span><span>Mensual</span></div>
+            <div class="order-row"><span class="lbl">Primer cobro</span><span id="order-date">—</span></div>
+            <div class="order-row"><span class="lbl">Próximo cobro</span><span id="order-next">—</span></div>
+            <div class="order-row total"><span class="lbl">Total</span><span class="val" id="order-total">—</span></div>
+          </div>
+
+          <h3 class="section-gap">Datos de pago</h3>
+          <form id="payment-form">
+            <div id="clip-checkout" class="clip-wrap"></div>
+            <div id="payment-error" class="payment-error"></div>
+            <button type="submit" id="pay-btn" class="btn btn-primary btn-lg btn-block" disabled>
+              <span id="pay-btn-text">Cargando formulario de pago...</span>
+              <span id="pay-btn-spinner" class="spinner pay-spinner"></span>
+            </button>
+          </form>
+
+          <div class="security-badge"><span class="security-dot"></span>Pagos seguros por Clip · TLS 1.3 · PCI DSS</div>
+          <div class="terms-note">Al continuar aceptas nuestros <a href="/terms.html">Términos</a> y <a href="/privacy.html">Privacidad</a></div>
+          <div class="guarantee">✓ Garantía de reembolso de 7 días. Sin preguntas.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script>
+    const plans={
+      basico:{name:'Básico',price:29,display:'$29 USD',clip:'https://pago.clip.mx/v3/6e31fbef-2748-43b3-bd49-8e469c3b5b22',benefits:['<strong>30 búsquedas/mes</strong> — Consultas en 29 bases federadas','<strong>10 rastreos OSINT/mes</strong> — Búsqueda básica en redes sociales','<strong>Expediente unificado</strong> — Toda la información consolidada','<strong>Exportación PDF</strong> — Reportes descargables','<strong>1 usuario</strong> — Acceso individual','<strong>Soporte por correo</strong> — Respuesta en 24-48 horas']},
+      profesional:{name:'Profesional',price:99,display:'$99 USD',clip:'https://pago.clip.mx/v3/fb646bf0-61ce-4758-b0da-1f11229bbf52',benefits:['<strong>500 búsquedas/mes</strong> — Alto volumen de consultas','<strong>100 rastreos OSINT/mes</strong> — Inteligencia de redes sociales','<strong>Oráculo LLM incluido</strong> — Consulta en lenguaje natural','<strong>OSINT completo</strong> — Rastreo avanzado','<strong>3 usuarios</strong> — Colaboración en equipo','<strong>Validación CURP/RFC</strong> — Tlaloc + CheckID']},
+      empresarial:{name:'Empresarial',price:299,display:'$299 USD',clip:'https://pago.clip.mx/v3/ab2aa488-9607-439d-9811-fbfba4b90ae4',benefits:['<strong>1,000 búsquedas/mes</strong> — Volumen empresarial','<strong>500 rastreos OSINT/mes</strong> — Inteligencia masiva','<strong>API de integración</strong> — Conecta con tus sistemas','<strong>10 usuarios</strong> — Equipo completo','<strong>Modelos IA premium</strong> — Análisis avanzado','<strong>Singula judicial</strong> — Antecedentes y listas negras']},
+      corporativo:{name:'Corporativo',price:500,display:'$500 USD',clip:'https://pago.clip.mx/v3/8b56ec0b-7981-4d34-860e-8b407391a566',benefits:['<strong>Búsquedas ilimitadas</strong> — Sin restricciones','<strong>Rastreos ilimitados</strong> — OSINT sin límites','<strong>Usuarios ilimitados</strong> — Organización completa','<strong>Modelos IA personalizados</strong> — Configura por caso','<strong>On-premise disponible</strong> — Tu infraestructura','<strong>SLA garantizado</strong> — 99.9% disponibilidad','<strong>Gerente dedicado</strong> — Contacto directo']}
+    };
+    const params=new URLSearchParams(location.search);
+    const planKey=params.get('plan')||'profesional';
+    const plan=plans[planKey]||plans.profesional;
+    document.getElementById('plan-name').textContent=plan.name;
+    document.getElementById('plan-price').innerHTML=plan.display.split(' ')[0]+' <span>USD/mes</span>';
+    document.getElementById('benefits-list').innerHTML=plan.benefits.map(b=>'<li><span class="check">✓</span><span>'+b+'</span></li>').join('');
+    document.getElementById('order-plan').textContent=plan.name;
+    document.getElementById('order-total').textContent=plan.display;
+    const today=new Date();
+    document.getElementById('order-date').textContent=today.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+    const next=new Date(today);next.setMonth(next.getMonth()+1);
+    document.getElementById('order-next').textContent=next.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+    // Initialize Clip SDK
+    const CLIP_PUBLIC_KEY=window.CLIP_PUBLIC_KEY||'';
+    let clipSDK=null;
+    let clipCard=null;
+
+    async function initClipSDK(){
+      try{
+        // Get public key from our API
+        const r=await fetch('/api/clip/config',{headers:{'Authorization':'Bearer '+localStorage.getItem('session_token')}});
+        const cfg=await r.json();
+        if(cfg.error)throw new Error(cfg.error);
+
+        clipSDK=new ClipSDK(cfg.public_key);
+        clipCard=clipSDK.element.create('Card',{locale:'es'});
+        clipCard.mount('clip-checkout');
+
+        document.getElementById('pay-btn').disabled=false;
+        document.getElementById('pay-btn-text').textContent='Pagar '+plan.display;
+      }catch(e){
+        document.getElementById('pay-btn-text').textContent='Error: '+e.message;
+        document.getElementById('payment-error').textContent='No se pudo cargar el formulario de pago. '+e.message;
+        document.getElementById('payment-error').style.display='block';
+      }
+    }
+
+    // initClipSDK called after auth check
+
+    // Handle form submission
+    document.getElementById('payment-form').addEventListener('submit',async(e)=>{
+      e.preventDefault();
+      if(!clipCard)return;
+
+      const btn=document.getElementById('pay-btn');
+      const btnText=document.getElementById('pay-btn-text');
+      const btnSpinner=document.getElementById('pay-btn-spinner');
+      const errorDiv=document.getElementById('payment-error');
+
+      btn.disabled=true;
+      btnText.textContent='Procesando pago...';
+      btnSpinner.style.display='inline-block';
+      errorDiv.style.display='none';
+
+      try{
+        // Tokenize card
+        const cardToken=await clipCard.cardToken();
+        const cardTokenId=cardToken.id;
+
+        // Send to our backend
+        const r=await fetch('/api/clip/create-payment',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('session_token')},
+          body:JSON.stringify({plan:planKey,card_token_id:cardTokenId})
+        });
+        const d=await r.json();
+
+        if(d.error)throw new Error(d.error);
+
+        if(d.status==='approved'){
+          // Payment approved immediately
+          btnText.textContent='¡Pago aprobado! Redirigiendo...';
+          btnSpinner.style.display='none';
+          btn.style.background='var(--accent2)';
+          setTimeout(()=>{window.location.href='/dashboard.html';},2000);
+        }else if(d.status==='pending'){
+          // 3DS or other pending action
+          btnText.textContent='Pago pendiente de verificación';
+          btnSpinner.style.display='none';
+          errorDiv.textContent='Tu pago requiere verificación adicional. Revisa tu app bancaria.';
+          errorDiv.style.display='block';
+          errorDiv.style.background='rgba(245,158,11,0.1)';
+          errorDiv.style.borderColor='rgba(245,158,11,0.3)';
+          errorDiv.style.color='var(--warn)';
+          btn.disabled=false;
+          btnText.textContent='Reintentar';
+        }else{
+          throw new Error(d.message||'Pago rechazado');
+        }
+      }catch(e){
+        errorDiv.textContent=e.message;
+        errorDiv.style.display='block';
+        btn.disabled=false;
+        btnText.textContent='Reintentar pago';
+        btnSpinner.style.display='none';
+      }
+    });
+    // Auth check first, then init Clip SDK
+    fetch('/api/auth/me',{headers:{'Authorization':'Bearer '+localStorage.getItem('session_token')}})
+      .then(r=>{if(!r.ok)throw new Error('unauthorized');return r.json();})
+      .then(()=>{initClipSDK();})
+      .catch(()=>{window.location.href='/login.html';});
+  </script>
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Procesando pago<span class="loading-dots"></span></div>
+    <div class="loading-sub">Completa el pago en la ventana de Clip. Esta página se actualizará automáticamente.</div>
+    <div class="loading-sub pulse" id="loading-status">Esperando confirmación de Clip...</div>
+  </div>
+<script src="common.js"></script>
+</body>
+</html>

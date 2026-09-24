@@ -1,0 +1,1 @@
+{"message":"Debe esperar 2 segundos para volver a consultar, evitemos congestionar el servicio","description":"Enviaste varias consultas muy seguidas; espera unos segundos entre una y otra.","errorCode":"rate_limit_exceeded"}

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta name="robots" content="noindex, nofollow">
+<title>Expediente — Argos OSINT</title>
+<link rel="icon" href="assets/argos-osint_favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/global.css">
+<style>
+/* === Layout === */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:50;padding:16px;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.sidebar .brand img{height:28px}
+.sidebar-section{margin-bottom:20px}
+.sidebar-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 8px;font-weight:700}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none}
+.sidebar-item:hover{color:var(--text);background:var(--panel2)}
+.sidebar-item.active{color:var(--accent2);background:rgba(110,231,183,0.08)}
+.main-area{flex:1;margin-left:240px;min-height:100vh}
+
+/* === Top bar === */
+.topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;gap:12px}
+.topbar-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.topbar-left h1{margin:0;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-left .curp-tag{font-family:monospace;font-size:12px;background:var(--panel2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;color:var(--accent2);flex-shrink:0}
+.topbar-left .estado-tag{font-size:11px;padding:2px 10px;border-radius:999px;font-weight:600;flex-shrink:0}
+.estado-completo{background:rgba(110,231,183,.15);color:var(--accent2);border:1px solid rgba(110,231,183,.3)}
+.estado-parcial{background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.3)}
+.estado-error{background:rgba(239,68,68,.15);color:var(--error);border:1px solid rgba(239,68,68,.3)}
+.topbar-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* === Tabs === */
+.tabs-bar{display:flex;gap:2px;background:var(--panel);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:52px;z-index:39;overflow-x:auto}
+.tab-btn{background:transparent;border:none;color:var(--muted);padding:12px 18px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none;padding:24px}
+.tab-panel.active{display:block}
+
+/* === Cards === */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:8px}
+.card-title .badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--accent2);color:#000;font-weight:700}
+.card-title .badge.warn{background:var(--warn)}
+.card-title .badge.err{background:var(--error);color:#fff}
+
+/* === KV grid === */
+.kv{display:grid;grid-template-columns:160px 1fr;gap:6px 12px;font-size:13px}
+.kv .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;padding-top:2px}
+.kv .v{word-break:break-word}
+.kv .v.empty{color:var(--muted);font-style:italic}
+.kv .v.highlight{color:var(--accent2);font-weight:600;font-family:monospace;background:rgba(110,231,183,.08);padding:2px 6px;border-radius:3px;border-left:3px solid var(--accent2)}
+
+/* === Status === */
+.status-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;font-size:13px;margin-bottom:16px;flex-wrap:wrap}
+.status-bar.running{border-color:var(--warn);color:var(--warn)}
+.status-bar.ok{border-color:var(--accent2);color:var(--accent2)}
+.status-bar.error{border-color:var(--error);color:var(--error)}
+
+/* === KPIs === */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.kpi .kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.kpi .kpi-value{font-size:22px;font-weight:700;margin-top:4px;font-family:monospace}
+
+/* === Base grid === */
+.bases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.base-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.2s}
+.base-card:hover{border-color:var(--accent)}
+.base-card-head{padding:12px 16px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.base-card-head h3{margin:0;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.base-card-body{padding:12px 16px;max-height:300px;overflow-y:auto}
+.base-card-empty{color:var(--muted);font-size:12px;padding:8px 0;font-style:italic}
+
+/* === Buttons === */
+.btn{background:linear-gradient(180deg,rgba(79,140,255,.95) 0%,rgba(59,120,235,.95) 100%);border:1px solid rgba(120,170,255,.45);color:#fff;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;transition:transform 0.12s,box-shadow 0.18s,filter 0.18s;font-family:inherit;text-decoration:none}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn.secondary{background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.02) 100%);border:1px solid rgba(255,255,255,.10);color:var(--text);box-shadow:0 2px 8px -2px rgba(0,0,0,.3)}
+.btn.secondary:hover{border-color:rgba(120,170,255,.4);color:var(--accent)}
+.btn.sm{padding:5px 10px;font-size:11px;min-height:28px}
+.btn.warn{background:var(--warn);border-color:var(--warn);color:#000}
+
+/* === Spinner === */
+.spinner{border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;width:16px;height:16px;animation:spin .8s linear infinite;display:inline-block;flex-shrink:0}
+.spinner-big{width:32px;height:32px;border-width:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* === Table === */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{text-align:left;padding:6px 10px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);font-weight:600}
+.data-table td{padding:6px 10px;border-bottom:1px solid var(--border)}
+.data-table tr:hover td{background:var(--panel2)}
+
+/* === Additional searches section === */
+.search-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.search-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s}
+.search-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(79,140,255,.15)}
+.search-card-icon{font-size:28px;margin-bottom:8px}
+.search-card h4{margin:0 0 4px;font-size:14px}
+.search-card p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
+.search-card .tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;text-transform:uppercase;margin-top:6px}
+.tag-singula{background:rgba(255,94,94,.15);color:#ff5e5e}
+.tag-apify{background:rgba(180,92,249,.15);color:#b45cf9}
+.tag-interno{background:rgba(79,140,255,.15);color:var(--accent)}
+
+/* === Responsive === */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main-area{margin-left:0}
+  .bases-grid{grid-template-columns:1fr}
+  .search-cards{grid-template-columns:1fr}
+  .kv{grid-template-columns:120px 1fr}
+}
+
+/* === Background === */
+.argos-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse 80% 75% at 50% 50%,#0f1115 0%,#080C20 60%,#05081A 100%)}
+.argos-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.argos-bg::after{content:"";position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.argos-bg--quiet canvas{opacity:.45}
+@media(prefers-reduced-motion:reduce){.argos-bg canvas{opacity:.45}}
+body>*:not(.argos-bg){position:relative;z-index:1}
+</style>
+</head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand"><img src="assets/argos-osint_isotipo_mono-blanco.svg" alt="Argos"><span>ARGOS <span style="color:var(--accent2)">OSINT</span></span></div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Navegación</div>
+      <a href="/dashboard.html" class="sidebar-item"><span>📊</span> Dashboard</a>
+      <a href="/buscar.html" class="sidebar-item"><span>🔍</span> Búsqueda</a>
+      <a href="/oraculo.html" class="sidebar-item"><span>🤖</span> Oráculo</a>
+      <a href="/sujeto.html" class="sidebar-item active"><span>📋</span> Expediente</a>
+      <a href="/busquedas_adicionales.html" class="sidebar-item"><span>🌐</span> Búsquedas Ext.</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Cuenta</div>
+      <a href="/dashboard.html#history" class="sidebar-item"><span>📜</span> Historial</a>
+      <a href="/dashboard.html#reports" class="sidebar-item"><span>📄</span> Reportes</a>
+      <a href="/subscribe.html" class="sidebar-item"><span>💳</span> Suscripción</a>
+    </div>
+    <div style="margin-top:auto">
+      <a href="#" class="sidebar-item" id="logout-btn"><span>🚪</span> Cerrar sesión</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-area">
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="sujeto-nombre">Cargando...</h1>
+        <span class="curp-tag" id="sujeto-curp">—</span>
+        <span class="estado-tag" id="sujeto-estado"></span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn sm secondary" onclick="window.location.href='/buscar.html'">← Volver a búsqueda</button>
+        <button class="btn sm" id="btn-mapear" onclick="ejecutarMapeo()">🗺 Mapear</button>
+        <button class="btn sm" id="btn-reporte" onclick="window.location.href='/busquedas_adicionales.html?curp='+CURP">🌐 Búsquedas ext.</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" data-tab="resumen">📊 Resumen</button>
+      <button class="tab-btn" data-tab="bases">🗄 Por Base</button>
+      <button class="tab-btn" data-tab="inteligencia">⚡ Inteligencia</button>
+      <button class="tab-btn" data-tab="acciones">🚀 Acciones</button>
+    </div>
+
+    <!-- Status -->
+    <div class="tab-panel active" id="tab-resumen">
+      <div id="status" class="status-bar running"><span class="spinner"></span><span>Cargando expediente...</span></div>
+
+      <!-- KPIs -->
+      <div class="kpi-row" id="kpi-row"></div>
+
+      <!-- Identity summary -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🪪 Identidad del sujeto</div>
+        </div>
+        <div class="kv" id="kv-identidad"></div>
+      </div>
+
+      <!-- Sources summary -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📚 Fuentes consultadas</div>
+        </div>
+        <div id="fuentes-chips"></div>
+      </div>
+
+      <!-- Step timeline -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⏱ Flujo de creación</div>
+        </div>
+        <div id="step-timeline"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Por Base -->
+    <div class="tab-panel" id="tab-bases">
+      <div class="bases-grid" id="bases-grid"></div>
+    </div>
+
+    <!-- Tab: Inteligencia -->
+    <div class="tab-panel" id="tab-inteligencia">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚡ Motor de inteligencia integral</div>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Ejecuta el cruce completo en 29 bases. Detecta convivientes, familiares y vínculos.</p>
+        <button class="btn" id="btn-intel" onclick="ejecutarInteligencia()">⚡ Ejecutar inteligencia</button>
+        <div id="intel-result" style="margin-top:16px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏦 Bancos — búsqueda manual</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:10px">
+          <select id="banco-select" style="padding:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px">
+            <option value="santander">🏦 Santander</option>
+            <option value="hsbc">🏦 HSBC</option>
+            <option value="banorte">🏦 Banorte</option>
+            <option value="bancomer">🏦 Bancomer</option>
+            <option value="citibanamex">🏦 Citibanamex</option>
+            <option value="bancoppel">🏦 Bancoppel</option>
+            <option value="amex">🏦 AMEX</option>
+          </select>
+          <input id="banco-nombre" placeholder="Nombre completo" style="padding:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px">
+          <input id="banco-rfc" placeholder="RFC" style="padding:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px">
+          <button class="btn sm" onclick="buscarBanco()">🔎 Buscar</button>
+        </div>
+        <div id="banco-result"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Acciones -->
+    <div class="tab-panel" id="tab-acciones">
+      <div class="search-cards">
+        <div class="search-card" onclick="window.location.href='/busquedas_adicionales.html?curp='+CURP+'&auto=singula_judicial'">
+          <div class="search-card-icon">⚖️</div>
+          <h4>Singula — Judicial</h4>
+          <p>Antecedentes judiciales y penales del sujeto.</p>
+          <span class="tag tag-singula">SINGULA</span>
+        </div>
+        <div class="search-card" onclick="window.location.href='/busquedas_adicionales.html?curp='+CURP+'&auto=singula_blacklist'">
+          <div class="search-card-icon">🚫</div>
+          <h4>Singula — Blacklist</h4>
+          <p>Listas negras, OFAC, PEP y sanciones.</p>
+          <span class="tag tag-singula">SINGULA</span>
+        </div>
+        <div class="search-card" onclick="window.location.href='/busquedas_adicionales.html?curp='+CURP+'&auto=singula_intel'">
+          <div class="search-card-icon">🕵️</div>
+          <h4>Singula — Inteligencia</h4>
+          <p>Datos de inteligencia básica y premium.</p>
+          <span class="tag tag-singula">SINGULA</span>
+        </div>
+        <div class="search-card" onclick="window.location.href='/busquedas_adicionales.html?curp='+CURP+'&auto=apify'">
+          <div class="search-card-icon">🌐</div>
+          <h4>Apify — OSINT</h4>
+          <p>Rastreo de redes sociales y presencia digital.</p>
+          <span class="tag tag-apify">APIFY</span>
+        </div>
+        <div class="search-card" onclick="ejecutarMapeo()">
+          <div class="search-card-icon">🗺</div>
+          <h4>Mapeo de sujeto</h4>
+          <p>CheckID + CFE + mapas geográficos.</p>
+          <span class="tag tag-interno">INTERNO</span>
+        </div>
+        <div class="search-card" onclick="ejecutarReporte()">
+          <div class="search-card-icon">📄</div>
+          <h4>Generar reporte</h4>
+          <p>Reporte narrativo con IA de todos los datos.</p>
+          <span class="tag tag-interno">INTERNO</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==== Config ==== */
+const API_URL = (() => {
+  const h = location.hostname;
+  if (location.protocol === "file:" || h === "" || h === "localhost" || h === "127.0.0.1") return "http://localhost:8765";
+  return `${location.protocol}//${location.host}`;
+})();
+const params = new URLSearchParams(location.search);
+const CURP = params.get("curp");
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const authH = () => { const t = localStorage.getItem("session_token"); return t ? {"Authorization": `Bearer ${t}`} : {}; };
+const authHJ = () => ({ "Content-Type": "application/json", ...authH() });
+
+/* ==== State ==== */
+let perfilData = null;
+
+/* ==== Tabs ==== */
+document.querySelectorAll(".tab-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    document.getElementById("tab-" + b.dataset.tab).classList.add("active");
+  });
+});
+
+/* ==== Auth ==== */
+async function checkAuth() {
+  try {
+    const r = await fetch(`${API_URL}/api/auth/me`, { headers: authH() });
+    const d = await r.json();
+    if (!d.ok) { location.href = "/login.html"; return false; }
+  } catch { location.href = "/login.html"; return false; }
+  return true;
+}
+
+/* ==== Load ==== */
+async function load() {
+  if (!(await checkAuth())) return;
+  if (!CURP) {
+    setStatus("error", "Falta parámetro ?curp=...");
+    $("sujeto-nombre").textContent = "Sin CURP";
+    return;
+  }
+
+  $("sujeto-curp").textContent = CURP;
+
+  try {
+    const r = await fetch(`${API_URL}/api/perfil/crear`, {
+      method: "POST",
+      headers: authHJ(),
+      body: JSON.stringify({ curp: CURP }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+
+    perfilData = data;
+    const perfil = data.perfil || {};
+    const padron = perfil.padron_data || {};
+    const checkid = perfil.checkid_data || {};
+
+    // Nombre
+    const nombre = [padron.nombre, padron.paterno, padron.materno].filter(Boolean).join(" ") || "Sin nombre";
+    $("sujeto-nombre").textContent = nombre;
+    document.title = `${nombre} — Expediente`;
+
+    // Estado
+    const estado = data.estado || "desconocido";
+    const estadoEl = $("sujeto-estado");
+    const estadoLabels = { completo: "✓ Completo", parcial: "⚠ Parcial", ya_completo: "♻ Ya existía", checkid_ok: "✓ CheckID OK", padron_solo: "⚠ Solo padrón" };
+    estadoEl.textContent = estadoLabels[estado] || estado;
+    estadoEl.className = "estado-tag estado-" + (estado.includes("completo") || estado.includes("ok") ? "completo" : estado.includes("parcial") || estado.includes("solo") ? "parcial" : "error");
+
+    renderKPIs(data, perfil, padron, checkid);
+    renderIdentidad(padron, checkid, perfil);
+    renderFuentes(perfil);
+    renderTimeline(data.pasos || []);
+    renderBases(perfil);
+
+    setStatus("ok", `✓ Expediente cargado · ${data.metadata?.creditos?.total || 0} créditos · ${data.metadata?.elapsed_ms || 0}ms`);
+  } catch (e) {
+    setStatus("error", `Error: ${e.message}`);
+  }
+}
+
+/* ==== Render: Status ==== */
+function setStatus(kind, msg) {
+  const el = $("status");
+  el.className = "status-bar " + kind;
+  el.innerHTML = (kind === "running" ? '<span class="spinner"></span>' : '') + `<span>${esc(msg)}</span>`;
+}
+
+/* ==== Render: KPIs ==== */
+function renderKPIs(data, perfil, padron, checkid) {
+  const bases = Object.keys(perfil).filter(k => k.endsWith("_data") && perfil[k]);
+  const creditos = data.metadata?.creditos || {};
+  const kpis = [
+    { label: "Bases con datos", value: bases.length, color: "var(--accent)" },
+    { label: "Créditos usados", value: creditos.total || 0, color: "var(--accent2)" },
+    { label: "CheckID", value: checkid && Object.keys(checkid).length ? "✓" : "—", color: checkid && Object.keys(checkid).length ? "var(--accent2)" : "var(--muted)" },
+    { label: "RFC", value: perfil.rfc || "—", color: perfil.rfc ? "var(--accent2)" : "var(--muted)" },
+    { label: "Tiempo", value: (data.metadata?.elapsed_ms || 0) + "ms", color: "var(--text)" },
+  ];
+  $("kpi-row").innerHTML = kpis.map(k =>
+    `<div class="kpi"><div class="kpi-label">${esc(k.label)}</div><div class="kpi-value" style="color:${k.color}">${esc(String(k.value))}</div></div>`
+  ).join("");
+}
+
+/* ==== Render: Identidad ==== */
+function renderIdentidad(padron, checkid, perfil) {
+  const fields = [
+    ["CURP", perfil.curp || CURP, "highlight"],
+    ["RFC", perfil.rfc || "", perfil.rfc ? "highlight" : "empty"],
+    ["NSS", perfil.nss || "", "empty"],
+    ["Nombre", padron.nombre || ""],
+    ["Paterno", padron.paterno || ""],
+    ["Materno", padron.materno || ""],
+    ["F. nacimiento", padron.fecnac || ""],
+    ["Sexo", padron.sexo || ""],
+    ["Calle", padron.calle || ""],
+    ["Número", padron.ext || ""],
+    ["Interior", padron.interior || ""],
+    ["Colonia", padron.colonia || ""],
+    ["CP", padron.cp || ""],
+    ["Estado", padron.estado || ""],
+    ["Municipio", padron.municipio || ""],
+    ["Sección", padron.seccion || ""],
+  ];
+  $("kv-identidad").innerHTML = fields.map(([k, v, cls]) => {
+    const c = !v ? "empty" : (cls || "");
+    return `<div class="k">${k}</div><div class="v ${c}">${esc(v || "—")}</div>`;
+  }).join("");
+}
+
+/* ==== Render: Fuentes ==== */
+function renderFuentes(perfil) {
+  const fuentes = Object.keys(perfil).filter(k => k.endsWith("_data") && perfil[k]);
+  if (!fuentes.length) {
+    $("fuentes-chips").innerHTML = '<span style="color:var(--muted);font-size:12px">Ninguna fuente consultada aún.</span>';
+    return;
+  }
+  const icons = { padron_data: "📋", checkid_data: "🧮", imss_data: "🏥", att_data: "📞", telcel_data: "📱", repuve_data: "🚗", empleadores_data: "🏢", issste_data: "🏛️", cfe_data: "⚡" };
+  $("fuentes-chips").innerHTML = fuentes.map(f => {
+    const name = f.replace("_data", "").toUpperCase();
+    const icon = icons[f] || "📦";
+    const data = perfil[f];
+    const count = Array.isArray(data) ? data.length : (data && typeof data === "object" ? Object.keys(data).length : 0);
+    return `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;font-weight:500;border-radius:999px;background:rgba(110,231,183,.12);color:var(--accent2);border:1px solid rgba(110,231,183,.25);margin:2px">${icon} ${esc(name)}${count > 0 ? ` (${count})` : ""}</span>`;
+  }).join("");
+}
+
+/* ==== Render: Timeline ==== */
+function renderTimeline(pasos) {
+  if (!pasos.length) {
+    $("step-timeline").innerHTML = '<div style="color:var(--muted);font-size:12px">Sin pasos ejecutados.</div>';
+    return;
+  }
+  const icons = { leer_existente: "📂", padron: "📋", checkid: "🧮", imss: "🏥", att: "📞", telcel: "📱", repuve: "🚗", empleadores: "🏢", issste: "🏛️", cfe: "⚡", insert_padron_db: "💾", update_checkid_db: "💾", update_imss_db: "💾", bases_rfc: "🔗" };
+  const labels = { leer_existente: "Lectura previa", padron: "Padrón INE", checkid: "CheckID (SAT)", imss: "IMSS Asegurados", att: "ATT", telcel: "Telcel", repuve: "REPUVE", empleadores: "Empleadores", issste: "ISSSTE", cfe: "CFE", insert_padron_db: "Guardar padrón", update_checkid_db: "Guardar CheckID", update_imss_db: "Guardar IMSS", bases_rfc: "Bases por RFC" };
+  $("step-timeline").innerHTML = '<div style="display:flex;flex-direction:column;gap:4px">' + pasos.map(p => {
+    const icon = icons[p.paso] || "📦";
+    const label = labels[p.paso] || p.paso;
+    const ok = p.ok !== undefined ? p.ok : (p.existe !== undefined);
+    const color = p.error ? "var(--error)" : ok ? "var(--accent2)" : "var(--muted)";
+    const statusIcon = p.error ? "✗" : ok ? "✓" : "—";
+    const detail = p.reutilizado ? "reutilizado" : (p.creditos !== undefined ? `${p.creditos} créditos` : (p.servicios_count !== undefined ? `${p.servicios_count} servicios` : (p.asegurados_count !== undefined ? `${p.asegurados_count} asegurados` : "")));
+    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;font-size:12px;background:var(--panel2)">
+      <span style="width:20px;text-align:center">${icon}</span>
+      <span style="flex:1;color:var(--text)">${esc(label)}</span>
+      <span style="color:var(--muted);font-family:monospace;font-size:11px">${p.tiempo_ms || 0}ms</span>
+      <span style="color:${color};font-weight:600;width:20px;text-align:center">${statusIcon}</span>
+      ${detail ? `<span style="color:var(--muted);font-size:11px">${esc(detail)}</span>` : ""}
+    </div>`;
+  }).join("") + "</div>";
+}
+
+/* ==== Render: Bases ==== */
+function renderBases(perfil) {
+  const bases = [
+    { key: "padron_data", icon: "📋", title: "Padrón Electoral", fields: ["nombre","paterno","materno","fecnac","sexo","calle","ext","colonia","cp","estado","municipio","seccion"] },
+    { key: "checkid_data", icon: "🧮", title: "CheckID (SAT)", fields: ["rfc","nss","razon_social","email","codigo_postal","regimen_fiscal"] },
+    { key: "imss_data", icon: "🏥", title: "IMSS", fields: null },
+    { key: "att_data", icon: "📞", title: "ATT", fields: null },
+    { key: "telcel_data", icon: "📱", title: "Telcel", fields: null },
+    { key: "repuve_data", icon: "🚗", title: "REPUVE", fields: null },
+    { key: "empleadores_data", icon: "🏢", title: "Empleadores", fields: null },
+    { key: "issste_data", icon: "🏛️", title: "ISSSTE", fields: null },
+    { key: "cfe_data", icon: "⚡", title: "CFE", fields: null },
+  ];
+
+  let html = "";
+  for (const b of bases) {
+    const data = perfil[b.key];
+    const hasData = data && (Array.isArray(data) ? data.length > 0 : typeof data === "object" && Object.keys(data).length > 0);
+    const count = Array.isArray(data) ? data.length : (hasData ? 1 : 0);
+
+    html += `<div class="base-card" style="${hasData ? '' : 'opacity:0.6'}">
+      <div class="base-card-head">
+        <h3>${b.icon} ${esc(b.title)}</h3>
+        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${hasData ? 'var(--accent2)' : 'var(--border)'};color:${hasData ? '#000' : 'var(--muted)'};font-weight:600">${count}</span>
+      </div>
+      <div class="base-card-body">`;
+
+    if (!hasData) {
+      html += '<div class="base-card-empty">Sin datos</div>';
+    } else if (Array.isArray(data)) {
+      // Array of records (IMSS, ATT, Telcel, etc.)
+      for (const rec of data.slice(0, 5)) {
+        html += renderRecord(rec);
+      }
+      if (data.length > 5) html += `<div style="color:var(--muted);font-size:11px;margin-top:4px">+${data.length - 5} registros más</div>`;
+    } else {
+      // Single object (padron, checkid)
+      const fields = b.fields || Object.keys(data);
+      html += '<div class="kv">';
+      for (const f of fields) {
+        const v = data[f];
+        if (v !== undefined && v !== null && v !== "") {
+          html += `<div class="k">${esc(f)}</div><div class="v">${esc(typeof v === "object" ? JSON.stringify(v) : String(v))}</div>`;
+        }
+      }
+      html += '</div>';
+    }
+
+    html += "</div></div>";
+  }
+  $("bases-grid").innerHTML = html;
+}
+
+function renderRecord(rec) {
+  if (!rec || typeof rec !== "object") return "";
+  const entries = Object.entries(rec).filter(([k, v]) => v !== null && v !== undefined && v !== "" && !k.startsWith("_"));
+  if (!entries.length) return "";
+  return '<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">' +
+    entries.slice(0, 8).map(([k, v]) =>
+      `<div style="display:flex;gap:8px"><span style="color:var(--muted);min-width:80px;font-size:10px;text-transform:uppercase">${esc(k)}</span><span style="color:var(--text)">${esc(String(v).substring(0, 60))}</span></div>`
+    ).join("") + "</div>";
+}
+
+/* ==== Actions ==== */
+async function ejecutarMapeo() {
+  if (!CURP) return;
+  const overlay = showOverlay("Mapeando sujeto...", "CheckID + CFE + mapas");
+  try {
+    const r = await fetch(`${API_URL}/api/v1/sujeto/mapear`, {
+      method: "POST", headers: authHJ(),
+      body: JSON.stringify({ curp: CURP }),
+    });
+    const data = await r.json();
+    if (data.error) { alert("Error: " + data.error); return; }
+    alert(`Mapeo completado en ${data.metadata?.elapsed_ms || 0}ms\nCFE: ${data.cfe?.total || 0} coincidencias`);
+  } catch (e) { alert("Error: " + e.message); }
+  finally { overlay.remove(); }
+}
+
+async function ejecutarInteligencia() {
+  if (!CURP) return;
+  const btn = $("btn-intel");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Ejecutando...';
+  try {
+    const r = await fetch(`${API_URL}/api/v1/sujeto/inteligencia_completa?curp=${encodeURIComponent(CURP)}`, { headers: authH() });
+    const data = await r.json();
+    if (data.error) { alert("Error: " + data.error); return; }
+    $("intel-result").innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;white-space:pre-wrap;max-height:400px;overflow:auto">${esc(JSON.stringify(data, null, 2))}</div>`;
+  } catch (e) { alert("Error: " + e.message); }
+  finally { btn.disabled = false; btn.innerHTML = "⚡ Ejecutar inteligencia"; }
+}
+
+async function buscarBanco() {
+  const banco = $("banco-select").value;
+  const nombre = $("banco-nombre").value.trim();
+  const rfc = $("banco-rfc").value.trim();
+  if (!nombre && !rfc) { alert("Ingresa al menos nombre o RFC"); return; }
+  const q = new URLSearchParams({ banco });
+  if (nombre) q.set("nombre", nombre);
+  if (rfc) q.set("rfc", rfc);
+  try {
+    const r = await fetch(`${API_URL}/api/v1/bancos/buscar?${q}`, { headers: authH() });
+    const data = await r.json();
+    $("banco-result").innerHTML = `<pre style="background:var(--panel2);padding:12px;border-radius:6px;font-size:11px;max-height:300px;overflow:auto">${esc(JSON.stringify(data, null, 2))}</pre>`;
+  } catch (e) { alert("Error: " + e.message); }
+}
+
+function ejecutarReporte() {
+  alert("Funcionalidad de reporte próximamente");
+}
+
+function showOverlay(msg, sub) {
+  const o = document.createElement("div");
+  o.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center";
+  o.innerHTML = `<div style="text-align:center;color:#fff"><div class="spinner-big spinner" style="margin:0 auto 12px"></div><div style="font-size:14px">${esc(msg)}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">${esc(sub)}</div></div>`;
+  document.body.appendChild(o);
+  return o;
+}
+
+/* ==== Logout ==== */
+document.getElementById("logout-btn").addEventListener("click", async e => {
+  e.preventDefault();
+  await fetch(`${API_URL}/api/auth/logout`, { method: "POST", headers: authH() });
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+});
+
+/* ==== Animated background ==== */
+(function(){
+  const wrap = document.querySelector('.argos-bg');
+  if (!wrap) return;
+  const cv = wrap.querySelector('canvas');
+  const ctx = cv.getContext('2d');
+  const quiet = wrap.classList.contains('argos-bg--quiet');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = quiet || reduce;
+  const PLATA = '201,205,213', AMBAR = '232,180,74';
+  let W, H, dpr, nodes = [], amber = [];
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function build(){
+    const n = Math.round((W * H) / (quiet ? 44000 : 22000));
+    nodes = [];
+    for (let i = 0; i < n; i++){
+      nodes.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-.5)*.12, vy: (Math.random()-.5)*.12, r: 1+Math.random()*1.4, a: .25+Math.random()*.45 });
+    }
+    amber = [];
+    [[.18,.28],[.80,.22],[.72,.78]].forEach(([fx,fy]) => amber.push({ x: W*fx+(Math.random()-.5)*80, y: H*fy+(Math.random()-.5)*80, t: Math.random()*Math.PI*2 }));
+  }
+  function centerFade(x,y){ const dx=(x-W/2)/(W*.45),dy=(y-H/2)/(H*.45); const d=Math.min(1,Math.sqrt(dx*dx+dy*dy)); return .25+.75*d*d; }
+  const LINK = 150;
+  function draw(t){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<nodes.length;i++){const a=nodes[i];for(let j=i+1;j<nodes.length;j++){const b=nodes[j];const dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;if(d2<LINK*LINK){const k=1-Math.sqrt(d2)/LINK;const f=centerFade((a.x+b.x)/2,(a.y+b.y)/2);ctx.strokeStyle='rgba('+PLATA+','+(k*.16*f).toFixed(3)+')';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}}
+    for(const p of nodes){const f=centerFade(p.x,p.y);ctx.fillStyle='rgba('+PLATA+','+(p.a*f).toFixed(3)+')';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();if(!still){p.x+=p.vx;p.y+=p.vy;if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;}}
+    for(const s of amber){const pulse=still?.5:(.5+.5*Math.sin(t*.0009+s.t));nodes.forEach(p=>{const dx=p.x-s.x,dy=p.y-s.y,d=Math.hypot(dx,dy);if(d<LINK*1.3){ctx.strokeStyle='rgba('+AMBAR+','+(.1+.12*pulse)*(1-d/(LINK*1.3))+')';ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(p.x,p.y);ctx.stroke();}});const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,26);g.addColorStop(0,'rgba('+AMBAR+','+(.22+.18*pulse).toFixed(3)+')');g.addColorStop(1,'rgba('+AMBAR+',0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,26,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba('+AMBAR+','+(.75+.25*pulse).toFixed(3)+')';ctx.beginPath();ctx.arc(s.x,s.y,2.6,0,Math.PI*2);ctx.fill();}
+    if(!still)requestAnimationFrame(draw);
+  }
+  addEventListener('resize',()=>{resize();if(still)draw(0);});
+  resize();still?draw(0):requestAnimationFrame(draw);
+})();
+
+/* ==== Init ==== */
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "kyc-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-01",
+  "assets": {
+    "directory": "../frontend",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "ENVIRONMENT": "staging"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT",
+      "id": "4266ececce9c4455bb2d786b3920df97",
+      "preview_id": "RATE_LIMIT_KV_PREVIEW_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ACTAS_BUCKET",
+      "bucket_name": "kyc-actas"
+    }
+  ],
+  "services": [],
+  "routes": []
+}

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mi cuenta — Plataforma Encuentra</title>
+<link rel="stylesheet" href="/css/global.css">
+<style>
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 { font-size: 18px; margin: 0; }
+header nav a { color: var(--muted); text-decoration: none; margin-left: 16px; }
+header nav a:hover { color: var(--text); }
+main { max-width: 800px; margin: 24px auto; padding: 0 16px; }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.card h2 { margin-top: 0; font-size: 16px; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.field input {
+  width: 100%; padding: 8px 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); border-radius: 6px;
+  font-family: monospace; font-size: 13px;
+}
+.btn {
+  padding: 8px 16px; border: none; border-radius: 6px;
+  font-size: 13px; cursor: pointer; font-weight: 500;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #3d75e6; }
+.btn-danger { background: var(--error); color: #fff; }
+.btn-secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+.msg { padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 13px; display: none; }
+.msg.ok { background: rgba(110, 231, 183, 0.15); color: var(--accent2); display: block; }
+.msg.error { background: rgba(239, 68, 68, 0.15); color: var(--error); display: block; }
+.msg.info { background: rgba(79, 140, 255, 0.15); color: var(--accent); display: block; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.pill-set { background: rgba(110, 231, 183, 0.2); color: var(--accent2); }
+.pill-global { background: rgba(138, 147, 166, 0.2); color: var(--muted); }
+code { font-family: monospace; background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+.user-info { display: flex; gap: 16px; align-items: center; font-size: 13px; color: var(--muted); }
+.user-info strong { color: var(--text); }
+/* Page-specific classes for inline style replacements */
+.key-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+.key-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.key-card-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.key-card-detail { font-size: 12px; color: var(--muted); }
+.key-error { margin-top: 6px; }
+.act-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.act-header { text-align: left; color: var(--muted); }
+.act-th { padding: 6px; }
+.act-empty { padding: 12px; text-align: center; color: var(--muted); }
+
+/* --- Argos OSINT Portal Background --- */
+.argos-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse 80% 75% at 50% 50%, #0f1115 0%, #080C20 60%, #05081A 100%)}
+.argos-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.argos-bg::after{content:"";position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.argos-bg--quiet canvas{opacity:.45}
+@media (prefers-reduced-motion:reduce){.argos-bg canvas{opacity:.45}}
+body > *:not(.argos-bg) { position: relative; z-index: 1; }
+
+</style>
+</head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+<header>
+  <h1>Mi cuenta</h1>
+  <nav>
+    <a href="/buscar.html">Búsqueda</a>
+    <a href="#" onclick="logout(); return false;">Salir</a>
+  </nav>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Información de la cuenta</h2>
+    <div class="user-info" id="user-info">Cargando…</div>
+  </div>
+
+  <div class="card">
+    <h2>Mis API Keys</h2>
+    <p class="text-muted text-sm mt-0">
+      Cada proveedor puede usar tu propia API key o la global del servidor.
+      Si configuras una tuya, solo tú pagarás los consumos. Si la dejas vacía,
+      se usa la global configurada en <code>.env</code>.
+    </p>
+    <p class="text-muted text-xs">
+      ⚠️ Las keys se guardan cifradas con Fernet (AES-128-CBC + HMAC) en
+      <code>bases/auth.db</code>. Nunca verás el valor completo después de
+      guardarlas, solo enmascarado. Si la pierdes, vuelve a escribirla.
+    </p>
+    <div id="keys-msg" class="msg"></div>
+    <div id="keys-list">Cargando…</div>
+  </div>
+
+  <div class="card">
+    <h2>Actividad reciente de mis keys</h2>
+    <p class="text-muted text-sm mt-0">
+      Aquí ves cuándo se usó cada key por última vez y si hubo errores.
+    </p>
+    <div id="activity-list">Cargando…</div>
+  </div>
+</main>
+
+<script>
+const API_URL = "";
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s || "").replace(/[<>&'"]/g, c => ({ "<":"&lt;",">":"&gt;","&":"&amp;","'":"&#39;","\"":"&quot;" }[c])); }
+function fmtDate(epoch) {
+  if (!epoch) return "—";
+  try { return new Date(epoch * 1000).toLocaleString("es-MX"); } catch (e) { return String(epoch); }
+}
+function token() { return localStorage.getItem("session_token") || ""; }
+function authHeaders() {
+  const h = { "Content-Type": "application/json" };
+  const t = token();
+  if (t) h["Authorization"] = `Bearer ${t}`;
+  return h;
+}
+function showMsg(elId, type, msg) {
+  const el = $(elId);
+  el.className = `msg ${type}`;
+  el.textContent = msg;
+}
+
+async function init() {
+  // auth check
+  try {
+    const me = await fetch(`${API_URL}/api/auth/me`, { headers: authHeaders() }).then(r => r.json());
+    if (!me.ok) { location.href = "/login.html"; return; }
+    $("user-info").innerHTML = `
+      <strong>${esc(me.user.username)}</strong>
+      <span class="pill ${me.user.is_admin ? "pill-set" : "pill-global"}">${me.user.is_admin ? "admin" : "usuario"}</span>
+      <span>· display: ${esc(me.user.display_name || me.user.username)}</span>
+    `;
+  } catch (e) {
+    location.href = "/login.html";
+    return;
+  }
+  await loadMyAvailableKeys();
+}
+
+// Carga SOLO los providers disponibles (key válida + health OK).
+async function loadMyAvailableKeys() {
+  $("keys-list").innerHTML = `<div class="msg info">Verificando tus keys contra los proveedores…</div>`;
+  try {
+    const r = await fetch(`${API_URL}/api/account/provider-keys/available`, { headers: authHeaders() });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    renderAvailableKeys(data.providers || []);
+    renderActivity(data.providers || []);
+  } catch (e) {
+    $("keys-list").innerHTML = `<div class="msg error">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+const PROVIDERS = {
+  singula: "Singula (KYC + huella digital completa)",
+  apify:   "Apify (OSINT / redes sociales)",
+  tlaloc:  "Tlaloc (RENAPO + SAT)",
+};
+
+const SOURCE_LABELS = {
+  user:   "PERSONAL",
+  global: "GLOBAL",
+};
+
+function renderAvailableKeys(available) {
+  if (available.length === 0) {
+    $("keys-list").innerHTML = `
+      <div class="msg error">
+        No tienes ningún provider con API key válida y operativa.<br>
+        Las keys pueden estar expiradas, inválidas, o sin configurar
+        (y sin fallback global disponible).<br><br>
+        Contacta al administrador para que configure tus keys.
+      </div>`;
+    return;
+  }
+  const html = available.map(p => `
+    <div class="key-card">
+      <div class="key-card-header">
+        <strong>${esc(PROVIDERS[p.provider] || p.provider)}</strong>
+        <span class="pill ${p.source === 'user' ? 'pill-set' : 'pill-global'}">${esc(SOURCE_LABELS[p.source] || p.source)}</span>
+      </div>
+      <div class="key-card-label">
+        Key: <code class="text-base">${esc(p.masked)}</code>
+      </div>
+      <div class="key-card-detail">
+        ${p.last_used ? `· último uso: ${fmtDate(p.last_used)}` : ""}
+        ${p.last_ok   ? `· último OK: ${fmtDate(p.last_ok)}` : ""}
+      </div>
+      ${p.last_error ? `<div class="msg error key-error">último error: ${esc(p.last_error)}</div>` : ""}
+    </div>
+  `).join("");
+  $("keys-list").innerHTML = html;
+}
+
+function renderActivity(available) {
+  const rows = available.map(k => `
+    <tr>
+      <td><code>${esc(k.provider)}</code></td>
+      <td>${fmtDate(k.last_used)}</td>
+      <td>${fmtDate(k.last_ok)}</td>
+      <td class="${k.last_error ? 'text-error' : 'text-muted'}">${esc(k.last_error || "—")}</td>
+    </tr>
+  `).join("");
+  $("activity-list").innerHTML = `
+    <table class="act-table">
+      <thead><tr class="act-header">
+        <th class="act-th">Proveedor</th>
+        <th class="act-th">Último uso</th>
+        <th class="act-th">Último OK</th>
+        <th class="act-th">Último error</th>
+      </tr></thead>
+      <tbody>${rows || `<tr><td colspan="4" class="act-empty">No has usado ningún provider todavía.</td></tr>`}</tbody>
+    </table>
+  `;
+}
+
+async function logout() {
+  await fetch(`${API_URL}/api/auth/logout`, {method: "POST", headers: token() ? {"Authorization": `Bearer ${token()}`} : {}});
+  localStorage.removeItem("session_token");
+  location.href = "/login.html";
+}
+
+init();
+</script>
+<script>
+(function(){
+  const wrap = document.querySelector('.argos-bg');
+  if (!wrap) return;
+  const cv = wrap.querySelector('canvas');
+  const ctx = cv.getContext('2d');
+  const quiet = wrap.classList.contains('argos-bg--quiet');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = quiet || reduce;
+  const PLATA = '201,205,213', AMBAR = '232,180,74';
+  let W, H, dpr, nodes = [], amber = [];
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function build(){
+    const n = Math.round((W * H) / (quiet ? 44000 : 22000));
+    nodes = [];
+    for (let i = 0; i < n; i++){
+      nodes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12,
+        r: 1 + Math.random() * 1.4,
+        a: .25 + Math.random() * .45
+      });
+    }
+    amber = [];
+    const spots = [[.18,.28],[.80,.22],[.72,.78]];
+    spots.forEach(([fx,fy]) => amber.push({ x: W*fx + (Math.random()-.5)*80, y: H*fy + (Math.random()-.5)*80, t: Math.random()*Math.PI*2 }));
+  }
+  function centerFade(x, y){
+    const dx = (x - W/2) / (W*.45), dy = (y - H/2) / (H*.45);
+    const d = Math.min(1, Math.sqrt(dx*dx + dy*dy));
+    return .25 + .75 * d * d;
+  }
+  const LINK = 150;
+  function draw(t){
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < nodes.length; i++){
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++){
+        const b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y, d2 = dx*dx + dy*dy;
+        if (d2 < LINK*LINK){
+          const k = 1 - Math.sqrt(d2) / LINK;
+          const f = centerFade((a.x+b.x)/2, (a.y+b.y)/2);
+          ctx.strokeStyle = 'rgba('+PLATA+','+(k * .16 * f).toFixed(3)+')';
+          ctx.lineWidth = .8;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+    }
+    for (const p of nodes){
+      const f = centerFade(p.x, p.y);
+      ctx.fillStyle = 'rgba('+PLATA+','+(p.a * f).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      if (!still){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -10) p.x = W + 10; if (p.x > W + 10) p.x = -10;
+        if (p.y < -10) p.y = H + 10; if (p.y > H + 10) p.y = -10;
+      }
+    }
+    for (const s of amber){
+      const pulse = still ? .5 : (.5 + .5 * Math.sin(t * .0009 + s.t));
+      nodes.forEach(p => {
+        const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy);
+        if (d < LINK * 1.3){
+          ctx.strokeStyle = 'rgba('+AMBAR+','+(.10 + .12 * pulse) * (1 - d/(LINK*1.3))+')';
+          ctx.lineWidth = .9;
+          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        }
+      });
+      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 26);
+      g.addColorStop(0, 'rgba('+AMBAR+','+(.22 + .18 * pulse).toFixed(3)+')');
+      g.addColorStop(1, 'rgba('+AMBAR+',0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba('+AMBAR+','+(.75 + .25 * pulse).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 2.6, 0, Math.PI*2); ctx.fill();
+    }
+    if (!still) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', () => { resize(); if (still) draw(0); });
+  resize();
+  still ? draw(0) : requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

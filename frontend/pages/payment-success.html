@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta name="robots" content="noindex, nofollow">
+  <title>¡Bienvenido a Argos OSINT!</title>
+  <link rel="icon" href="../assets/argos-osint_favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
+    .card{max-width:540px;width:100%;text-align:center;padding:40px 32px;position:relative;z-index:1}
+    .icon{width:80px;height:80px;border-radius:50%;background:rgba(110,231,183,0.12);border:3px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;animation:popIn 0.5s ease}
+    .card h1{font-size:22px;margin-bottom:8px;color:var(--accent2)}
+    .card .sub{color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.6}
+    .benefits{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;text-align:left}
+    .benefits h3{font-size:12px;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em}
+    .benefit-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;color:var(--muted)}
+    .benefit-item:not(:last-child){border-bottom:1px solid var(--border)}
+    .benefit-item .ck{color:var(--accent2);font-weight:700;flex-shrink:0}
+    .tx-info{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:24px;font-size:12px;color:var(--muted)}
+    .tx-row{display:flex;justify-content:space-between;padding:3px 0}
+    .confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1000;overflow:hidden}
+    .confetti-piece{position:absolute;width:10px;height:10px;top:-10px;animation:confettiFall 3s ease-in forwards}
+    @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+    @keyframes popIn{0%{transform:scale(0)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+    .tour-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(3px);z-index:2000;display:none}
+    .tour-overlay.active{display:block}
+    .tour-step{position:fixed;z-index:2001;background:var(--panel);border:2px solid var(--accent);border-radius:10px;padding:20px;max-width:360px;box-shadow:0 8px 30px rgba(0,0,0,0.5);top:50%;left:50%;transform:translate(-50%,-50%)}
+    .tour-step h4{margin-bottom:8px;color:var(--accent)}
+    .tour-step p{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+    .tour-step .tour-actions{display:flex;justify-content:space-between;align-items:center}
+    .tour-step .tour-dots{display:flex;gap:6px}
+    .tour-step .tour-dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
+    .tour-step .tour-dot.active{background:var(--accent)}
+    .countdown{font-size:12px;color:var(--muted);margin-top:12px}
+    .countdown span{color:var(--accent);font-weight:700}
+    .tour-cta{margin-top:8px}
+  </style>
+</head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+  <div class="page">
+    <div class="card">
+      <div class="icon">✓</div>
+      <h1>¡Bienvenido a Argos OSINT!</h1>
+      <p class="sub">Tu suscripción ha sido activada. Ya puedes comenzar a investigar con inteligencia artificial.</p>
+      <div class="benefits" id="benefits"></div>
+      <div class="tx-info">
+        <div class="tx-row"><span>ID de transacción</span><span id="tx-id">—</span></div>
+        <div class="tx-row"><span>Fecha de activación</span><span id="tx-date">—</span></div>
+        <div class="tx-row"><span>Vigencia hasta</span><span id="tx-expires">—</span></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" id="start-tour">Comenzar recorrido</button>
+      <a href="/dashboard.html" class="btn btn-ghost btn-block tour-cta" onclick="window.close()">Cerrar y volver al dashboard</a>
+      <div class="countdown">Redirigiendo en <span id="countdown">15</span> segundos...</div>
+    </div>
+  </div>
+  <div class="confetti" id="confetti"></div>
+  <div class="tour-overlay" id="tour-overlay"></div>
+  <div class="tour-step" id="tour-step" style="display:none"></div>
+  <script>
+    const planBenefits={
+      basico:['30 búsquedas/mes','10 rastreos OSINT/mes','Expediente unificado','Exportación PDF','1 usuario'],
+      profesional:['500 búsquedas/mes','100 rastreos OSINT/mes','Oráculo LLM','OSINT completo','3 usuarios','Validación CURP/RFC'],
+      empresarial:['1,000 búsquedas/mes','500 rastreos OSINT/mes','API de integración','10 usuarios','Modelos IA premium','Singula judicial'],
+      corporativo:['Búsquedas ilimitadas','Rastreos ilimitados','Usuarios ilimitados','Modelos IA personalizados','On-premise','SLA garantizado']
+    };
+    const params=new URLSearchParams(location.search);
+    const plan=params.get('plan')||'profesional';
+    const txId=params.get('tx_id')||'—';
+    const benefits=planBenefits[plan]||planBenefits.profesional;
+    document.getElementById('benefits').innerHTML='<h3>Beneficios del plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+'</h3>'+benefits.map(b=>'<div class="benefit-item"><span class="ck">✓</span><span>'+b+'</span></div>').join('');
+    document.getElementById('tx-id').textContent=txId;
+    const now=new Date();
+    document.getElementById('tx-date').textContent=now.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+    const exp=new Date(now);exp.setMonth(exp.getMonth()+1);
+    document.getElementById('tx-expires').textContent=exp.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+    // Confetti
+    (function(){const c=document.getElementById('confetti');const colors=['#4f8cff','#6ee7b7','#f59e0b','#ef4444','#a78bfa','#38bdf8'];for(let i=0;i<50;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*2+'s';p.style.animationDuration=(2+Math.random()*2)+'s';p.style.width=(6+Math.random()*8)+'px';p.style.height=(6+Math.random()*8)+'px';p.style.borderRadius=Math.random()>0.5?'50%':'0';c.appendChild(p)}})();
+    // Activate subscription via payment token
+    const paymentToken=localStorage.getItem('payment_token')||'';
+    const paymentPlan=localStorage.getItem('payment_plan')||plan;
+    if(paymentToken){
+      fetch('/api/payment/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:paymentToken})})
+        .then(r=>r.json()).then(d=>{
+          if(d.ok){
+            localStorage.removeItem('payment_token');
+            localStorage.removeItem('payment_plan');
+            document.getElementById('tx-id').textContent=d.subscription?.tx_hash?.substring(0,16)+'...'||txId;
+          }
+        }).catch(e=>console.error('Activate error:',e));
+    }else{
+      // Fallback: direct confirm (user already logged in)
+      fetch('/api/subscribe/confirm',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('session_token')},body:JSON.stringify({plan:paymentPlan,tx_id:txId,source:'clip_redirect'})}).catch(e=>console.error(e));
+    }
+    // Tour
+    const tourSteps=[
+      {title:'🔍 Búsqueda global',text:'Busca por nombre, CURP, RFC o teléfono en las 29 bases federadas.'},
+      {title:'📊 Expediente unificado',text:'Toda la información consolidada en una vista con trazabilidad.'},
+      {title:'🤖 Oráculo LLM',text:'Pregunta en lenguaje natural sobre el caso.'},
+      {title:'🌐 OSINT',text:'Rastreo de redes sociales y presencia digital.'},
+      {title:'📋 Reportes',text:'Genera reportes KYC con hallazgos y score de riesgo.'},
+      {title:'⚙️ Configuración',text:'Gestiona tu cuenta, usuarios y modelos de IA.'}
+    ];
+    let curStep=0;
+    document.getElementById('start-tour').addEventListener('click',()=>{curStep=0;showStep()});
+    function showStep(){
+      document.getElementById('tour-overlay').classList.add('active');
+      const st=document.getElementById('tour-step');st.style.display='block';
+      const s=tourSteps[curStep];
+      st.innerHTML='<h4>'+s.title+'</h4><p>'+s.text+'</p><div class="tour-actions"><div class="tour-dots">'+tourSteps.map((_,i)=>'<div class="tour-dot '+(i===curStep?'active':'')+'"></div>').join('')+'</div><div>'+(curStep>0?'<button class="btn btn-ghost btn-sm" id="tp">Atrás</button>':'')+'<button class="btn btn-primary btn-sm" id="tn">'+(curStep<tourSteps.length-1?'Siguiente':'¡Entendido!')+'</button></div></div>';
+      document.getElementById('tn').addEventListener('click',()=>{if(curStep<tourSteps.length-1){curStep++;showStep()}else{endTour()}});
+      const tp=document.getElementById('tp');if(tp)tp.addEventListener('click',()=>{curStep--;showStep()});
+    }
+    function endTour(){
+      document.getElementById('tour-overlay').classList.remove('active');
+      document.getElementById('tour-step').style.display='none';
+      fetch('/api/onboarding/complete',{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('session_token')}}).catch(e=>{});
+      window.location.href='/buscar.html';
+    }
+    // Countdown: 5 seconds then close tab (original tab will auto-redirect)
+    let sec=5;
+    const cd=document.getElementById('countdown');
+    cd.innerHTML='Esta pestaña se cerrará en <span>'+sec+'</span> segundos...';
+    const iv=setInterval(()=>{
+      sec--;
+      cd.innerHTML='Esta pestaña se cerrará en <span>'+sec+'</span> segundos...';
+      if(sec<=0){
+        clearInterval(iv);
+        // Try to close the tab (works if opened by script)
+        window.close();
+        // Fallback: redirect to dashboard
+        setTimeout(()=>{window.location.href='/dashboard.html';},500);
+      }
+    },1000);
+  </script>
+<script src="common.js"></script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Dashboard — Argos OSINT</title>
+  <link rel="icon" href="assets/argos-osint_favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border:1px solid transparent;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{opacity:0.9}
+.btn-secondary{background:transparent;color:var(--text);border-color:var(--border)}.btn-secondary:hover{border-color:var(--muted);background:var(--panel)}
+.btn-danger{background:var(--error);color:#fff}
+.btn-ghost{background:transparent;color:var(--muted);border:none;padding:8px 12px}.btn-ghost:hover{color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px}.btn-lg{padding:14px 28px;font-size:14px}.btn-block{width:100%}
+.form-input{width:100%;padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none}
+.form-input:focus{border-color:var(--accent)}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath fill='%238a93a6' d='M6 8L 1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.badge-success{background:rgba(110,231,183,0.15);color:var(--accent2)}
+.badge-warning{background:rgba(245,158,11,0.15);color:var(--warn)}
+.badge-danger{background:rgba(239,68,68,0.15);color:var(--error)}
+.badge-info{background:rgba(79,140,255,0.15);color:var(--accent)}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);position:relative;z-index:1;padding:16px;display:flex;flex-direction:column;flex-shrink:0}
+    .sidebar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+    .sidebar .brand img{height:28px}
+    .sidebar-section{margin-bottom:20px}
+    .sidebar-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 8px;font-weight:700}
+    .sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .sidebar-item:hover{color:var(--text);background:var(--panel2)}
+    .sidebar-item.active{color:var(--accent2);background:rgba(110,231,183,0.08)}
+    .sidebar-item .count{margin-left:auto;font-size:11px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:999px}
+    .main{flex:1;overflow-y:auto}
+    .main-header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--panel)}
+    .main-header h1{font-size:20px;font-weight:700}
+    .main-content{padding:28px}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .stat-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+    .stat-card .value{font-size:28px;font-weight:800;color:var(--accent)}
+    .stat-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;margin-top:28px}
+    .quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+    .action-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;cursor:pointer;transition:all 0.2s;text-align:center;text-decoration:none;color:var(--text)}
+    .action-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(79,140,255,0.15)}
+    .action-card .icon{font-size:28px;margin-bottom:8px}
+    .action-card h3{font-size:14px;margin-bottom:4px}
+    .action-card p{font-size:12px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:var(--panel);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;text-align:left;padding:10px 14px;border-bottom:2px solid var(--border)}
+    td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    tr:hover td{background:var(--panel2)}
+    .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+    .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+    .user-menu{position:relative}
+    .user-btn{display:flex;align-items:center;gap:8px;background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:13px}
+    .user-btn:hover{border-color:var(--muted)}
+    .avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+    .dropdown{position:absolute;top:100%;right:0;margin-top:8px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px;min-width:180px;display:none;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+    .dropdown.active{display:block}
+    .dropdown a{display:block;padding:8px 12px;border-radius:6px;font-size:13px;color:var(--muted);text-decoration:none}
+    .dropdown a:hover{background:var(--panel2);color:var(--text)}
+    .dropdown hr{border:none;border-top:1px solid var(--border);margin:4px 0}
+    .dash-sub-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:28px}
+    .dash-sub-card.hidden{display:none}
+    .dash-sub-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+    .dash-sub-plan{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .dash-sub-plan-name{font-size:18px;font-weight:700}
+    .dash-sub-details{font-size:13px;color:var(--muted);line-height:1.8}
+    .dash-sub-none{text-align:center}
+    .dash-sub-none p{color:var(--muted);margin-bottom:12px}
+    @media(max-width:768px){.sidebar{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.quick-actions{grid-template-columns:repeat(2,1fr)}.main-content{padding:16px}}
+  
+/* --- Argos OSINT Portal Background --- */
+.argos-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse 80% 75% at 50% 50%, #0f1115 0%, #080C20 60%, #05081A 100%)}
+.argos-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.argos-bg::after{content:"";position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.argos-bg--quiet canvas{opacity:.45}
+@media (prefers-reduced-motion:reduce){.argos-bg canvas{opacity:.45}}
+body > *:not(.argos-bg) { position: relative; z-index: 1; }
+
+</style>
+</head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><img src="assets/argos-osint_isotipo_mono-blanco.svg" alt="Argos"><span>ARGOS <span class="text-accent2">OSINT</span></span></div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Navegación</div>
+        <a href="/dashboard.html" class="sidebar-item active"><span>📊</span> Dashboard</a>
+        <a href="/buscar.html" class="sidebar-item"><span>🔍</span> Búsqueda</a>
+        <a href="/oraculo.html" class="sidebar-item"><span>🤖</span> Oráculo</a>
+        <a href="/sujeto.html" class="sidebar-item"><span>📋</span> Expediente</a>
+        <a href="/busquedas_adicionales.html" class="sidebar-item"><span>🌐</span> Búsquedas Ext.</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Cuenta</div>
+        <a href="/dashboard.html#history" class="sidebar-item"><span>📜</span> Historial</a>
+        <a href="/dashboard.html#reports" class="sidebar-item"><span>📄</span> Reportes</a>
+        <a href="/subscribe.html" class="sidebar-item"><span>💳</span> Suscripción</a>
+      </div>
+      <div class="sidebar-section hidden" id="admin-section">
+        <div class="sidebar-title">Administración</div>
+        <a href="/admin.html" class="sidebar-item"><span>⚙️</span> Panel admin</a>
+      </div>
+      <div class="mt-auto">
+        <a href="#" class="sidebar-item" id="logout-btn"><span>🚪</span> Cerrar sesión</a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="main-header">
+        <h1>Dashboard</h1>
+        <div class="user-menu">
+          <button class="user-btn" id="user-btn"><div class="avatar" id="avatar">?</div><span id="user-name">Cargando...</span><span>▾</span></button>
+          <div class="dropdown" id="dropdown">
+            <a href="/dashboard.html">📊 Dashboard</a>
+            <a href="/buscar.html">🔍 Búsqueda</a>
+            <a href="/oraculo.html">🤖 Oráculo</a>
+            <hr>
+            <a href="/subscribe.html">💳 Suscripción</a>
+            <a href="#" id="logout-dd">🚪 Cerrar sesión</a>
+          </div>
+        </div>
+      </div>
+      <div class="main-content">
+        <!-- Stats -->
+        <div class="stats-grid" id="stats">
+          <div class="stat-card"><div class="label">Plan actual</div><div class="value" id="stat-plan">—</div><div class="sub" id="stat-plan-sub">Sin suscripción</div></div>
+          <div class="stat-card"><div class="label">Búsquedas este mes</div><div class="value" id="stat-search">—</div><div class="sub" id="stat-search-sub">de —</div></div>
+          <div class="stat-card"><div class="label">Rastreos OSINT</div><div class="value" id="stat-osint">—</div><div class="sub" id="stat-osint-sub">de —</div></div>
+          <div class="stat-card"><div class="label">Reportes guardados</div><div class="value" id="stat-reports">—</div><div class="sub">activos</div></div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="section-title">Acciones rápidas</div>
+        <div class="quick-actions">
+          <a href="/buscar.html" class="action-card"><div class="icon">🔍</div><h3>Búsqueda</h3><p>Consultar bases federadas</p></a>
+          <a href="/oraculo.html" class="action-card"><div class="icon">🤖</div><h3>Oráculo</h3><p>Consultar con IA</p></a>
+          <a href="/sujeto.html" class="action-card"><div class="icon">📋</div><h3>Expediente</h3><p>Ver sujeto consolidado</p></a>
+          <a href="/busquedas_adicionales.html" class="action-card"><div class="icon">🌐</div><h3>Búsquedas Ext.</h3><p>Singula, Apify, OSINT</p></a>
+          <a href="/cfe_coordenadas.html" class="action-card"><div class="icon">📍</div><h3>CFE Coords</h3><p>Buscar por coordenadas</p></a>
+          <a href="/issste.html" class="action-card"><div class="icon">🏛️</div><h3>ISSSTE</h3><p>Buscar empleados ISSSTE</p></a>
+        </div>
+
+        <!-- Active subscription -->
+        <div class="section-title">Suscripción activa</div>
+        <div id="sub-card" class="dash-sub-card hidden">
+          <div class="dash-sub-header">
+            <div>
+              <div class="dash-sub-plan">
+                <span id="sub-plan-name" class="dash-sub-plan-name">—</span>
+                <span id="sub-badge" class="badge badge-success">Activa</span>
+              </div>
+              <div class="dash-sub-details">
+                <div>📅 <strong>Inicio:</strong> <span id="sub-start">—</span></div>
+                <div>📅 <strong>Próximo corte:</strong> <span id="sub-expires">—</span></div>
+                <div>🔍 <strong>Búsquedas:</strong> <span id="sub-search">—</span></div>
+                <div>🌐 <strong>Rastreos OSINT:</strong> <span id="sub-osint">—</span></div>
+              </div>
+            </div>
+            <a href="/subscribe.html" class="btn btn-secondary btn-sm">Cambiar plan</a>
+          </div>
+        </div>
+        <div id="sub-none" class="dash-sub-card hidden dash-sub-none">
+          <p class="text-muted mb-3">No tienes una suscripción activa.</p>
+          <a href="/subscribe.html" class="btn btn-primary">Ver planes</a>
+        </div>
+
+        <!-- Search history -->
+        <div class="section-title">Historial de búsquedas</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Consulta</th><th>Tipo</th><th>Resultados</th><th>Tiempo</th></tr></thead>
+            <tbody id="history-body"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- Perfiles creados -->
+        <div class="section-title" style="margin-top:28px">Perfiles creados</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nombre</th><th>CURP</th><th>RFC</th><th>Estado</th><th>Fuentes</th><th>Actualizado</th><th></th></tr></thead>
+            <tbody id="perfiles-body"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- Saved reports -->
+        <div class="section-title mt-4">Reportes guardados</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Título</th><th>Sujeto</th><th>Tipo</th><th>Estado</th></tr></thead>
+            <tbody id="reports-body"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API=window.location.origin;
+    const TOKEN=localStorage.getItem('session_token');
+    const H={'Authorization':'Bearer '+TOKEN};
+
+    function fmtDate(ts){
+      if(!ts)return'—';
+      const d=new Date(typeof ts==='number'?ts*1000:ts);
+      return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    }
+
+    async function load(){
+      // Auth check
+      try{
+        const r=await fetch(API+'/api/auth/me',{headers:H});
+        if(!r.ok)throw new Error();
+        const u=await r.json();
+        document.getElementById('user-name').textContent=u.display_name||u.username;
+        document.getElementById('avatar').textContent=(u.display_name||u.username||'?')[0].toUpperCase();
+        if(u.is_admin)document.getElementById('admin-section').classList.remove('hidden');
+        window._isAdmin=u.is_admin;
+      }catch(e){window.location.href='/login.html';return;}
+
+      // Usage
+      try{
+        const r=await fetch(API+'/api/usage',{headers:H});
+        const u=await r.json();
+        const b=u.busquedas||{};
+        const o=u.osint||{};
+        document.getElementById('stat-search').textContent=b.used||0;
+        document.getElementById('stat-search-sub').textContent='de '+(b.unlimited?'∞':b.limit);
+        document.getElementById('stat-osint').textContent=o.unlimited?'∞':(o.limit||0);
+        document.getElementById('stat-osint-sub').textContent=o.unlimited?'Ilimitado':'disponibles';
+      }catch(e){}
+
+      // Subscription
+      try{
+        const r=await fetch(API+'/api/subscribe/status',{headers:H});
+        const s=await r.json();
+        const names={basico:'Básico',profesional:'Profesional',empresarial:'Empresarial',corporativo:'Corporativo',admin:'Administrador'};
+        const planName=s.has_subscription?(names[s.plan]||s.plan):'Ninguno';
+        document.getElementById('stat-plan').textContent=planName;
+        document.getElementById('stat-plan-sub').textContent=s.has_subscription?'Vence: '+fmtDate(s.expires_at):'Suscríbete para comenzar';
+
+        // Subscription card
+        if(s.has_subscription){
+          document.getElementById('sub-card').classList.remove('hidden');
+          document.getElementById('sub-plan-name').textContent=planName;
+          document.getElementById('sub-start').textContent=fmtDate(s.started_at);
+          document.getElementById('sub-expires').textContent=fmtDate(s.expires_at);
+          const b=s.limits||{};
+          document.getElementById('sub-search').textContent=(b.busquedas_mes===-1?'Ilimitadas':b.busquedas_mes+'/mes');
+          document.getElementById('sub-osint').textContent=b.osint?(s.limits?.rastreos_mes===-1?'Ilimitados':s.limits?.rastreos_mes+'/mes'):'No incluido';
+          // Days until expiry
+          if(s.expires_at){
+            const days=Math.ceil((s.expires_at*1000-Date.now())/(1000*60*60*24));
+            if(days<=7){
+              document.getElementById('sub-badge').className='badge badge-warning';
+              document.getElementById('sub-badge').textContent='Vence en '+days+' días';
+            }
+          }
+        }else{
+          document.getElementById('sub-none').classList.remove('hidden');
+        }
+      }catch(e){}
+
+      // Admin override (after subscription loads)
+      if(window._isAdmin){
+        document.getElementById('stat-plan').textContent='Administrador';
+        document.getElementById('stat-plan-sub').textContent='Acceso completo sin restricciones';
+        document.getElementById('sub-card').classList.remove('hidden');
+        document.getElementById('sub-plan-name').textContent='Administrador';
+        document.getElementById('sub-badge').className='badge badge-info';
+        document.getElementById('sub-badge').textContent='Admin';
+        document.getElementById('sub-start').textContent='—';
+        document.getElementById('sub-expires').textContent='Sin vencimiento';
+        document.getElementById('sub-search').textContent='Ilimitadas';
+        document.getElementById('sub-osint').textContent='Ilimitados';
+        document.getElementById('sub-none').classList.add('hidden');
+      }
+
+      // Reports
+      try{
+        const r=await fetch(API+'/api/reports',{headers:H});
+        const d=await r.json();
+        const reports=d.reports||[];
+        document.getElementById('stat-reports').textContent=reports.length;
+        const tbody=document.getElementById('reports-body');
+        if(reports.length===0){tbody.innerHTML='<tr><td colspan="5" class="empty">No hay reportes guardados</td></tr>';}
+        else{
+          tbody.innerHTML=reports.map(r=>`<tr><td>${fmtDate(r.created_at)}</td><td>${r.title||'—'}</td><td>${r.subject_name||'—'}</td><td>${r.report_type||'—'}</td><td><span class="badge badge-${r.status==='active'?'success':'warning'}">${r.status}</span></td></tr>`).join('');
+        }
+      }catch(e){}
+
+      // History
+      try{
+        const r=await fetch(API+'/api/history?limit=20',{headers:H});
+        const d=await r.json();
+        const hist=d.history||[];
+        const tbody=document.getElementById('history-body');
+        if(hist.length===0){tbody.innerHTML='<tr><td colspan="5" class="empty">No hay búsquedas registradas</td></tr>';}
+        else{
+          tbody.innerHTML=hist.map(h=>`<tr><td>${fmtDate(h.created_at)}</td><td>${h.query||'—'}</td><td>${h.query_type||'—'}</td><td>${h.results_count||0}</td><td>${h.duration_ms?h.duration_ms+'ms':'—'}</td></tr>`).join('');
+        }
+      }catch(e){}
+
+      // Perfiles creados
+      try{
+        const r=await fetch(API+'/api/perfiles?limit=50',{headers:H});
+        const d=await r.json();
+        const perfiles=d.perfiles||[];
+        const tbody=document.getElementById('perfiles-body');
+        if(perfiles.length===0){tbody.innerHTML='<tr><td colspan="7" class="empty">No hay perfiles creados</td></tr>';}
+        else{
+          tbody.innerHTML=perfiles.map(p=>{
+            const fuentes=Object.keys(p.fuentes||{}).filter(k=>p.fuentes[k]).map(k=>k.toUpperCase()).join(', ')||'—';
+            const estadoClass=p.estado==='completo'||p.estado.includes('ok')?'badge-success':p.estado.includes('parcial')||p.estado.includes('solo')?'badge-warning':'badge-info';
+            return `<tr style="cursor:pointer" onclick="window.location.href='/sujeto.html?curp=${encodeURIComponent(p.curp)}'">
+              <td><strong>${p.nombre||'Sin nombre'}</strong></td>
+              <td><code style="font-size:11px">${p.curp||'—'}</code></td>
+              <td><code style="font-size:11px">${p.rfc||'—'}</code></td>
+              <td><span class="badge ${estadoClass}">${p.estado||'—'}</span></td>
+              <td style="font-size:11px">${fuentes}</td>
+              <td>${fmtDate(p.actualizado_en)}</td>
+              <td><a href="/sujeto.html?curp=${encodeURIComponent(p.curp)}" class="btn-ghost" style="font-size:11px">📋 Ver</a></td>
+            </tr>`;
+          }).join('');
+        }
+      }catch(e){}
+    }
+
+    // User menu
+    document.getElementById('user-btn').addEventListener('click',()=>document.getElementById('dropdown').classList.toggle('active'));
+    document.addEventListener('click',e=>{if(!e.target.closest('.user-menu'))document.getElementById('dropdown').classList.remove('active');});
+
+    // Logout
+    async function logout(){await fetch(API+'/api/auth/logout',{method:'POST',headers:H});localStorage.removeItem('session_token');window.location.href='/login.html';}
+    document.getElementById('logout-btn').addEventListener('click',e=>{e.preventDefault();logout();});
+    document.getElementById('logout-dd').addEventListener('click',e=>{e.preventDefault();logout();});
+
+    load();
+  </script>
+<script>
+(function(){
+  const wrap = document.querySelector('.argos-bg');
+  if (!wrap) return;
+  const cv = wrap.querySelector('canvas');
+  const ctx = cv.getContext('2d');
+  const quiet = wrap.classList.contains('argos-bg--quiet');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = quiet || reduce;
+  const PLATA = '201,205,213', AMBAR = '232,180,74';
+  let W, H, dpr, nodes = [], amber = [];
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function build(){
+    const n = Math.round((W * H) / (quiet ? 44000 : 22000));
+    nodes = [];
+    for (let i = 0; i < n; i++){
+      nodes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12,
+        r: 1 + Math.random() * 1.4,
+        a: .25 + Math.random() * .45
+      });
+    }
+    amber = [];
+    const spots = [[.18,.28],[.80,.22],[.72,.78]];
+    spots.forEach(([fx,fy]) => amber.push({ x: W*fx + (Math.random()-.5)*80, y: H*fy + (Math.random()-.5)*80, t: Math.random()*Math.PI*2 }));
+  }
+  function centerFade(x, y){
+    const dx = (x - W/2) / (W*.45), dy = (y - H/2) / (H*.45);
+    const d = Math.min(1, Math.sqrt(dx*dx + dy*dy));
+    return .25 + .75 * d * d;
+  }
+  const LINK = 150;
+  function draw(t){
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < nodes.length; i++){
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++){
+        const b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y, d2 = dx*dx + dy*dy;
+        if (d2 < LINK*LINK){
+          const k = 1 - Math.sqrt(d2) / LINK;
+          const f = centerFade((a.x+b.x)/2, (a.y+b.y)/2);
+          ctx.strokeStyle = 'rgba('+PLATA+','+(k * .16 * f).toFixed(3)+')';
+          ctx.lineWidth = .8;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+    }
+    for (const p of nodes){
+      const f = centerFade(p.x, p.y);
+      ctx.fillStyle = 'rgba('+PLATA+','+(p.a * f).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      if (!still){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -10) p.x = W + 10; if (p.x > W + 10) p.x = -10;
+        if (p.y < -10) p.y = H + 10; if (p.y > H + 10) p.y = -10;
+      }
+    }
+    for (const s of amber){
+      const pulse = still ? .5 : (.5 + .5 * Math.sin(t * .0009 + s.t));
+      nodes.forEach(p => {
+        const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy);
+        if (d < LINK * 1.3){
+          ctx.strokeStyle = 'rgba('+AMBAR+','+(.10 + .12 * pulse) * (1 - d/(LINK*1.3))+')';
+          ctx.lineWidth = .9;
+          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        }
+      });
+      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 26);
+      g.addColorStop(0, 'rgba('+AMBAR+','+(.22 + .18 * pulse).toFixed(3)+')');
+      g.addColorStop(1, 'rgba('+AMBAR+',0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba('+AMBAR+','+(.75 + .25 * pulse).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 2.6, 0, Math.PI*2); ctx.fill();
+    }
+    if (!still) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', () => { resize(); if (still) draw(0); });
+  resize();
+  still ? draw(0) : requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

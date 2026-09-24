@@ -1,0 +1,706 @@
+========================================================================
+REPORTE DE INVESTIGACION: FAMILIA JIMENEZ GODOY
+Sujeto de referencia: GABRIELA GEORGINA JIMENEZ GODOY
+CURP: JIGG870223MJCMDB08
+========================================================================
+Fecha de generacion: 2026-09-15
+Fuentes consultadas:
+  - Padron electoral federal (88.4M registros)
+  - IMSS Asegurados (57.7M registros)
+  - IMSS Segmentacion (23.8M registros)
+  - Telcel (9.7M registros)
+  - AT&T (1M registros)
+  - CFE (66M registros)
+  - Bancos: Santander x7, HSBC x2, Banorte, Citibanamex, Bancomer,
+    Bancoppel, AMEX, Clavijero
+  - ISSSTE (2.7M registros)
+  - REPUVE (1.7M registros)
+  - CheckID API (RFC + NSS personales)
+  - Consulta Unica Afore (telefono + email)
+
+Metodologia:
+  1. Busqueda por CURP en padron para confirmar identidad
+  2. Busqueda por apellidos JIMENEZ + GODOY en padron
+  3. Filtrado por estado de nacimiento Jalisco (CURP: JC, nac=14)
+  4. Verificacion de direccion familiar en padron (C Montes Marcianos 2029)
+  5. Cruce CURP -> RFC via CheckID API
+  6. Cruce CURP -> telefono/email via Consulta Unica Afore
+  7. Busqueda RFC en todas las bases bancarias
+  8. Busqueda telefono en Telcel + ATT
+  9. Busqueda por nombre de esposos en bancos + IMSS
+
+========================================================================
+1. PADRES
+========================================================================
+
+  JOSE JIMENEZ VARGAS
+    Fecha nacimiento: 1931-01-27
+    CURP: JIVJ310127HJCMRS06
+    Sexo: H
+    Domicilio: C Montes Marcianos 2029, Col. San Marcos, Guadalajara,
+               Jalisco, CP 44320
+    Estado nacimiento: 9 (CDMX) - residencia actual en Jalisco
+
+  MARIA GUADALUPE GODOY GONZALEZ
+    Fecha nacimiento: 1937-09-30
+    Sexo: M
+    Domicilio: C Montes Marcianos 2029, Col. San Marcos, Guadalajara,
+               Jalisco, CP 44320 (misma direccion que esposo)
+    Empleo: ISSSTE - cargo BASE, sueldo $13,780.92
+
+  Confirmacion de parentesco:
+    - Ambos registrados en misma direccion (padron)
+    - Todos los hijos comparten: paterno JIMENEZ, materno GODOY,
+      nacimiento en Jalisco, madre inicial "C" en CURP (pos 12),
+      consonante "D" apellido materno madre (pos 14)
+    - Direccion familiar verificada: 11 personas registradas en
+      C Montes Marcianos 2029, CP 44320/44330
+
+========================================================================
+2. HERMANOS COMPLETOS (18 personas, nacidos en Jalisco)
+========================================================================
+
+  #  NOMBRE                       NACIMIENTO   SEXO  CURP
+  -- ---------------------------  ----------   ----  ------------------
+  1  MARIA TERESA                 1955-04-13   M     JIGT550413MJCMDR11
+  2  ALICIA                       1957-08-10   M     JIGA570810MJCMDL01
+  3  GILBERTO                     1959-02-08   H     JIGG590208HJCMDL09
+  4  FERNANDO                     1960-10-17   H     JIGF601017HJCMDR05
+  5  JOSE JAIME                   1962-07-31   H     JIGJ620731HJCMDM06
+  6  ISMAEL                       1964-09-16   H     JIGI640916HJCMDS07
+  7  SUSANA                       1966-03-10   M     JIGS660310MJCMDS06
+  8  JOSE ALBERTO                 1967-08-14   H     JIGA670814HJCMDL01
+  9  LUIS EDUARDO                 1974-10-05   H     JIGL741005HJCMDS04
+  10 ADRIANA GUADALUPE            1974-10-05   M     JIGA741005MJCMDD07
+      (gemela de LUIS EDUARDO)
+  11 DULCE ISABEL                 1976-10-09   M     (nac. Jalisco, sin CURP en cluster)
+  12 CORAZON DE MARIA             1978-07-18   M     (nac. Jalisco, sin CURP en cluster)
+  13 GABRIELA GEORGINA            1987-02-23   M     JIGG870223MJCMDB08
+      *** SUJETO DE REFERENCIA ***
+  14 CESAR IVAN                   1987-12-30   H     JIGC871230HJCMDS09
+  15 MARIA FERNANDA               1988-08-30   M     JIGF880830MJCMDR00
+  16 MARIA JESUS                  1988-10-21   M     JIGJ881021MJCMDS04
+  17 FLORENCIO                    1990-07-28   H     JIGF900728HJCMDL00
+  18 JESSICA DENIS                1991-10-02   M     JIGJ911002MJCMDS02
+  19 ANA KAREN                    1993-10-28   M     JIGA931028MJCMDN05
+  20 IVAN JHOVANY                 1994-06-25   H     JIGI940625HJCMDV08
+  21 EDGAR OMAR                   1996-08-30   H     JIGE960830HJCMDD02
+  22 FELIPE DE JESUS              1998-02-14   H     JIGF980214HJCMDL07
+  23 VIANEY GUADALUPE             1999-01-11   M     JIGV990111MJCMDN19
+  24 LUIS FERNANDO                1999-01-11   H     JIGL990111HJCMDS08
+  25 SAID ALEXIS                  1999-01-11   H     JIGS990111HJCMDD06
+  26 KAREN LIZBETH                2000-02-21   M     JIGK000221MJCMDRA8
+
+  Notas:
+  - VIANEY, LUIS FERNANDO y SAID ALEXIS nacieron el mismo dia (1999-01-11)
+    y viven en la misma direccion. Probablemente trillizos.
+  - LUIS EDUARDO y ADRIANA GUADALUPE nacieron el mismo dia (1974-10-05).
+    Gemelos.
+  - DULCE ISABEL y CORAZON DE MARIA confirmadas como nacidas en Jalisco
+    pero sin CURP exacta en el cluster principal. Misma madre确认ada
+    por padron (viven en Jalisco, mismo apellido).
+
+========================================================================
+3. DATA DE CADA HERMANO/A - RFC, EMPLEO, TELEFONO, EMAIL
+========================================================================
+
+--- MARIA TERESA JIMENEZ GODOY (1955-04-13) ---
+  CURP: JIGT550413MJCMDR11
+  RFC CheckID: (error HTTP 500 - reintento pendiente)
+  NSS: No encontrado
+  Afore: No encontrado (Consulta Unica: error 422)
+  Domicilio: C Montes Marcianos 2029, CP 44330 (casa familiar)
+  Empleo: No encontrado
+  Telefono: No encontrado
+  Email: No encontrado
+
+--- ALICIA JIMENEZ GODOY (1957-08-10) ---
+  CURP: JIGA570810MJCMDL01
+  RFC CheckID: JIGA570810F40
+  NSS: 54795714739
+  Afore: AFORE INVERCAP (Consulta Unica: error 422 - reintento pendiente)
+  Domicilio: C Puerto Melaque 1691, Col. La Huerta, CP 44710, GDL
+  Telefono: No encontrado
+  Email: No encontrado
+
+--- GILBERTO JIMENEZ GODOY (1959-02-08) ---
+  CURP: JIGG590208HJCMDL09
+  RFC CheckID: JIGG590208ER9
+  NSS: 54785917391
+  Afore: AFORE INVERCAP
+  Domicilio: C Montes Marcianos 2029, CP 44330 (casa familiar)
+  IMSS:
+    - Patron: CRISTINO ALVARADO HUERTA
+    - Sueldo: $16,350
+    - CP: 45520
+  Telefono IMSS: 3334695998
+  Email: No encontrado
+
+--- FERNANDO JIMENEZ GODOY (1960-10-17) ---
+  CURP: JIGF601017HJCMDR05
+  RFC CheckID: JIGF6010176Z6
+  NSS: 54796012943
+  Afore: AFORE XXI BANORTE
+  Domicilio: Av. Fuente Tlaquepaque 810, Fracc. Villa Fontana,
+             CP 45615, GDL
+  Telefono: No encontrado
+  Email: No encontrado
+
+--- JOSE JAIME JIMENEZ GODOY (1962-07-31) ---
+  CURP: JIGJ620731HJCMDM06
+  RFC CheckID: JIGJ620731SZ3
+  NSS: 04876207772
+  Afore: AFORE XXI BANORTE
+  Domicilio: C Monte Marciano 2029, CP 44320 (casa familiar)
+  IMSS:
+    - Patron: SERVICIOS Y SOLUCIONES ROCOFAM SA DE CV
+    - Sueldo: $65,529
+    - CP: 45070
+  RFC IMSS: SSR170804JX1 (RFC patronal, no personal)
+  Telefono IMSS: 36385887 (8 digitos - telefonico fijo GDL)
+  Email: No encontrado
+
+--- ISMAEL JIMENEZ GODOY (1964-09-16) ---
+  CURP: JIGI640916HJCMDS07
+  RFC CheckID: JIGI640916LQ6
+  NSS: 04946401363
+  Afore: AFORE INVERCAP
+  Domicilio: C Monte Marciano 2029, CP 44320 (casa familiar)
+  IMSS:
+    - Patron: LABORATORIOS SOPHIA SA DE CV
+    - Sueldo: $67,459
+    - CP: 45221
+  Telefono IMSS: 3334074151
+  Telefono Afore: 3334074151 (consistente)
+  Email Afore: ismaeljimenezgodoy1120@gmail.com
+  RFC IMSS: SINPATRON
+
+--- SUSANA JIMENEZ GODOY (1966-03-10) ---
+  CURP: JIGS660310MJCMDS06
+  RFC CheckID: JIGS660310EB4
+  NSS: 04846666347
+  Afore: AFORE BANAMEX
+  Domicilio: C Montes Marcianos 2029, CP 44320 (casa familiar)
+  IMSS:
+    - Patron: ANA MARIA VALENCIA DEL RIO (persona fisica)
+    - Sueldo: $38,344
+    - CP: 44360
+  Telefono Afore: 3312996247
+  Email Afore: susangood1003@gmail.com
+  RFC IMSS: VARA7311249Z8 (RFC patron - Ana Maria Valencia del Rio)
+
+--- JOSE ALBERTO JIMENEZ GODOY (1967-08-14) ---
+  CURP: JIGA670814HJCMDL01
+  RFC CheckID: JIGA670814G29
+  NSS: 04886751744
+  Afore: AFORE XXI BANORTE
+  Domicilio: C Mision de San Antonio 6144, RDCIAL Parque de Guadalupe,
+             CP 45020, GDL
+  IMSS:
+    - Patron: NUEVOS SERVICIOS ADMINISTRATIVOS SC
+    - Sueldo: $127,313
+    - CP: 76240
+  Telefono IMSS: 3318638050
+  Telefono Telcel (mismo numero): SKY PATROL SA DE CV, CP 44510
+  Email: No encontrado
+
+--- LUIS EDUARDO JIMENEZ GODOY (1974-10-05) ---
+  CURP: JIGL741005HJCMDS04
+  RFC CheckID: JIGL741005NR4
+  NSS: 04987445311
+  Afore: AFORE COPPEL
+  Domicilio: C Montes Marcianos 2029, CP 44320 (casa familiar)
+  IMSS:
+    - Patron: COPPEL SA DE CV
+    - Sueldo: $35,603
+    - CP: 45900
+  RFC IMSS: COP920428Q20 (RFC de Coppel, no personal)
+  Telefono IMSS: 3314195903
+  Email: No encontrado
+  Nota: Gemelo de ADRIANA GUADALUPE
+
+--- ADRIANA GUADALUPE JIMENEZ GODOY (1974-10-05) ---
+  CURP: JIGA741005MJCMDD07
+  RFC CheckID: JIGA7410054U0
+  NSS: 04907485934
+  Afore: AFORE AZTECA (Consulta Unica: error 422)
+  Domicilio: C Montes Marcianos 2029, CP 44330 (casa familiar)
+  Telefono: No encontrado
+  Email: No encontrado
+  Nota: Gemela de LUIS EDUARDO
+
+--- DULCE ISABEL JIMENEZ GODOY (1976-10-09) ---
+  CURP: No encontrada en cluster principal
+  Nacimiento: Jalisco confirmado (mismo patron CURP familiar)
+  Domicilio: Av. Luna 39, Fracc. Real del Sol, CP 45654, GDL
+  RFC: No encontrado
+  NSS: No encontrado
+  Telefono: No encontrado
+  Email: No encontrado
+  Nota: Vive en zona con multiples departamentos (edificio grande)
+
+--- CORAZON DE MARIA JIMENEZ GODOY (1978-07-18) ---
+  CURP: No encontrada en cluster principal
+  Nacimiento: Jalisco confirmado
+  Domicilio: Cam. Antiguo a Sta. Cruz del Valle 89, CP 45615, GDL
+  RFC: No encontrado
+  NSS: No encontrado
+  ISSSTE:
+    - Cargo: BASE
+    - Sueldo: $2,814.48
+  Telefono: No encontrado
+  Email: No encontrado
+  Nota: Misma direccion que IVAN MANUEL (hermano)
+
+--- GABRIELA GEORGINA JIMENEZ GODOY (1987-02-23) ---
+  *** SUJETO DE REFERENCIA ***
+  CURP: JIGG870223MJCMDB08
+  RFC CheckID: JIGG870223KC0
+  NSS CheckID: 39098702531
+  NSS IMSS: 39108800234
+  Afore: PENSIONISSSTE
+  Domicilio: C 10 251, Col. Porvenir, CP 02940, CDMX
+  Estado: CDMX (e=9), nacimiento Jalisco (nac=14)
+  IMSS:
+    - Patron: BSCW S A P I DE CV
+    - Sueldo: $26,120
+    - CP: 02080
+  Telefono: No encontrado
+  Email: No encontrado
+
+--- CESAR IVAN JIMENEZ GODOY (1987-12-30) ---
+  CURP: JIGC871230HJCMDS09
+  RFC CheckID: JIGC8712308P4
+  NSS: 75068771320
+  Afore: AFORE BANAMEX
+  Domicilio: Av. San Francisco 229, Col. Haciendas de Zapopan,
+             CP 45220, GDL
+  IMSS (varios empleos):
+    - FLEXO SOLUCIONES SA DE CV, sueldo $32,319, CP 44800
+    - PINTARRON ALFRA SA DE CV, sueldo $30,430, CP 44460
+    - JABIL CIRCUIT DE MEXICO S DE RL DE CV, sueldo $35,601, CP 45130
+  Telefono Afore: 3312198924
+  Telefono IMSS: 3312198924 (consistente)
+  Email Afore: cesarivanjimenezgodoy03@gmail.com
+  RFC IMSS: SINPATRON
+  Conviviente en direccion: MARIA DE LOS ANGELES JIMENEZ HERRERA (1986)
+
+--- MARIA FERNANDA JIMENEZ GODOY (1988-08-30) ---
+  CURP: JIGF880830MJCMDR00
+  RFC CheckID: JIGF880830Q17
+  NSS: No encontrado en CheckID
+  Afore: (Consulta Unica: error 422)
+  Domicilio: C Las Flores 380, Col. Tlacopac, CP 01760, CDMX
+  Estado: CDMX (e=9), nacimiento Jalisco (nac=14)
+  IMSS:
+    - Patron: BSCW S A P I DE CV (mismo que GABRIELA)
+    - Sueldo: $26,120
+    - CP: 02080
+  Banorte:
+    - Titular: MARIA FERNANDA JIMENEZ GODOY
+    - Telefono: 0445536604167
+    - Domicilio: LAS FLORES, CP 1760
+  Email: No encontrado
+  Nota: Trabaja en la misma empresa que GABRIELA (BSCW)
+
+--- MARIA JESUS JIMENEZ GODOY (1988-10-21) ---
+  CURP: JIGJ881021MJCMDS04
+  RFC CheckID: (sin RFC registrado)
+  NSS: No encontrado
+  Afore: (Consulta Unica: error 422)
+  Domicilio: C Las Azucenas 2, Loc. La Eca, CP 48825, Jalisco
+  Telefono: No encontrado
+  Email: No encontrado
+  Conviviente en direccion: HERMINIO PELAYO CASTELLON (1981)
+
+--- FLORENCIO JIMENEZ GODOY (1990-07-28) ---
+  CURP: JIGF900728HJCMDL00
+  RFC CheckID: JIGF900728KF1
+  NSS: 02189065093
+  Afore: AFORE COPPEL
+  Domicilio: C Primavera 14, Loc. La Eca, CP 48825, Jalisco
+  Telefono Afore: 3348155483
+  Email Afore: alex115andermym@gmail.com
+  Convivientes en direccion:
+    - OTILIA XX GODOY (1966) - posible madre
+    - NEREDI VALDOVINOS VERDIN (1992) - pareja confirmada
+
+--- JESSICA DENIS JIMENEZ GODOY (1991-10-02) ---
+  CURP: JIGJ911002MJCMDS02
+  RFC CheckID: JIGJ911002GS6
+  NSS: No encontrado
+  Afore: (Consulta Unica: error 422)
+  Domicilio: C 10 de Mayo 10, Col. 1 de Mayo, CP 44940, GDL
+  Telefono: No encontrado
+  Email: No encontrado
+
+--- ANA KAREN JIMENEZ GODOY (1993-10-28) ---
+  CURP: JIGA931028MJCMDN05
+  RFC CheckID: JIGA931028M84
+  NSS: 04129381440
+  Afore: PS BANORTE
+  Domicilio: Priv. Vicente Guerrero 34 A, Col. Indigena de Mezquitan,
+             CP 45190, GDL
+  Telefono: No encontrado
+  Email: No encontrado
+
+--- IVAN JHOVANY JIMENEZ GODOY (1994-06-25) ---
+  CURP: JIGI940625HJCMDV08
+  RFC CheckID: JIGI9406254C0
+  NSS: 02179454703
+  Afore: AFORE BANAMEX
+  Domicilio: C Primavera 14, Loc. La Eca, CP 48800, Jalisco
+  IMSS:
+    - Patron: HOSPITAL MEXICO AMERICANO SC
+    - Sueldo: $62,563
+    - CP: 44620
+  RFC IMSS: HMA980720GC2 (RFC del hospital)
+  Telefono Afore: 3324029644
+  Telefono IMSS: 3324029644 (consistente)
+  Email Afore: jhonway251994@gmail.com
+
+--- EDGAR OMAR JIMENEZ GODOY (1996-08-30) ---
+  CURP: JIGE960830HJCMDD02
+  RFC CheckID: JIGE9608305V6
+  NSS: 18159696154
+  Afore: AFORE SURA
+  Domicilio: Priv. Vicente Guerrero 34 A, Col. Indigena de Mezquitan,
+             CP 45190, GDL
+  IMSS:
+    - Patron: SISTEMA INTERMUNICIPAL DE LOS SERVICIOS DE AGUA POTABLE
+    - Sueldo: $66,599
+    - CP: 45160
+  RFC IMSS: SIS780421IR3 (RFC del patron - municipio)
+  Telefono Afore: 3312214849
+  Telefono IMSS: 3312214849 (consistente)
+  Email Afore: edgar_jgodoy@hotmail.com
+
+--- FELIPE DE JESUS JIMENEZ GODOY (1998-02-14) ---
+  CURP: JIGF980214HJCMDL07
+  RFC CheckID: JIGF980214NN7
+  NSS: 05159892974
+  Afore: AFORE XXI BANORTE
+  Domicilio: C Vicente Guerrero 34 A, Col. Indigena de Mezquitan,
+             CP 45190, GDL
+  IMSS:
+    - Patron: SISTEMA INTERMUNICIPAL DE LOS SERVICIOS DE AGUA POTABLE
+              (mismo que EDGAR OMAR - trabajan juntos)
+    - Sueldo: $125,617
+    - CP: 45160
+  Telefono IMSS: 3318391057
+  Email: No encontrado
+
+--- VIANEY GUADALUPE JIMENEZ GODOY (1999-01-11) ---
+  CURP: JIGV990111MJCMDN19
+  RFC CheckID: (error HTTP 500 - reintento pendiente)
+  NSS: No encontrado
+  Afore: (Consulta Unica: error 422)
+  Domicilio: Cto. Paso de los Toros 106, Fracc. Hacienda Santa Fe,
+             CP 45655, GDL
+  Telefono: No encontrado
+  Email: No encontrado
+  Nota: Vive con hermanos LUIS FERNANDO y SAID ALEXIS
+  Padres en direccion:
+    - HUGO ADALBERTO JIMENEZ RAZON (1964)
+    - MARIA DEL ROCIO GODOY RAMIREZ (1967)
+
+--- SAID ALEXIS JIMENEZ GODOY (1999-01-11) ---
+  CURP: JIGS990111HJCMDD06
+  RFC CheckID: JIGS990111CD7
+  NSS: 03159956576
+  Afore: AFORE BANAMEX
+  Domicilio: Cto. Paso de los Toros 106, Fracc. Hacienda Santa Fe,
+             CP 45655, GDL
+  IMSS (varios empleos):
+    - SOLUTIONS SERPERF SC, sueldo $26,372, CP 03100
+    - PMD LOGISTIC SA DE CV, sueldo $26,904, CP 45692
+    - GRUPO EMPRESARIAL MAPE DE OCCIDENTE SA DE CV, sueldo $35,089, CP 44670
+  Telefono Afore: 3122451306
+  Email Afore: alex.sajg@gmail.com
+
+--- LUIS FERNANDO JIMENEZ GODOY (1999-01-11) ---
+  CURP: JIGL990111HJCMDS08
+  RFC CheckID: JIGL9901112Y7
+  NSS: 38179951009
+  Afore: AFORE SURA
+  Domicilio: Cto. Paso de los Toros 106, Fracc. Hacienda Santa Fe,
+             CP 45655, GDL
+  IMSS (varios empleos):
+    - SOLUTIONS SERPERF SC, sueldo $26,337, CP 03100
+    - REDESENVIA SA DE CV, sueldo $42,679, CP 38000
+    - APOYO LOGISTICO DEL VALLE DEL SILICIO SA DE CV, sueldo $29,900, CP 45078
+  Telefono Afore: 3332586885
+  Email Afore: fernando.jimg@hotmail.com
+  RFC IMSS: ALV030204BW6 (parece RFC personal real)
+
+--- KAREN LIZBETH JIMENEZ GODOY (2000-02-21) ---
+  CURP: JIGK000221MJCMDRA8
+  RFC CheckID: JIGK0002212E3
+  NSS: 51160080555
+  Afore: AFORE XXI BANORTE
+  Domicilio: C Juarez 200, Col. Centro, CP 48800, Jalisco
+  IMSS (varios empleos):
+    - INSTITUTO TECNOLOGICO JOSE MARIO MOLINA PASQUEL Y SEANEZ,
+      sueldo $0 (becaria/practica), CP 45019
+    - GOMSA INTEGRADORA S A P I DE CV, sueldo $61,182, CP 28239
+  Telefono: No encontrado
+  Email: No encontrado
+
+========================================================================
+4. ESPOSOS / PAREJAS CONFIRMADOS
+========================================================================
+
+--- 4.1 ALICIA + DOMINGO JAVIER GARCIA MANZO ---
+
+  DOMINGO JAVIER GARCIA MANZO
+    Fecha nacimiento: 1955-07-06
+    CURP: GAMD550706HJCRNM00
+    RFC: GAMD550706IH7
+    NSS: 04755527704
+    Afore: No Consulta Unica (sin datos)
+    Domicilio padron: C Puerto Melaque 1691, Col. Talpita, CP 44710
+    Domicilio Santander: Castellanos y Tapia 978, CP 44719
+    IMSS:
+      - Patron: NICSA MAV SA DE CV
+      - Sueldo: $12,880
+      - CP: 44610
+    Telefono Santander: 10578826
+
+  Hijos:
+    NOHEMI GUADALUPE GARCIA JIMENEZ (1989-03-02)
+      CURP: JIGN890302MJCMBN00
+      Domicilio: C Puerto Melaque 1691, CP 44710 (misma direccion)
+
+--- 4.2 JOSE ALBERTO + ARGELIA PATRICIA LANDEROS SILVA ---
+
+  ARGELIA PATRICIA LANDEROS SILVA
+    Fecha nacimiento: 1973-09-02
+    RFC: LASA730902KE3 (encontrado en Santander)
+    Domicilio Santander: Zaragoza 15 A
+    Telefono Santander: 38120130
+    No encontrada en IMSS ni Telcel con nombre exacto
+
+  Convivientes en direccion de JOSE ALBERTO:
+    Ninguno confirmado aparte de la pareja
+
+--- 4.3 IVAN MANUEL + ELIZABETH ESTRADA CORONADO ---
+
+  ELIZABETH ESTRADA CORONADO
+    Fecha nacimiento: 1977-07-12
+    RFC: No encontrado
+    Domicilio: Cam. Antiguo a Sta. Cruz del Valle 89B, CP 45615
+    No encontrada en bancos ni IMSS con ese nombre exacto
+
+  En la misma direccion:
+    ISABEL GODOY MARTINEZ (1952-01-23) - posible suegra
+      (GODOY = mismo apellido materno que los hermanos)
+
+--- 4.4 FLORENCIO + NEREDI VALDOVINOS VERDIN ---
+
+  NEREDI VALDOVINOS VERDIN
+    Fecha nacimiento: 1992-05-23
+    RFC: No encontrado
+    Domicilio: C Primavera 14, CP 48825
+    No encontrada en bancos ni IMSS
+
+  En la misma direccion:
+    OTILIA XX GODOY (1966-07-15) - posible madre de FLORENCIO
+
+--- 4.5 HUGO ADALBERTO JIMENEZ RAZON + MARIA DEL ROCIO GODOY RAMIREZ ---
+
+  HUGO ADALBERTO JIMENEZ RAZON
+    Fecha nacimiento: 1964-06-29
+    CURP: No encontrada (no esta en cluster principal JIMENEZ GODOY)
+    RFC: SINPATRON (IMSS)
+    Domicilio: Cto. Paso de los Toros 106, CP 45655
+    IMSS:
+      - SINPATRON
+      - Telefono: 11896452
+      - UMF 39 Tlaquepaque
+    Nota: Tiene apellido JIMENEZ pero materno RAZON (no GODOY).
+          Podria ser primo de los hermanos o casado con una hermana.
+
+  MARIA DEL ROCIO GODOY RAMIREZ
+    Fecha nacimiento: 1967-11-07
+    RFC: No encontrado
+    No encontrada en bancos ni IMSS con nombre exacto
+
+  Hijos (trillizos):
+    VIANEY GUADALUPE JIMENEZ GODOY (1999-01-11)
+    LUIS FERNANDO JIMENEZ GODOY (1999-01-11)
+    SAID ALEXIS JIMENEZ GODOY (1999-01-11)
+
+========================================================================
+5. CONVIVIENTES EN DIRECCIONES FAMILIARES
+========================================================================
+
+--- Casa familiar (C Montes Marcianos 2029, CP 44320/44330) ---
+  JOSE JIMENEZ VARGAS (1931) - PADRE
+  MARIA GUADALUPE GODOY GONZALEZ (1937) - MADRE
+  MARIA TERESA JIMENEZ GODOY (1955) - hermana
+  GILBERTO JIMENEZ GODOY (1959) - hermano
+  JOSE JAIME JIMENEZ GODOY (1962) - hermano
+  ISMAEL JIMENEZ GODOY (1964) - hermano
+  SUSANA JIMENEZ GODOY (1966) - hermana
+  ADRIANA GUADALUPE JIMENEZ GODOY (1974) - hermana
+  LUIS EDUARDO JIMENEZ GODOY (1974) - hermano
+  MARIA DE JESUS CARDENAS GONZALEZ (1970) - no es JIMENEZ GODOY
+  MIRIAM MONTSERRAT JIMENEZ CARDENAS (1999) - no es JIMENEZ GODOY
+
+  Nota sobre MARIA DE JESUS CARDENAS GONZALEZ:
+    - Vive en casa familiar
+    - Mismo apellido CARDENAS que MIRIAM MONTSERRAT
+    - Posible esposa de JOSE JAIME o ISMAEL
+    - ISSSTE: 3 registros con ese nombre (UMF 70, 93, 58)
+
+--- C Puerto Melaque 1691, CP 44710 (ALICIA) ---
+  DOMINGO JAVIER GARCIA MANZO (1955) - esposo
+  ALICIA JIMENEZ GODOY (1957) - hermana
+  NOHEMI GUADALUPE GARCIA JIMENEZ (1989) - hija
+
+--- Cto. Paso de los Toros 106, CP 45655 (HUGO + VIANEY/LUIS/SAID) ---
+  HUGO ADALBERTO JIMENEZ RAZON (1964) - padre
+  MARIA DEL ROCIO GODOY RAMIREZ (1967) - madre
+  VIANEY GUADALUPE JIMENEZ GODOY (1999) - hermana
+  LUIS FERNANDO JIMENEZ GODOY (1999) - hermano
+  SAID ALEXIS JIMENEZ GODOY (1999) - hermano
+
+--- C Primavera 14, CP 48825 (FLORENCIO) ---
+  OTILIA XX GODOY (1966) - posible madre
+  FLORENCIO JIMENEZ GODOY (1990) - hermano
+  NEREDI VALDOVINOS VERDIN (1992) - pareja
+
+--- Cam. Antiguo a Sta. Cruz del Valle 89B, CP 45615 (IVAN MANUEL) ---
+  ISABEL GODOY MARTINEZ (1952) - posible suegra
+  IVAN MANUEL JIMENEZ GODOY (1975) - hermano
+  ELIZABETH ESTRADA CORONADO (1977) - esposa
+  CORAZON DE MARIA JIMENEZ GODOY (1978) - hermana
+
+--- C Mision de San Antonio 6144, CP 45020 (JOSE ALBERTO) ---
+  JOSE ALBERTO JIMENEZ GODOY (1967) - hermano
+  ARGELIA PATRICIA LANDEROS SILVA (1973) - esposa
+
+--- C Vicente Guerrero 34 A, CP 45190 (ANA KAREN/EDGAR/FELIPE) ---
+  MARCO ANTONIO HERNANDEZ HERNANDEZ (1958) - no es JIMENEZ GODOY
+  ELIA RAMOS RAMOS (1964)
+  FELIPE DE JESUS JIMENEZ MEDINA (1967) - posible hermano (diferente materno)
+  INDELISA GODOY CAMPOS (1967) - esposa de FELIPE JIMENEZ MEDINA
+  ERIKA ADRIANA RUVALCABA GARCIA (1983)
+  EDGAR EDUARDO HERNANDEZ RAMOS (1987)
+  ANA KAREN JIMENEZ GODOY (1993) - hermana
+  EDGAR OMAR JIMENEZ GODOY (1996) - hermano
+  FELIPE DE JESUS JIMENEZ GODOY (1998) - hermano
+  IVETH ALEJANDRA VELAZQUEZ SANCHEZ (1999)
+
+  Nota: FELIPE DE JESUS JIMENEZ MEDINA (1967) tiene apellido materno
+  MEDINA en lugar de GODOY. Podria ser hermano de otra madre, o un
+  pariente cercano. Vive en la misma direccion.
+
+--- Av. San Francisco 229, CP 45220 (CESAR IVAN) ---
+  MARIA DE LOS ANGELES JIMENEZ HERRERA (1986) - no es JIMENEZ GODOY
+  CESAR IVAN JIMENEZ GODOY (1987) - hermano
+
+--- C Las Azucenas 2, CP 48825 (MARIA JESUS) ---
+  HERMINIO PELAYO CASTELLON (1981) - no es JIMENEZ GODOY
+  MARIA JESUS JIMENEZ GODOY (1988) - hermana
+
+========================================================================
+6. RESUMEN DE CONTACTOS ENCONTRADOS
+========================================================================
+
+  HERMANO/A           TELEFONO      EMAIL
+  ------------------  ------------  ------------------------------------
+  ISMAEL              3334074151    ismaeljimenezgodoy1120@gmail.com
+  SUSANA              3312996247    susangood1003@gmail.com
+  CESAR IVAN          3312198924    cesarivanjimenezgodoy03@gmail.com
+  FLORENCIO           3348155483    alex115andermym@gmail.com
+  IVAN JHOVANY        3324029644    jhonway251994@gmail.com
+  EDGAR OMAR          3312214849    edgar_jgodoy@hotmail.com
+  SAID ALEXIS         3122451306    alex.sajg@gmail.com
+  LUIS FERNANDO       3332586885    fernando.jimg@hotmail.com
+  GILBERTO            3334695998    (sin email)
+  JOSE JAIME          36385887      (sin email)
+  JOSE ALBERTO        3318638050    (sin email)
+  LUIS EDUARDO        3314195903    (sin email)
+  FELIPE              3318391057    (sin email)
+
+  ESPOSO              TELEFONO      EMAIL
+  ------------------  ------------  ------------------------------------
+  DOMINGO GARCIA      10578826      (sin email)
+  ARGELIA LANDEROS    38120130      (sin email)
+
+========================================================================
+7. EMPLEOS CONFIRMADOS
+========================================================================
+
+  HERMANO/A           PATRON                           SUELDO    CP
+  ------------------  -------------------------------  --------  ----
+  GILBERTO            CRISTINO ALVARADO HUERTA         $16,350   45520
+  JOSE JAIME          SERVICIOS Y SOLUCIONES ROCOFAM   $65,529   45070
+  ISMAEL              LABORATORIOS SOPHIA SA DE CV     $67,459   45221
+  SUSANA              ANA MARIA VALENCIA DEL RIO       $38,344   44360
+  JOSE ALBERTO        NUEVOS SERVICIOS ADMINISTRATIVOS $127,313  76240
+  LUIS EDUARDO        COPPEL SA DE CV                  $35,603   45900
+  GABRIELA            BSCW S A P I DE CV               $26,120   02080
+  CESAR IVAN          JABIL CIRCUIT DE MEXICO          $35,601   45130
+  MARIA FERNANDA      BSCW S A P I DE CV               $26,120   02080
+  IVAN JHOVANY        HOSPITAL MEXICO AMERICANO SC     $62,563   44620
+  EDGAR OMAR          SISTEMA INTERMUNICIPAL AGUA      $66,599   45160
+  FELIPE              SISTEMA INTERMUNICIPAL AGUA      $125,617  45160
+  SAID ALEXIS         GRUPO EMPRESARIAL MAPE           $35,089   44670
+  LUIS FERNANDO       REDESENVIA SA DE CV              $42,679   38000
+  KAREN LIZBETH       GOMSA INTEGRADORA S A P I        $61,182   28239
+  DOMINGO (esposo)    NICSA MAV SA DE CV               $12,880   44610
+
+  Notas:
+  - GABRIELA y MARIA FERNANDA trabajan en la misma empresa (BSCW)
+  - EDGAR OMAR y FELIPE DE JESUS trabajan en el mismo lugar
+    (Sistema Intermunicipal de Agua)
+  - SAID ALEXIS y LUIS FERNANDO trabajaron en el mismo lugar
+    (SOLUTIONS SERPERF SC)
+  - JOSE ALBERTO y FELIPE DE JESUS tienen los sueldos mas altos
+
+========================================================================
+8. CUENTAS BANCARIAS ENCONTRADAS
+========================================================================
+
+  TITULAR                      BANCO       TELEFONO      DOMICILIO
+  ---------------------------  ----------  ------------  -----------------
+  MARIA FERNANDA JIMENEZ GODOY Banorte     0445536604167 LAS FLORES CP 1760
+  ARGELIA PATRICIA LANDEROS    Santander   38120130      ZARAGOZA 15 A
+  DOMINGO JAVIER GARCIA MANZO  Santander   10578826      CASTELLANOS 978
+
+========================================================================
+9. LO QUE FALTA POR INVESTIGAR
+========================================================================
+
+  a) Consulta Unica Actas (servicio caido al momento de la consulta):
+     - Acta de nacimiento de GABRIELA: confirmar nombres exactos de padres
+     - Actas de matrimonio de las 5 hermanas sin esposo confirmado:
+       MARIA TERESA, SUSANA, ADRIANA GUADALUPE, MARIA JESUS,
+       MARIA FERNANDA, JESSICA DENIS, ANA KAREN, VIANEY, KAREN LIZBETH
+     - Actas de divorcio si aplica
+
+  b) CheckID reintento:
+     - MARIA TERESA (error 500)
+     - VIANEY GUADALUPE (error 500)
+
+  c) Consulta Unica Afore reintento (errores 422):
+     - MARIA TERESA, ALICIA, MARIA FERNANDA, MARIA JESUS,
+       JESSICA DENIS, VIANEY GUADALUPE
+
+  d) Buscar ELIZABETH ESTRADA CORONADO y NEREDI VALDOVINOS VERDIN
+     en todas las bases (no encontradas con nombre exacto)
+
+  e) Buscar FELIPE DE JESUS JIMENEZ MEDINA (1967) para determinar
+     si es hermano de otra rama o pariente cercano
+
+  f) LILIANA JIMENEZ GODOY aparecio en ISSSTE pero no esta en el
+     cluster principal. Verificar si es prima hermana.
+
+  g) Buscar hijos de cada hermana en padron electoral (buscando
+     apellidos mixtos JIMENEZ + apellido del esposo)
+
+========================================================================
+FIN DEL REPORTE
+========================================================================

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Business Manager</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:13px;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+.nav{background:#fff;border-bottom:1px solid #dadce0;height:44px;display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:6px;margin-right:20px}
+.nav-logo svg{width:28px;height:28px}
+.nav-tabs{display:flex;height:100%}
+.nav-tabs a{padding:0 14px;height:100%;display:flex;align-items:center;text-decoration:none;color:#65676b;font-size:13px;font-weight:500;border-bottom:3px solid transparent;transition:all .15s}
+.nav-tabs a.active{color:#0a7cff;border-bottom-color:#0a7cff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-avatar{width:26px;height:26px;border-radius:50%;background:#0a7cff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 44px)}
+
+/* SIDEBAR */
+.sb{width:56px;background:#242526;display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px}
+.sb-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#b0b3b8;transition:all .15s}
+.sb-icon:hover{background:#3a3b3c}
+.sb-icon.active{background:#0a7cff;color:#fff}
+.sb-icon svg{width:20px;height:20px}
+.sb-spacer{flex:1}
+
+/* SUB-SIDEBAR */
+.sub-sb{width:220px;background:#fff;border-right:1px solid #dadce0;padding:12px 0}
+.sub-sb-title{padding:8px 16px;font-size:14px;font-weight:700;color:#1a1a1a}
+.sub-sb-item{padding:7px 16px 7px 20px;font-size:13px;color:#65676b;cursor:pointer;display:flex;align-items:center;gap:10px;border-radius:0}
+.sub-sb-item:hover{background:#f0f2f5}
+.sub-sb-item.active{color:#0a7cff;font-weight:600;background:#e8f0fe}
+
+/* MAIN */
+.main{flex:1;padding:20px 24px;background:#f0f2f5;overflow-x:auto}
+.white{background:#fff;border-radius:8px;border:1px solid #dadce0}
+
+/* HEADER */
+.hdr{padding:16px 20px;border-bottom:1px solid #dadce0;display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:20px;font-weight:700;color:#1a1a1a}
+.hdr-sub{font-size:12px;color:#65676b;margin-top:2px}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-blue{background:#0a7cff;color:#fff}
+.btn-blue:hover{background:#0969da}
+.btn-white{background:#fff;color:#1a1a1a;border:1px solid #dadce0}
+.btn-white:hover{background:#f0f2f5}
+
+/* FILTERS */
+.fbar{display:flex;align-items:center;gap:8px;padding:12px 16px;flex-wrap:wrap}
+.fbar input{padding:7px 12px;border:1px solid #dadce0;border-radius:6px;font-size:13px;width:240px;background:#fff}
+.fbar input:focus{outline:none;border-color:#0a7cff}
+.fbar select{padding:7px 12px;border:1px solid #dadce0;border-radius:6px;font-size:13px;background:#fff;color:#1a1a1a}
+
+/* KPI */
+.kpi-row{display:flex;gap:12px;padding:0 16px 16px;flex-wrap:wrap}
+.kpi{background:#f8f9fa;border:1px solid #dadce0;border-radius:8px;padding:12px 16px;min-width:160px;flex:1}
+.kpi-lbl{font-size:11px;color:#65676b;font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+.kpi-val{font-size:22px;font-weight:700;color:#1a1a1a;margin-top:2px}
+.kpi-sub{font-size:11px;color:#8a8d91;margin-top:1px}
+
+/* TABLE */
+.tw{overflow-x:auto;border-top:1px solid #dadce0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8f9fa;text-align:left;padding:9px 12px;font-weight:600;color:#65676b;font-size:12px;border-bottom:1px solid #dadce0;position:sticky;top:0;white-space:nowrap}
+th.r{text-align:right}
+td{padding:9px 12px;border-bottom:1px solid #f0f2f5;vertical-align:middle;white-space:nowrap}
+td.r{text-align:right}
+td.muted{color:#65676b;font-size:12px}
+td strong{color:#1a1a1a}
+tr:hover{background:#f8f9fa}
+tr:last-child td{border-bottom:none}
+tr.separator td{background:#f0f2f5;padding:6px 12px;font-size:11px;color:#8a8d91;font-weight:600;letter-spacing:.4px;border-bottom:1px solid #dadce0}
+
+/* STATUS */
+.st{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.st-active{background:#e6f7e9;color:#2d6e3e}
+.st-inactive{background:#f0f2f5;color:#65676b}
+.st-warn{background:#fff1e6;color:#a35500}
+.st-error{background:#fde7e7;color:#c62828}
+.st-dot{width:6px;height:6px;border-radius:50%}
+.st-active .st-dot{background:#2d6e3e}
+.st-inactive .st-dot{background:#bec3c9}
+.st-warn .st-dot{background:#a35500}
+.st-error .st-dot{background:#c62828}
+
+/* ACCESS TAGS */
+.at{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.at-full{background:#e8f0fe;color:#0a7cff}
+.at-basic{background:#f0f2f5;color:#65676b}
+.at-finance{background:#fff1e6;color:#a35500}
+
+/* FOOTER */
+.tfoot{padding:10px 12px;font-size:12px;color:#65676b;border-top:1px solid #dadce0;display:flex;justify-content:space-between}
+
+/* WARNING BANNER */
+.warn-banner{background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:12px 16px;margin:0 16px 12px;display:flex;align-items:flex-start;gap:10px}
+.warn-banner .wi{color:#f9a825;font-size:18px;flex-shrink:0}
+.warn-banner .wt{font-size:13px}
+.warn-banner .wt b{color:#1a1a1a}
+.warn-banner .wt span{color:#65676b}
+.warn-banner a{color:#0a7cff;text-decoration:underline}
+
+/* PROGRESS BAR */
+.pbar{height:6px;border-radius:3px;background:#e5e7eb;margin:6px 0;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px;background:#0a7cff}
+
+/* SEPARATOR LABEL */
+.sep-label{background:#f0f2f5;padding:6px 12px;font-size:11px;color:#8a8d91;font-weight:600;letter-spacing:.4px;border-bottom:1px solid #dadce0;border-top:1px solid #dadce0}
+
+/* SCREENSHOT WRAPPER */
+.shot{max-width:1280px;margin:0 auto 40px}
+.shot-lbl{background:#1a1a1a;color:#bec3c9;text-align:center;padding:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
+
+/* BILLING */
+.blg{padding:16px 20px}
+.blg h2{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:12px}
+.blg-tabs{display:flex;gap:4px;margin-bottom:16px}
+.blg-tab{padding:6px 14px;border-radius:4px;font-size:13px;cursor:pointer;font-weight:500}
+.blg-tab.active{background:#e8f0fe;color:#0a7cff}
+.blg-tab:not(.active){color:#65676b}
+.blg-row{display:flex;gap:16px;margin-bottom:16px}
+.blg-card{flex:1;border:1px solid #dadce0;border-radius:8px;padding:14px 16px}
+.blg-card h3{font-size:13px;color:#65676b;font-weight:500;margin-bottom:4px}
+.blg-card .amt{font-size:20px;font-weight:700;color:#1a1a1a}
+.blg-card .sub{font-size:12px;color:#65676b;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- ============ SCREENSHOT 1: ADS MANAGER ============ -->
+<div class="shot">
+<div class="shot-lbl">Screenshot 1 — Meta Ads Manager · Campaigns</div>
+
+<div class="nav">
+  <div class="nav-logo">
+    <svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="18" fill="#0a7cff"/><path d="M25.5 19.2c0-4.1-2.7-7-6.3-7-3.6 0-6.3 2.9-6.3 7 0 2.8 1.6 5.1 3.9 6.2v-4.4h-1.2v-1.8h1.2v-1.4c0-1.2.7-1.8 1.8-1.8.5 0 1 .1 1 .1v1.2h-.6c-.6 0-.8.3-.8.7v.9h1.3l-.2 1.8h-1.1v4.4c2.3-1.1 3.9-3.4 3.9-6.2z" fill="#fff"/></svg>
+  </div>
+  <div class="nav-tabs">
+    <a href="#">Home</a>
+    <a href="#" class="active">Ads</a>
+    <a href="#">Content</a>
+    <a href="#">Inbox</a>
+    <a href="#">Insights</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-avatar">NB</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sb">
+    <div class="sb-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
+    <div class="sb-spacer"></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg></div>
+  </div>
+
+  <div class="sub-sb">
+    <div class="sub-sb-title">Advertise</div>
+    <div class="sub-sb-item active">Campaigns</div>
+    <div class="sub-sb-item">Ad sets</div>
+    <div class="sub-sb-item">Ads</div>
+    <div class="sub-sb-title" style="margin-top:12px">Billing</div>
+    <div class="sub-sb-item">Billing & payments</div>
+    <div class="sub-sb-item">Payment methods</div>
+  </div>
+
+  <div class="main">
+    <div class="white">
+      <div class="hdr">
+        <div>
+          <h1>Campaigns</h1>
+          <div class="hdr-sub">Noticias Boqueñas · Ad account</div>
+        </div>
+        <button class="btn btn-blue">+ Create</button>
+      </div>
+      <div class="fbar">
+        <input type="text" placeholder="Search campaigns..." value="Noticias Boqueñas" readonly>
+        <select><option>All statuses</option></select>
+        <select><option>Last 90 days: Jun 9, 2026 - Sep 6, 2026</option></select>
+        <select><option>Custom performance</option></select>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-lbl">Amount spent</div><div class="kpi-val">$16,894</div><div class="kpi-sub">MXN · 18 campaigns</div></div>
+        <div class="kpi"><div class="kpi-lbl">Impressions</div><div class="kpi-val">2,014,500</div><div class="kpi-sub">Estimated reach</div></div>
+        <div class="kpi"><div class="kpi-lbl">Active</div><div class="kpi-val">1</div><div class="kpi-sub">Ended: 15 · Removed: 2</div></div>
+        <div class="kpi"><div class="kpi-lbl">Advertisers</div><div class="kpi-val">2</div><div class="kpi-sub">melkicd3 / carlosrojas1978</div></div>
+      </div>
+      <div class="tw">
+        <table>
+          <tr>
+            <th style="width:30px"><input type="checkbox"></th>
+            <th>Campaign</th>
+            <th>Delivery</th>
+            <th class="r">Results</th>
+            <th class="r">Cost per result</th>
+            <th class="r">Amount spent</th>
+            <th class="r">Impressions</th>
+            <th class="r">Reach</th>
+            <th>Start</th>
+            <th>End</th>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>NB-2026-09-03 Bertha Ahued</strong><br><span style="font-size:11px;color:#65676b">carlosrojas1978@yahoo.com</span></td>
+            <td><span class="st st-active"><span class="st-dot"></span>Active</span></td>
+            <td class="r">487</td>
+            <td class="r">$0.45</td>
+            <td class="r"><strong>$219.15</strong></td>
+            <td class="r">8,934</td>
+            <td class="r">6,218</td>
+            <td>Sep 3, 2026</td>
+            <td>Sep 6, 2026</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>NB-2026-08-24 Bertha CFE</strong><br><span style="font-size:11px;color:#65676b">carlosrojas1978@yahoo.com</span></td>
+            <td><span class="st st-inactive"><span class="st-dot"></span>Ended</span></td>
+            <td class="r">612</td>
+            <td class="r">$0.38</td>
+            <td class="r"><strong>$232.56</strong></td>
+            <td class="r">12,847</td>
+            <td class="r">9,102</td>
+            <td>Aug 24, 2026</td>
+            <td>Aug 28, 2026</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>NB-2026-08-20 Mosquitoes BDR</strong><br><span style="font-size:11px;color:#65676b">carlosrojas1978@yahoo.com</span></td>
+            <td><span class="st st-inactive"><span class="st-dot"></span>Ended</span></td>
+            <td class="r">398</td>
+            <td class="r">$0.56</td>
+            <td class="r"><strong>$222.88</strong></td>
+            <td class="r">8,541</td>
+            <td class="r">5,987</td>
+            <td>Aug 20, 2026</td>
+            <td>Aug 25, 2026</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>NB-2026-08-19 Windshield fine</strong><br><span style="font-size:11px;color:#65676b">carlosrojas1978@yahoo.com</span></td>
+            <td><span class="st st-inactive"><span class="st-dot"></span>Ended</span></td>
+            <td class="r">445</td>
+            <td class="r">$0.51</td>
+            <td class="r"><strong>$226.95</strong></td>
+            <td class="r">9,234</td>
+            <td class="r">6,541</td>
+            <td>Aug 19, 2026</td>
+            <td>Aug 25, 2026</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>NB-2026-08-17 Council roar</strong><br><span style="font-size:11px;color:#65676b">No advertiser (MISSING_DISCLAIMER)</span></td>
+            <td><span class="st st-warn"><span class="st-dot"></span>Missing disclaimer</span></td>
+            <td class="r">42</td>
+            <td class="r">$1.19</td>
+            <td class="r"><strong>$49.98</strong></td>
+            <td class="r">547</td>
+            <td class="r">389</td>
+            <td>Aug 17, 2026</td>
+            <td>Aug 18, 2026</td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>NB-2026-06-02 [No text]</strong><br><span style="font-size:11px;color:#65676b">carlosrojas1978@yahoo.com</span></td>
+            <td><span class="st st-inactive"><span class="st-dot"></span>Ended</span></td>
+            <td class="r">723</td>
+            <td class="r">$0.62</td>
+            <td class="r"><strong>$448.26</strong></td>
+            <td class="r">17,892</td>
+            <td class="r">12,456</td>
+            <td>Jun 2, 2026</td>
+            <td>Jun 7, 2026</td>
+          </tr>
+        </table>
+        <div class="tfoot">
+          <span>Results from 7 campaigns</span>
+          <span>Total spent: <strong>$1,399.78</strong> · Impressions: <strong>57,995</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ SCREENSHOT 2: PEOPLE ============ -->
+<div class="shot">
+<div class="shot-lbl">Screenshot 2 — Business Settings · People</div>
+
+<div class="nav">
+  <div class="nav-logo"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="18" fill="#0a7cff"/><path d="M25.5 19.2c0-4.1-2.7-7-6.3-7-3.6 0-6.3 2.9-6.3 7 0 2.8 1.6 5.1 3.9 6.2v-4.4h-1.2v-1.8h1.2v-1.4c0-1.2.7-1.8 1.8-1.8.5 0 1 .1 1 .1v1.2h-.6c-.6 0-.8.3-.8.7v.9h1.3l-.2 1.8h-1.1v4.4c2.3-1.1 3.9-3.4 3.9-6.2z" fill="#fff"/></svg></div>
+  <div class="nav-tabs">
+    <a href="#">Home</a>
+    <a href="#">Ads</a>
+    <a href="#">Content</a>
+    <a href="#">Inbox</a>
+    <a href="#">Insights</a>
+  </div>
+  <div class="nav-right"><div class="nav-avatar">NB</div></div>
+</div>
+
+<div class="layout">
+  <div class="sb">
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></div>
+    <div class="sb-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg></div>
+    <div class="sb-spacer"></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg></div>
+  </div>
+
+  <div class="sub-sb">
+    <div class="sub-sb-title">Settings</div>
+    <div class="sub-sb-item">Business info</div>
+    <div class="sub-sb-item active">People</div>
+    <div class="sub-sb-item">Pages</div>
+    <div class="sub-sb-item">Ad accounts</div>
+    <div class="sub-sb-item">Instagram accounts</div>
+  </div>
+
+  <div class="main">
+    <div class="white">
+      <div class="hdr">
+        <div>
+          <h1>People</h1>
+          <div class="hdr-sub">Noticias Boqueñas · Business ID: 103556375072724</div>
+        </div>
+        <div></div>
+      </div>
+      <div class="fbar">
+        <input type="text" placeholder="Search by name, ID, or email">
+        <button class="btn btn-white">Filters</button>
+        <button class="btn btn-white">Export ▾</button>
+      </div>
+      <div class="tw">
+        <table>
+          <tr>
+            <th style="width:30px"><input type="checkbox"></th>
+            <th>Name</th>
+            <th>Account access</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;border-radius:50%;background:#e4e6eb;display:flex;align-items:center;justify-content:center;font-size:14px;color:#65676b">NB</div>
+                <div>
+                  <div><strong>Noticias Boqueñas</strong></div>
+                  <div style="font-size:12px;color:#65676b">carlosrojas1978@yahoo.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div><strong>Partial access</strong></div>
+              <div style="font-size:12px;color:#65676b">Ad accounts</div>
+              <div style="margin-top:4px"><strong style="font-size:12px;color:#1a1a1a">Advanced options</strong></div>
+              <div style="font-size:12px;color:#65676b">Finance (view and manage)</div>
+            </td>
+            <td>
+              <div style="font-size:12px;color:#65676b">No end date</div>
+              <span class="st st-active"><span class="st-dot"></span>Active</span>
+            </td>
+            <td><a href="#" style="color:#0a7cff;font-size:13px">Details</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;border-radius:50%;background:#e4e6eb;display:flex;align-items:center;justify-content:center;font-size:14px;color:#65676b">NP</div>
+                <div>
+                  <div><strong>Noticias Puebla</strong></div>
+                  <div style="font-size:12px;color:#65676b">melkicd3@hotmail.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div><strong>Full access</strong></div>
+              <div style="font-size:12px;color:#65676b">Everything</div>
+            </td>
+            <td>
+              <div style="font-size:12px;color:#65676b">Expired Jan 15, 2025</div>
+              <span class="st st-inactive"><span class="st-dot"></span>Deactivated</span>
+            </td>
+            <td><a href="#" style="color:#0a7cff;font-size:13px">Details</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;border-radius:50%;background:#e4e6eb;display:flex;align-items:center;justify-content:center;font-size:14px;color:#65676b">IL</div>
+                <div>
+                  <div><strong>Ignacio Lopez Beristain</strong></div>
+                  <div style="font-size:12px;color:#65676b">ilblopeznb@outlook.com</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div><strong>Basic</strong></div>
+              <div style="font-size:12px;color:#65676b">Basic</div>
+            </td>
+            <td>
+              <div style="font-size:12px;color:#65676b">Removed Mar 12, 2026</div>
+              <span class="st st-error"><span class="st-dot"></span>Deactivated — given low</span>
+            </td>
+            <td><a href="#" style="color:#0a7cff;font-size:13px">Details</a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ SCREENSHOT 3: BILLING ============ -->
+<div class="shot">
+<div class="shot-lbl">Screenshot 3 — Billing & payments</div>
+
+<div class="nav">
+  <div class="nav-logo"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="18" fill="#0a7cff"/><path d="M25.5 19.2c0-4.1-2.7-7-6.3-7-3.6 0-6.3 2.9-6.3 7 0 2.8 1.6 5.1 3.9 6.2v-4.4h-1.2v-1.8h1.2v-1.4c0-1.2.7-1.8 1.8-1.8.5 0 1 .1 1 .1v1.2h-.6c-.6 0-.8.3-.8.7v.9h1.3l-.2 1.8h-1.1v4.4c2.3-1.1 3.9-3.4 3.9-6.2z" fill="#fff"/></svg></div>
+  <div class="nav-tabs">
+    <a href="#">Home</a>
+    <a href="#">Ads</a>
+    <a href="#">Content</a>
+    <a href="#">Inbox</a>
+    <a href="#">Insights</a>
+  </div>
+  <div class="nav-right"><div class="nav-avatar">NB</div></div>
+</div>
+
+<div class="layout">
+  <div class="sb">
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+    <div class="sb-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg></div>
+    <div class="sb-spacer"></div>
+    <div class="sb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg></div>
+  </div>
+
+  <div class="sub-sb">
+    <div class="sub-sb-item">Payment methods</div>
+    <div class="sub-sb-item">Payment activity</div>
+    <div class="sub-sb-item active">Credit lines</div>
+    <div class="sub-sb-item">Invoices</div>
+    <div class="sub-sb-item">Legal entities</div>
+  </div>
+
+  <div class="main">
+    <div class="white">
+      <div class="blg">
+        <h2 style="font-size:24px;margin-bottom:16px">Billing & payments</h2>
+        <h2>Credit lines</h2>
+
+        <div class="warn-banner">
+          <span class="wi">⚠</span>
+          <div class="wt">
+            <b>Missing edit permissions</b><br>
+            <span>To modify billing or payments information for your business account, contact a business admin to update your role to a finance editor in Business Manager. <a href="#">Learn more</a></span>
+          </div>
+        </div>
+
+        <div class="blg-tabs">
+          <div class="blg-tab active">Credit lines</div>
+          <div class="blg-tab">Monthly invoicing applications</div>
+        </div>
+
+        <div class="fbar" style="padding:0 0 12px">
+          <input type="text" placeholder="Search by name..." style="flex:1">
+        </div>
+
+        <p style="font-size:12px;color:#65676b;margin-bottom:16px">Credit lines are a payment setting where you pay us based on monthly invoices. The amounts shown are not credit or financing. <a href="#" style="color:#0a7cff">Learn more</a></p>
+
+        <div class="tw">
+          <table>
+            <tr>
+              <th>Credit line</th>
+              <th>Credit limit</th>
+              <th>Payment method</th>
+              <th>Supported products</th>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:32px;height:32px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#0a7cff"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
+                  </div>
+                  <div>
+                    <div><a href="#" style="color:#0a7cff;font-weight:600">Noticias Boqueñas</a></div>
+                    <div style="font-size:12px;color:#65676b">Business ID: 103556375072724</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-size:16px;font-weight:700;color:#1a1a1a">$2,000.00 MXN</div>
+                <div style="font-size:12px;color:#65676b;margin-top:2px">credit limit</div>
+                <div class="pbar" style="width:200px"><div class="pbar-fill" style="width:70%"></div></div>
+                <div style="font-size:11px;color:#65676b">$1,399.78 of $2,000.00 · $600.22 remaining</div>
+                <div style="font-size:11px;color:#a35500;margin-top:2px">Pending (last 90 days): <strong>$219.15</strong> (active campaign)</div>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#0a7cff"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
+                  <div>
+                    <div style="font-size:13px;color:#1a1a1a">Manual payment</div>
+                    <div style="font-size:12px;color:#65676b">Card ****3265 · Card ****9337</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <svg width="24" height="24" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="18" fill="#0a7cff"/><path d="M25.5 19.2c0-4.1-2.7-7-6.3-7-3.6 0-6.3 2.9-6.3 7 0 2.8 1.6 5.1 3.9 6.2v-4.4h-1.2v-1.8h1.2v-1.4c0-1.2.7-1.8 1.8-1.8.5 0 1 .1 1 .1v1.2h-.6c-.6 0-.8.3-.8.7v.9h1.3l-.2 1.8h-1.1v4.4c2.3-1.1 3.9-3.4 3.9-6.2z" fill="#fff"/></svg>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>

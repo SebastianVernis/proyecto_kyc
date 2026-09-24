@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Administración — Argos OSINT</title>
+  <link rel="icon" href="assets/argos-osint_favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border:1px solid transparent;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{opacity:0.9}
+.btn-secondary{background:transparent;color:var(--text);border-color:var(--border)}.btn-secondary:hover{border-color:var(--muted);background:var(--panel)}
+.btn-danger{background:var(--error);color:#fff}
+.btn-success{background:var(--accent2);color:#0f1115}
+.btn-ghost{background:transparent;color:var(--muted);border:none;padding:8px 12px}.btn-ghost:hover{color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px}.btn-lg{padding:14px 28px;font-size:14px}.btn-block{width:100%}
+.form-input{width:100%;padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none}
+.form-input:focus{border-color:var(--accent)}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.badge-success{background:rgba(110,231,183,0.15);color:var(--accent2)}
+.badge-warning{background:rgba(245,158,11,0.15);color:var(--warn)}
+.badge-danger{background:rgba(239,68,68,0.15);color:var(--error)}
+.badge-info{background:rgba(79,140,255,0.15);color:var(--accent)}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);position:relative;z-index:1;padding:16px;display:flex;flex-direction:column;flex-shrink:0}
+    .sidebar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+    .sidebar .brand img{height:28px}
+    .sidebar-section{margin-bottom:20px}
+    .sidebar-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 8px;font-weight:700}
+    .sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .sidebar-item:hover{color:var(--text);background:var(--panel2)}
+    .sidebar-item.active{color:var(--accent2);background:rgba(110,231,183,0.08)}
+    .sidebar-item .count{margin-left:auto;font-size:11px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:999px}
+    .main{flex:1;overflow-y:auto}
+    .main-header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--panel)}
+    .main-header h1{font-size:20px;font-weight:700}
+    .main-content{padding:28px}
+    .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px}
+    .tab{padding:10px 18px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all 0.2s}
+    .tab:hover{color:var(--text)}
+    .tab.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:var(--panel);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;text-align:left;padding:10px 14px;border-bottom:2px solid var(--border)}
+    td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    tr:hover td{background:var(--panel2)}
+    .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+    .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .stat-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+    .stat-card .value{font-size:28px;font-weight:800;color:var(--accent)}
+    .stat-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .actions-cell{display:flex;gap:6px}
+    @media(max-width:768px){.sidebar{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.main-content{padding:16px}}
+  
+/* --- Argos OSINT Portal Background --- */
+.argos-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse 80% 75% at 50% 50%, #0f1115 0%, #080C20 60%, #05081A 100%)}
+.argos-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.argos-bg::after{content:"";position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.argos-bg--quiet canvas{opacity:.45}
+@media (prefers-reduced-motion:reduce){.argos-bg canvas{opacity:.45}}
+body > *:not(.argos-bg) { position: relative; z-index: 1; }
+
+</style>
+</head>
+<body>
+<div class="argos-bg argos-bg--quiet" aria-hidden="true"><canvas></canvas></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><img src="assets/argos-osint_isotipo_mono-blanco.svg" alt="Argos"><span>ARGOS <span class="text-accent2">OSINT</span></span></div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Administración</div>
+        <a href="/admin.html" class="sidebar-item active"><span>⚙️</span> Panel admin</a>
+        <a href="/dashboard.html" class="sidebar-item"><span>📊</span> Dashboard</a>
+      </div>
+      <div class="mt-auto">
+        <a href="#" class="sidebar-item" id="logout-btn"><span>🚪</span> Cerrar sesión</a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="main-header">
+        <h1>Panel de administración</h1>
+        <a href="/dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
+      </div>
+      <div class="main-content">
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card"><div class="label">Usuarios pendientes</div><div class="value" id="s-pending">—</div></div>
+          <div class="stat-card"><div class="label">KYC pendientes</div><div class="value" id="s-kyc">—</div></div>
+          <div class="stat-card"><div class="label">Suscripciones activas</div><div class="value" id="s-subs">—</div></div>
+          <div class="stat-card"><div class="label">Total usuarios</div><div class="value" id="s-users">—</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" data-tab="pending">Usuarios pendientes</button>
+          <button class="tab" data-tab="kyc">Verificaciones KYC</button>
+          <button class="tab" data-tab="users">Todos los usuarios</button>
+          <button class="tab" data-tab="subs">Suscripciones</button>
+          <button class="tab" data-tab="transactions">Actividad</button>
+        </div>
+
+        <!-- Pending users -->
+        <div class="tab-panel active" id="panel-pending">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Usuario</th><th>Nombre</th><th>Fecha registro</th><th>Acciones</th></tr></thead>
+              <tbody id="pending-body"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- KYC verifications -->
+        <div class="tab-panel" id="panel-kyc">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Usuario</th><th>CURP</th><th>RFC</th><th>Nombre</th><th>Provider</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="kyc-body"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- All users -->
+        <div class="tab-panel" id="panel-users">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Usuario</th><th>Nombre</th><th>Admin</th><th>Activo</th><th>Registro</th><th>Acciones</th></tr></thead>
+              <tbody id="users-body"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Subscriptions -->
+        <div class="tab-panel" id="panel-subs">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Usuario</th><th>Plan</th><th>Estado</th><th>Expira</th><th>Pagos</th><th>Total</th><th>Acciones</th></tr></thead>
+              <tbody id="subs-body"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Activity log -->
+        <div class="tab-panel" id="panel-transactions">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Usuario</th><th>Acción</th><th>Endpoint</th><th>Estado</th><th>IP</th><th>Fecha</th></tr></thead>
+              <tbody id="tx-body"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Forensic cases -->
+        
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API=window.location.origin;
+    const TOKEN=localStorage.getItem('session_token');
+    const H={'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json'};
+
+    function fmtDate(ts){
+      if(!ts)return'—';
+      const d=new Date(typeof ts==='number'?ts*1000:ts);
+      return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+        document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+      });
+    });
+
+    async function load(){
+      // Auth check (admin only)
+      let currentUser=null;
+      try{
+        const r=await fetch(API+'/api/auth/me',{headers:H});
+        if(!r.ok)throw new Error();
+        const u=await r.json();
+        if(!u.user?.is_admin){alert('Solo administradores');window.location.href='/dashboard.html';return;}
+        currentUser=u.user;
+      }catch(e){window.location.href='/login.html';return;}
+
+      // Pending users
+      try{
+        const r=await fetch(API+'/api/admin/pending-users',{headers:H});
+        const d=await r.json();
+        const users=d.pending_users||[];
+        document.getElementById('s-pending').textContent=users.length;
+        const tbody=document.getElementById('pending-body');
+        if(users.length===0){tbody.innerHTML='<tr><td colspan="5" class="empty">No hay usuarios pendientes</td></tr>';}
+        else{
+          tbody.innerHTML=users.map(u=>`<tr>
+            <td>${u.id}</td><td>${u.username}</td><td>${u.display_name||'—'}</td><td>${fmtDate(u.requested_at||u.created_at)}</td>
+            <td class="actions-cell">
+              <button class="btn btn-success btn-sm" onclick="approveUser(${u.id},'approved')">✓ Aprobar</button>
+              <button class="btn btn-danger btn-sm" onclick="approveUser(${u.id},'rejected')">✕ Rechazar</button>
+            </td>
+          </tr>`).join('');
+        }
+      }catch(e){}
+
+      // KYC pending
+      try{
+        const r=await fetch(API+'/api/admin/kyc-pending',{headers:H});
+        const d=await r.json();
+        const verifications=d.pending_verifications||[];
+        document.getElementById('s-kyc').textContent=verifications.length;
+        const tbody=document.getElementById('kyc-body');
+        if(verifications.length===0){tbody.innerHTML='<tr><td colspan="8" class="empty">No hay verificaciones pendientes</td></tr>';}
+        else{
+          tbody.innerHTML=verifications.map(v=>`<tr>
+            <td>${v.id}</td><td>${v.username||'—'}</td><td>${v.curp||'—'}</td><td>${v.rfc||'—'}</td>
+            <td>${[v.nombre,v.apellido_paterno,v.apellido_materno].filter(Boolean).join(' ')||'—'}</td>
+            <td>${v.provider||'—'}</td><td><span class="badge badge-warning">${v.status}</span></td>
+            <td class="actions-cell">
+              <button class="btn btn-success btn-sm" onclick="approveKyc(${v.id},'approved')">✓ Aprobar</button>
+              <button class="btn btn-danger btn-sm" onclick="approveKyc(${v.id},'rejected')">✕ Rechazar</button>
+            </td>
+          </tr>`).join('');
+        }
+      }catch(e){}
+
+      
+
+      // All users (from admin endpoint)
+      try{
+        const r=await fetch(API+'/api/admin/users',{headers:H});
+        const d=await r.json();
+        const users=Array.isArray(d)?d:(d.users||[]);
+        document.getElementById('s-users').textContent=users.length;
+        const tbody=document.getElementById('users-body');
+        if(users.length===0){tbody.innerHTML='<tr><td colspan="7" class="empty">No hay usuarios</td></tr>';}
+        else{
+          const myUser=currentUser?.username;
+          tbody.innerHTML=users.map(usr=>`<tr>
+            <td>${usr.id}</td><td>${usr.username}</td><td>${usr.display_name||'—'}</td>
+            <td>${usr.is_admin?'<span class="badge badge-info">Admin</span>':'—'}</td>
+            <td>${usr.is_active?'<span class="badge badge-success">Activo</span>':'<span class="badge badge-danger">Inactivo</span>'}</td>
+            <td>${fmtDate(usr.created_at)}</td>
+            <td class="actions-cell">
+              ${usr.username!==myUser?`
+                <button class="btn btn-ghost btn-sm" onclick="toggleAdmin('${usr.username}',${usr.is_admin?0:1})" title="${usr.is_admin?'Quitar admin':'Hacer admin'}">${usr.is_admin?'↓ Admin':'↑ Admin'}</button>
+                ${usr.is_active
+                  ?`<button class="btn btn-danger btn-sm" onclick="toggleActive('${usr.username}',false)">Deshabilitar</button>`
+                  :`<button class="btn btn-success btn-sm" onclick="toggleActive('${usr.username}',true)">Habilitar</button>`}
+                <button class="btn btn-ghost btn-sm" onclick="deleteUser('${usr.username}')" title="Eliminar" class="text-error">🗑</button>
+              `:'<span class="flex items-center p-2 text-xs text-muted">Tú</span>'}
+            </td>
+          </tr>`).join('');
+        }
+      }catch(e){}
+
+      // Subscriptions
+      try{
+        const r=await fetch(API+'/api/admin/subscriptions',{headers:H});
+        const d=await r.json();
+        const subs=d.subscriptions||[];
+        const tbody=document.getElementById('subs-body');
+        if(subs.length===0){tbody.innerHTML='<tr><td colspan="8" class="empty">No hay usuarios</td></tr>';}
+        else{
+          const statusBadge=s=>s==='active'?'<span class="badge badge-success">Activa</span>'
+            :s==='expired'?'<span class="badge badge-danger">Expirada</span>'
+            :s==='cancelled'?'<span class="badge badge-warning">Cancelada</span>'
+            :s?`<span class="badge badge-info">${s}</span>`:'<span class="text-muted">—</span>';
+          tbody.innerHTML=subs.map(s=>`<tr>
+            <td>${s.user_id}</td><td>${s.username||'—'}</td>
+            <td>${s.plan?`<span class="badge badge-info">${s.plan}</span>`:'<span class="text-muted">Sin plan</span>'}</td>
+            <td>${statusBadge(s.status)}</td>
+            <td>${s.expires_at?fmtDate(s.expires_at):'—'}</td>
+            <td>${s.tx_count||0}</td>
+            <td>${s.total_paid?'$'+s.total_paid.toFixed(0)+' USD':'—'}</td>
+            <td class="actions-cell">
+              <select class="form-input text-xs p-1" onchange="changeSubPlan(${s.user_id},this.value)">
+                <option value="">Cambiar plan</option>
+                <option value="basico">Básico ($29)</option>
+                <option value="profesional">Profesional ($99)</option>
+                <option value="empresarial">Empresarial ($299)</option>
+                <option value="corporativo">Corporativo ($500)</option>
+              </select>
+              ${s.status==='active'
+                ?`<button class="btn btn-danger btn-sm" onclick="changeSubStatus(${s.sub_id||0},'cancelled')">Cancelar</button>`
+                :s.sub_id?`<button class="btn btn-success btn-sm" onclick="changeSubStatus(${s.sub_id},'active')">Reactivar</button>`:''}
+            </td>
+          </tr>`).join('');
+        }
+      }catch(e){}
+
+      // Activity log
+      try{
+        const r=await fetch(API+'/api/admin/activity?limit=50',{headers:H});
+        const d=await r.json();
+        const rows=d.rows||[];
+        const tbody=document.getElementById('tx-body');
+        if(rows.length===0){tbody.innerHTML='<tr><td colspan="7" class="empty">No hay actividad reciente</td></tr>';}
+        else{
+          tbody.innerHTML=rows.map(r=>`<tr>
+            <td>${r.id}</td><td>${r.username||'—'}</td><td><span class="badge badge-info">${r.action}</span></td>
+            <td class="text-xs">${r.endpoint||'—'}</td>
+            <td>${r.status_code===200?'<span class="badge badge-success">'+r.status_code+'</span>':'<span class="badge badge-danger">'+r.status_code+'</span>'}</td>
+            <td class="text-xs truncate">${r.ip||'—'}</td>
+            <td>${fmtDate(r.created_at)}</td>
+          </tr>`).join('');
+        }
+      }catch(e){}
+    }
+
+    async function approveUser(userId, status){
+      const reason=status==='rejected'?prompt('Razón de rechazo (opcional):'):null;
+      await fetch(API+'/api/admin/approve-user',{method:'POST',headers:H,body:JSON.stringify({user_id:userId,status,reason})});
+      load();
+    }
+
+    async function approveKyc(verId, status){
+      const reason=status==='rejected'?prompt('Razón de rechazo (opcional):'):null;
+      await fetch(API+'/api/admin/approve-kyc',{method:'POST',headers:H,body:JSON.stringify({verification_id:verId,status,reason})});
+      load();
+    }
+
+    async function toggleAdmin(username, isAdmin){
+      await fetch(API+'/api/admin/users',{method:'POST',headers:H,body:JSON.stringify({action:'set_admin',username,is_admin:isAdmin})});
+      load();
+    }
+
+    async function toggleActive(username, active){
+      const action=active?'enable':'disable';
+      await fetch(API+'/api/admin/users',{method:'POST',headers:H,body:JSON.stringify({action,username})});
+      load();
+    }
+
+    async function deleteUser(username){
+      if(!confirm('¿Eliminar a '+username+'? Esta acción no se puede deshacer.'))return;
+      await fetch(API+'/api/admin/users',{method:'POST',headers:H,body:JSON.stringify({action:'delete',username})});
+      load();
+    }
+
+    async function changeSubPlan(userId, plan){
+      if(!plan)return;
+      await fetch(API+'/api/admin/subscriptions',{method:'POST',headers:H,body:JSON.stringify({user_id:userId,plan})});
+      load();
+    }
+
+    async function changeSubStatus(subId, status){
+      await fetch(API+'/api/admin/subscriptions',{method:'POST',headers:H,body:JSON.stringify({subscription_id:subId,status})});
+      load();
+    }
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click',async e=>{
+      e.preventDefault();
+      await fetch(API+'/api/auth/logout',{method:'POST',headers:H});
+      localStorage.removeItem('session_token');
+      window.location.href='/login.html';
+    });
+
+    load();
+  </script>
+<script>
+(function(){
+  const wrap = document.querySelector('.argos-bg');
+  if (!wrap) return;
+  const cv = wrap.querySelector('canvas');
+  const ctx = cv.getContext('2d');
+  const quiet = wrap.classList.contains('argos-bg--quiet');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = quiet || reduce;
+  const PLATA = '201,205,213', AMBAR = '232,180,74';
+  let W, H, dpr, nodes = [], amber = [];
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function build(){
+    const n = Math.round((W * H) / (quiet ? 44000 : 22000));
+    nodes = [];
+    for (let i = 0; i < n; i++){
+      nodes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12,
+        r: 1 + Math.random() * 1.4,
+        a: .25 + Math.random() * .45
+      });
+    }
+    amber = [];
+    const spots = [[.18,.28],[.80,.22],[.72,.78]];
+    spots.forEach(([fx,fy]) => amber.push({ x: W*fx + (Math.random()-.5)*80, y: H*fy + (Math.random()-.5)*80, t: Math.random()*Math.PI*2 }));
+  }
+  function centerFade(x, y){
+    const dx = (x - W/2) / (W*.45), dy = (y - H/2) / (H*.45);
+    const d = Math.min(1, Math.sqrt(dx*dx + dy*dy));
+    return .25 + .75 * d * d;
+  }
+  const LINK = 150;
+  function draw(t){
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < nodes.length; i++){
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++){
+        const b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y, d2 = dx*dx + dy*dy;
+        if (d2 < LINK*LINK){
+          const k = 1 - Math.sqrt(d2) / LINK;
+          const f = centerFade((a.x+b.x)/2, (a.y+b.y)/2);
+          ctx.strokeStyle = 'rgba('+PLATA+','+(k * .16 * f).toFixed(3)+')';
+          ctx.lineWidth = .8;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+    }
+    for (const p of nodes){
+      const f = centerFade(p.x, p.y);
+      ctx.fillStyle = 'rgba('+PLATA+','+(p.a * f).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      if (!still){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -10) p.x = W + 10; if (p.x > W + 10) p.x = -10;
+        if (p.y < -10) p.y = H + 10; if (p.y > H + 10) p.y = -10;
+      }
+    }
+    for (const s of amber){
+      const pulse = still ? .5 : (.5 + .5 * Math.sin(t * .0009 + s.t));
+      nodes.forEach(p => {
+        const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy);
+        if (d < LINK * 1.3){
+          ctx.strokeStyle = 'rgba('+AMBAR+','+(.10 + .12 * pulse) * (1 - d/(LINK*1.3))+')';
+          ctx.lineWidth = .9;
+          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        }
+      });
+      const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 26);
+      g.addColorStop(0, 'rgba('+AMBAR+','+(.22 + .18 * pulse).toFixed(3)+')');
+      g.addColorStop(1, 'rgba('+AMBAR+',0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba('+AMBAR+','+(.75 + .25 * pulse).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 2.6, 0, Math.PI*2); ctx.fill();
+    }
+    if (!still) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', () => { resize(); if (still) draw(0); });
+  resize();
+  still ? draw(0) : requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
