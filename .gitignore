@@ -1,0 +1,8 @@
+bases/*
+*.env*
+*/__pycache__/*
+_backups/*
+.coverage
+'nuevas a normalizar'/*
+backend/__pycache__/*
+backend/providers/__pycache__/*

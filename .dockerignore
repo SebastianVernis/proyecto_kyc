@@ -1,0 +1,15 @@
+# .dockerignore — evita copiar archivos innecesarios al contexto de build
+__pycache__
+*.pyc
+*.pyo
+.coverage
+.env
+.env.backup
+*.db
+cuartodepazsearch-build/
+.git/
+tests/
+docs/
+scripts/
+_backups/
+*.duckdb
