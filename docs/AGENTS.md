@@ -88,12 +88,10 @@ en el árbol de descubrimiento (es un subdirectorio).
 ```
 proyecto_kyc/
 ├── AGENTS.md / CLAUDE.md          # instrucciones para agentes
-├── HANDOFF_PROYECTO.md            # estado del proyecto (2026-08-22)
-├── HANDOFF_NORMALIZACION.md       # handoff normalización (38KB)
-├── RESUMEN_PROYECTO.md            # resumen completo actualizado
-├── INVENTARIO_BASES.md            # inventario completo (26KB)
-├── ANALISIS_BUSQUEDAS_LAYOUTS.md  # layouts de búsqueda
+├── README.md                      # índice del proyecto
+├── ANALISIS_BUSQUEDAS_LAYOUTS.md  # layouts de bases y endpoints
 ├── healthcheck.py                 # verificador de salud
+├── docker-compose.yml             # backend (8765) + gateway (8001)
 ├── healthcheck.last.json          # último estado
 ├── requirements.txt
 ├── conftest.py
@@ -108,7 +106,7 @@ proyecto_kyc/
 │   ├── auth.py                    # Bearer tokens + multi-tenant
 │   ├── config.py                  # configuración (.env)
 │   ├── audit.py                   # auditoría
-│   ├── deploy.py                  # ciclo de vida local + cloudflared
+│   ├── busqueda_multifuente.py    # búsquedas: ine2018/covid/telefonía
 │   ├── kyc_broker.py              # broker paralelo de providers
 │   ├── osint.py / osint_scorer.py # pipeline OSINT + scoring
 │   ├── rfc_utils.py               # cálculo RFC
@@ -243,7 +241,7 @@ proyecto_kyc/
 - `ENTITY_TO_BASES` en `servir.py:9903` — mapeo entidad→aliases para endpoints unificados
 - `TABLE_FOR_BASE` en `servir.py:9947` — alias→tabla principal
 - `auth.py` usa `bases/auth.db` (relativo al script)
-- Venv: `/home/sebastianvernis/.venv/bin/python` (NO python3 del sistema)
+- Venv (host): `/mnt/disco2/projects/kyc/.venv/bin/python`; el backend en Docker usa el intérprete de la imagen.
 
 ---
 
@@ -548,11 +546,11 @@ Para agregar una nueva base al runtime:
 
 | Documento | Contenido |
 |-----------|-----------|
-| `RESUMEN_PROYECTO.md` | Resumen completo actualizado (secciones 1-18) |
-| `HANDOFF_PROYECTO.md` | Estado al 2026-08-22, 3 rondas completadas |
-| `HANDOFF_NORMALIZACION.md` | Fase de normalización + integración masiva (38KB) |
-| `INVENTARIO_BASES.md` | Inventario detallado de las 29 bases |
-| `ANALISIS_BUSQUEDAS_LAYOUTS.md` | Layouts de búsqueda |
+| `README.md` | Índice del proyecto (qué leer para cada tarea) |
+| `docs/DEPLOY.md` | Despliegue vigente: Docker (backend) + Worker (frontend) |
+| `docs/METODOLOGIAS_BUSQUEDA.md` | Metodologías de búsqueda sobre el corpus |
+| `ANALISIS_BUSQUEDAS_LAYOUTS.md` | Inventario de layouts de bases y endpoints |
+| `docs/handoffs/` | Cierres de etapa anteriores (histórico) |
+| `obsoleto/` | Despliegue antiguo (VPS/systemd/Pages), archivado |
 | `docs/PLAN_ESCALABILIDAD.md` | Plan de escalabilidad |
 | `docs/PLAN_MAPEO_MASIVO.md` | Plan de mapeo masivo |
-| `wiki/` | Knowledge base GitNexus |

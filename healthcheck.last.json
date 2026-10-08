@@ -1,7 +1,7 @@
 {
   "overall_ok": true,
-  "total_size_gb": 23.597,
-  "total_rows": 341910356,
+  "total_size_gb": 21.579,
+  "total_rows": 341911245,
   "bases": [
     {
       "name": "padron",
@@ -15,7 +15,7 @@
     {
       "name": "telcel",
       "ok": true,
-      "size_gb": 3.09,
+      "size_gb": 2.015,
       "rows": 19270776,
       "tables": [
         "telcel",
@@ -25,7 +25,7 @@
     {
       "name": "att",
       "ok": true,
-      "size_gb": 0.17,
+      "size_gb": 0.071,
       "rows": 2097145,
       "tables": [
         "att",
@@ -54,7 +54,7 @@
     {
       "name": "imss_segmentacion",
       "ok": true,
-      "size_gb": 7.088,
+      "size_gb": 6.444,
       "rows": 47283869,
       "tables": [
         "imss_personas",
@@ -64,7 +64,7 @@
     {
       "name": "repuve",
       "ok": true,
-      "size_gb": 0.414,
+      "size_gb": 0.213,
       "rows": 3491163,
       "tables": [
         "repuve",
@@ -93,8 +93,8 @@
     {
       "name": "auth",
       "ok": true,
-      "size_gb": 0.0,
-      "rows": 990,
+      "size_gb": 0.001,
+      "rows": 1879,
       "tables": [
         "users",
         "sqlite_sequence",
@@ -104,7 +104,17 @@
         "activity_log",
         "user_provider_keys",
         "tenants",
-        "tenants_users"
+        "tenants_users",
+        "subscriptions",
+        "transactions",
+        "onboarding",
+        "usage_counters",
+        "search_history",
+        "saved_reports",
+        "kyc_verifications",
+        "user_approvals",
+        "payment_tokens",
+        "actas_submissions"
       ]
     },
     {
