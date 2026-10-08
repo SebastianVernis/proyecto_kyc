@@ -16,7 +16,7 @@ Guía operativa para desplegar la plataforma KYC con Docker Compose.
 ## Arranque rápido
 
 ```bash
-cd /home/sebastianvernis/proyectos/kyc/proyecto_kyc
+cd /mnt/disco2/projects/kyc/proyecto_kyc
 
 # 1. Copiar y configurar variables
 cp .env.example .env
@@ -91,14 +91,15 @@ Ver `.env.example` para la lista completa. Las más importantes:
 
 ### El backend no arranca: "Could not set lock on file"
 
-Otro proceso (ej: `servir.py` directo en el host) tiene la DB abierta. Detenerlo primero:
+Otro proceso (ej: `servir.py` directo en el host, o un contenedor previo) tiene
+la DB abierta. Detenerlo primero:
 
 ```bash
-# Si corriendo como servicio
-sudo systemctl stop cuartodepazsearch
-
-# Si corriendo directo
+# Si corriendo directo en el host
 kill $(pgrep -f "servir.py")
+
+# Si es un contenedor previo
+docker compose down
 ```
 
 ### El backend tarda en arrancar

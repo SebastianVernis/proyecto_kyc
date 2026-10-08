@@ -13,23 +13,23 @@ Gemini, Ollama Cloud).
 ## 1. Entorno
 
 ```bash
-# venv
-VENV=/home/sebastianvernis/.venv/bin/python
+# venv del host (este servidor)
+VENV=/mnt/disco2/projects/kyc/.venv/bin/python
 
 # healthcheck
-$VENV /home/sebastianvernis/proyectos/kyc/proyecto_kyc/healthcheck.py
+$VENV healthcheck.py
 
-# tests (270 tests, 22 archivos, ~45s)
-cd /home/sebastianvernis/proyectos/kyc/proyecto_kyc
+# tests (unittest de stdlib)
 $VENV -m unittest discover -s tests -v
 
-# arrancar backend
-cd /home/sebastianvernis/proyectos/kyc/proyecto_kyc/backend && $VENV servir.py [--port 8765]
+# backend: corre en Docker, no directo en el host
+docker compose build backend && docker compose up -d backend
 ```
 
 Login por defecto: `admin / admin123` (Bearer token).
-El runtime vive en `/home/sebastianvernis/.venv/` (DuckDB, pandas, polars,
-openpyxl, pyarrow, requests, python-dotenv, pymupdf, weasyprint, etc).
+El backend corre dentro del contenedor `kyc-backend` (Python 3.13, imagen
+`proyecto_kyc-backend`): los cambios en `backend/` requieren reconstruir la
+imagen. Ver `DEPLOY.md`.
 
 ### Nominatim local (geocodificación offline)
 
@@ -45,48 +45,34 @@ Stack: servidor local de Nominatim 5.3.2 con extracto OSM de México.
 - Los handlers de geocodificación intentan local primero, fallback al público.
 - La respuesta JSON incluye `geocode_source: "local" | "public"`.
 
-### Servicio systemd
-
-```bash
-# Unit: kyc-backend.service
-# User: sebastianvernis
-# WorkingDir: /home/sebastianvernis/proyectos/kyc/proyecto_kyc/backend
-# ExecStart: /home/sebastianvernis/.venv/bin/python -u servir.py
-
-# Diagnóstico 502:
-sudo systemctl status kyc-backend.service
-journalctl -u kyc-backend -n 50
-
-# Reinicio seguro:
-PID=$(ps -ef | grep servir.py | grep -v grep | awk '{print $2}')
-sudo kill -9 $PID; sleep 2; sudo systemctl start kyc-backend.service; sleep 10
-ss -ltnp | grep 8765
-
-# Tunnel: cloudflared → kyc.sebastianvernis.space (HTTP2 obligatorio)
-```
-
 ### Suite de tests
 
-270 tests en 22 archivos. Sin dependencias externas para tests (usa `unittest`
-de stdlib). Coverage.py se instala con `pip install coverage`.
+Tests con `unittest` de stdlib (sin dependencias externas). Se ejecutan con
 
-| Archivo | Tests | Descripción |
-|---------|-------|-------------|
-| test_bases.py | 9 | Layout, apertura y conteo de bases |
-| test_init_extended_con.py | 7 | EXTENDED_DBS, vistas api.*, _enriquecer |
-| test_path_migration.py | 7 | Paths viejos fuera de código activo |
-| test_unit_and_defaults.py | 7 | Unit systemd, --db, --html, .env |
-| test_backend_http.py | 4 | servir.py arranca y responde HTTP |
-| test_providers.py | 41 | Providers externos con requests mockeado |
-| test_query_latency.py | 12 | Latencia count/limit/lookup RFC+CURP |
-| test_coverage.py | 5 | Suite bajo coverage.py + reporte HTML |
-| test_cfe_flujo_coordenadas.py | 22 | CFE coordenadas GPS → Nominatim → CFE |
-| test_maps_per_subject.py | 31 | Mapas individuales en reporte IA |
-| test_issste.py | 22 | ISSSTE vista, handler, reporte sección 06b |
-| test_cfe_regex_unificada.py | — | Regex unificado CFE |
-| test_domicilio_buscar.py | — | Búsqueda domicilio |
-| test_fuzzy_direccion.py | — | Fuzzy dirección |
-| test_gemini.py | — | Gemini provider |
+```bash
+/mnt/disco2/projects/kyc/.venv/bin/python -m unittest discover -s tests -v
+```
+
+Los tests que verificaban el despliegue antiguo (unit systemd, template
+`cuartodepazsearch`, `install-service.sh`) están en `tests/_obsoleto/`; no se
+descubren con `discover` porque el patrón es `test_*.py` y esa carpeta no está
+en el árbol de descubrimiento (es un subdirectorio).
+
+| Archivo | Descripción |
+|---------|-------------|
+| test_bases.py | Layout, apertura y conteo de bases |
+| test_init_extended_con.py | EXTENDED_DBS, vistas api.*, _enriquecer |
+| test_backend_http.py | servir.py arranca y responde HTTP |
+| test_providers.py | Providers externos con requests mockeado |
+| test_query_latency.py | Latencia count/limit/lookup RFC+CURP |
+| test_coverage.py | Suite bajo coverage.py + reporte HTML |
+| test_cfe_flujo_coordenadas.py | CFE coordenadas GPS → Nominatim → CFE |
+| test_maps_per_subject.py | Mapas individuales en reporte IA |
+| test_issste.py | ISSSTE vista, handler, reporte sección 06b |
+| test_cfe_regex_unificada.py | Regex unificado CFE |
+| test_domicilio_buscar.py | Búsqueda domicilio |
+| test_fuzzy_direccion.py | Fuzzy dirección |
+| test_gemini.py | Gemini provider |
 | test_ia_filter.py | — | Filtro IA |
 | test_inteligencia_relacional.py | — | Inteligencia relacional |
 | test_parse_coord_input.py | — | Parse coordenadas |

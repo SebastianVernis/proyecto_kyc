@@ -536,16 +536,11 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/css/") or path.startswith("/js/") or path.startswith("/assets/"):
             self._serve_frontend_file(path)
             return
-        if path.startswith("/"):
-            # Serve from frontend/ subdirectory
-            try:
-                frontend_dir = ROOT.parent / "frontend"
-                page_file = frontend_dir / "pages" / path[7:]
-                data = page_file.read_bytes()
-                self._send(200, data, "text/html; charset=utf-8")
-            except FileNotFoundError:
-                self._send(404, f"{path} no encontrado".encode(), "text/plain")
-            return
+        # 2026-10-08: el catch-all estático se movió al FINAL de do_GET.
+        # Estaba aquí (antes de todo el bloque /api/*) y se tragaba la API
+        # completa: cualquier /api/... o *.html caía en este 404 de texto plano
+        # sin llegar nunca a su handler. El healthcheck no lo detectaba porque
+        # solo comprueba que el socket TCP abra.
         if path == "/sw.js":
             self._serve_static("/static/sw.js")
             return
@@ -930,6 +925,32 @@ class Handler(BaseHTTPRequestHandler):
             handle_telcel_buscar_avanzado(self)
             return
 
+        # === 2026-10-08: fuentes que el runtime no cubría ===
+        # ine_2018.duckdb (padrón 2018 por estado — 34 tablas con esquema, por
+        # eso `show tables` devolvía vacío), covid_clinico (la tabla clínica,
+        # hoy inalcanzable porque el archivo se attachea por `personas`) y el
+        # cruce telefónico unificado por teléfono/RFC/CURP.
+        from busqueda_multifuente import (
+            handle_ine2018_buscar,
+            handle_covid_buscar,
+            handle_telefonia_buscar,
+        )
+        if path == "/api/v1/ine2018/buscar":
+            session = self._require_session()
+            if not session: return
+            handle_ine2018_buscar(self)
+            return
+        if path == "/api/v1/covid/buscar":
+            session = self._require_session()
+            if not session: return
+            handle_covid_buscar(self)
+            return
+        if path == "/api/v1/telefonia/buscar":
+            session = self._require_session()
+            if not session: return
+            handle_telefonia_buscar(self)
+            return
+
         # /api/v1/familia/mapa?paterno=&materno=&estado=&ciudad=&limit=
         # 2026-08-06: análisis de familia. Busca todas las personas con un
         # apellido dado en att+telcel+repuve, las agrupa por (estado, ciudad,
@@ -1097,6 +1118,19 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/api/consultaunica/actas/status/"):
             uuid_ = path.split("/")[-1]
             self._handle_consultaunica_actas_status(uuid_)
+            return
+
+        # 2026-10-08: catch-all de páginas del frontend — AL FINAL a propósito.
+        # Todo lo que no casó arriba (rutas /api/* no reconocidas, /admin.html,
+        # /checkout.html, /payment/*, /m, estáticos no previstos) se intenta
+        # servir como página; si no existe, 404 de texto plano como antes.
+        if path.startswith("/"):
+            try:
+                page_file = self._frontend_dir() / "pages" / path[7:]
+                data = page_file.read_bytes()
+                self._send(200, data, "text/html; charset=utf-8")
+            except FileNotFoundError:
+                self._send(404, f"{path} no encontrado".encode(), "text/plain")
             return
 
         self._json(404, {"error": "not found", "path": path})
@@ -3780,11 +3814,36 @@ class Handler(BaseHTTPRequestHandler):
             import traceback
             self._json(500, {"error": f"error generando reporte: {e}", "trace": traceback.format_exc()[:500]})
 
+    def _frontend_dir(self):
+        """Directorio real del frontend.
+
+        2026-10-08: ROOT es el directorio del backend (/app en el contenedor,
+        backend/ en local). El código buscaba siempre ROOT.parent/"frontend"
+        = "/frontend", pero docker-compose monta `./frontend` en
+        /app/frontend, así que en el contenedor TODO el frontend daba 404.
+        Se resuelve probando, en orden: $KYC_FRONTEND_DIR, ROOT/"frontend"
+        (layout del contenedor) y ROOT.parent/"frontend" (layout local).
+        """
+        cache = getattr(self, "_frontend_dir_cache", None)
+        if cache:
+            return cache
+        candidatos = []
+        env = os.environ.get("KYC_FRONTEND_DIR")
+        if env:
+            candidatos.append(Path(env))
+        candidatos += [ROOT / "frontend", ROOT.parent / "frontend"]
+        for c in candidatos:
+            if (c / "index.html").exists() or (c / "login.html").exists():
+                self._frontend_dir_cache = c
+                return c
+        self._frontend_dir_cache = candidatos[-1]
+        return candidatos[-1]
+
     def _serve_html(self, filename=None):
         try:
-            # ROOT = directorio del script (backend/).
-            # Los HTML viven en ../frontend/ (un nivel arriba).
-            frontend_dir = ROOT.parent / "frontend"
+            # ROOT = directorio del script (backend/). Los HTML viven en el
+            # sibling frontend/ (local) o en /app/frontend (contenedor).
+            frontend_dir = self._frontend_dir()
             path = frontend_dir / (filename or "buscar.html")
             data = path.read_bytes()
             self._send(200, data, "text/html; charset=utf-8")
@@ -3795,7 +3854,7 @@ class Handler(BaseHTTPRequestHandler):
         """Sirve archivos de frontend/static/{...} con content-type correcto.
         url_path viene como /static/... o /sw.js o /manifest.json (rutas absolutas).
         """
-        frontend_dir = ROOT.parent / "frontend"
+        frontend_dir = self._frontend_dir()
         # normalizar
         rel = url_path.lstrip("/")
         if rel.startswith("static/"):
@@ -3820,7 +3879,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _serve_frontend_file(self, url_path):
         """Sirve archivos de frontend/css/, frontend/js/, frontend/assets/."""
-        frontend_dir = ROOT.parent / "frontend"
+        frontend_dir = self._frontend_dir()
         rel = url_path.lstrip("/")
         full = frontend_dir / rel
         try:

@@ -6,6 +6,26 @@ Backend verificado: sirv.py escuchando en 127.0.0.1:8765 (PID 1821)
 Bases verificadas: 29 attacheadas, todas OK (existen, conteo > 0, tablas correctas)
 Total datos: 271,545,430 filas / ~38 GB en disco
 
+ACTUALIZACIÓN 2026-10-08
+------------------------
+Este documento sigue vigente como INVENTARIO de layouts y endpoints. La guía
+operativa de cómo buscar es ahora docs/METODOLOGIAS_BUSQUEDA.md, que añade:
+
+  - ine_2018.duckdb: 34 tablas en 34 esquemas (AGS."Ags" ... DF2."Df2", EDM1."Edm1").
+    `show tables` devuelve VACÍO en este archivo: hay que usar duckdb_tables().
+    Nuevo endpoint: GET /api/v1/ine2018/buscar
+  - covid23_master.duckdb expone covid_clinico (130 cols, con CURP/domicilio/
+    teléfono/diagnóstico) ADEMÁS de personas (48 cols, volcado telefónico, no
+    clínico). EXTENDED_DBS attachea la tabla `personas`, así que lo clínico
+    quedaba inaccesible. Nuevo endpoint: GET /api/v1/covid/buscar
+  - Cruce telefónico unificado: GET /api/v1/telefonia/buscar
+  - cfe_SIN_ESTADO-003.duckdb (2.9 GB) NO tiene tablas ni vistas: huérfano.
+  - 16 pares *_master / *_v1 son twins de contenido verificado; santander_v1..v7
+    NO lo son entre sí. Ver el detalle en METODOLOGIAS_BUSQUEDA.md §4.6.
+  - Corregido en servir.py: el catch-all estático estaba ANTES del bloque
+    /api/* y se tragaba toda la API y todo el frontend (404 en todo). El
+    healthcheck no lo detectaba porque solo abre un socket TCP.
+
 ================================================================
 1. INVENTARIO DE BASES (LAYOUTS REALES)
 ================================================================

@@ -14,7 +14,7 @@
 | Fecha | 2026-09-05 |
 | Versión | 1.0 (borrador para revisión) |
 | Estado | **Pendiente de aprobación** |
-| Repositorio | `/home/sebastianvernis/proyectos/kyc/proyecto_kyc` |
+| Repositorio | `/mnt/disco2/projects/kyc/proyecto_kyc` |
 | Hardware objetivo | i5-12500 (12 vCPU), 31 GB RAM, NVMe 221 GB (96 GB libres) |
 
 ---
