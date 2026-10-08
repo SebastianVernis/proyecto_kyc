@@ -132,12 +132,25 @@ aditivas, migración idempotente al arrancar):
 
 ## 8. Puntos de integración
 
-| Punto | Hoy | v2 |
+| Punto | Antes | v2 |
 |---|---|---|
 | `POST /api/perfil/crear` | **abortaba en CheckID** | **hecho**: local primero; CU para lo dudoso; nunca aborta |
-| `/api/sujeto`, `/api/curp/{}`, `/v1/sujeto/enriquecido`, `perfil_inicial` | fallback CheckID con guard | pendiente: escalada CU por dato dudoso |
-| `POST /v1/sujeto/mapear` | CheckID directo | pendiente: local → CU solo si dudoso |
-| `_run_validation` | CheckID cobra sin control | pendiente: CU con confirmación de costo |
+| `GET /api/sujeto` | fallback CheckID | **hecho**: vía `_checkid_lookup` → compuerta v2 |
+| `GET /api/curp/{curp}` | fallback CheckID | **hecho**: vía `_checkid_lookup` → compuerta v2 |
+| `GET /v1/sujeto/enriquecido` | sin CheckID | **hecho**: hereda la compuerta (no llamaba a CheckID) |
+| `POST /v1/sujeto/mapear` | CheckID directo | **hecho**: paso de identidad vía v2 |
+| `_run_validation` (provider `checkid`) | CheckID cobra sin control | **hecho**: vía v2, costo 0 si CheckID pausado |
+
+**Palanca:** 3 de los 5 puntos pasan por `_checkid_lookup`; al hacerlo consciente
+del flujo v2 (cuando `CHECKID_ENABLED=false`) quedan conectados a la vez. La
+compuerta devuelve un dict con la MISMA forma que `CheckIdClient.get_full`, así
+que ningún consumidor cambia.
+
+**Tope de gasto real:** el resultado pagado se persiste (`updatear_consultaunica`)
+y la compuerta siguiente lo ve concluyente, así que cada sujeto paga **como
+máximo 1 crédito por dato, una sola vez** — el gasto lo acota el número de
+sujetos distintos, no el tráfico. AFOR queda apagado en estos endpoints (plan
+vacío), solo se enciende desde `perfil_crear` con plan corporativo.
 
 **Hecho** en `providers/consultaunica.py`: NSS (`/v3/imss`), RFC
 (`/v3/sat` rfc_search / rfc_validation) y saldo (`creditos_restantes()`), además
@@ -167,6 +180,7 @@ de afore, ifetel y actas.
 - `config.py` — `CHECKID_ENABLED`; `servir.py` — migración al arranque.
 
 **Pendiente** (siguiente iteración):
-- Escalada en `/api/sujeto`, `/api/curp/{}`, `/v1/sujeto/enriquecido`,
-  `/v1/sujeto/mapear` y `_run_validation`.
-- Exponer el contacto de AFOR en la UI de búsqueda.
+- Exponer el contacto de AFOR en la UI de búsqueda (el dato ya se persiste en
+  `cu_contacto`; falta mostrarlo).
+- (Opcional) Interruptor para desactivar la escalada en los endpoints de
+  lectura si se quiere control todavía más fino.

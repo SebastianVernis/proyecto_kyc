@@ -77,30 +77,58 @@ def mapear_sujeto(
         "metadata": {"steps": [], "elapsed_ms": 0},
     }
 
-    # ── Paso 1: CheckID ──────────────────────────────────────────────────
+    # ── Paso 1: identidad (CheckID o flujo v2) ───────────────────────────
     t1 = time.time()
     try:
         from config import config
-        api_key = config.checkid_api_key
-        if api_key:
-            client = CheckIdClient(api_key=api_key)
-            checkid_data = client.get_full(curp)
-            result["checkid"] = checkid_data
-            result["metadata"]["steps"].append({
-                "step": "checkid",
-                "elapsed_ms": int((time.time() - t1) * 1000),
-                "ok": checkid_data.get("exitoso", False),
-            })
+        if not getattr(config, "checkid_enabled", False):
+            # Flujo v2: CheckID pausado. Barrido local primero y escalada
+            # automática a ConsultaÚnica solo si el dato local es dudoso.
+            try:
+                from servir import _resolver_identidad_v2, _init_extended_con
+                v2 = _resolver_identidad_v2(
+                    curp, nombre=nombre, paterno=paterno, materno=materno,
+                    con_ext=_init_extended_con(),
+                )
+            except Exception:
+                v2 = None
+            if v2:
+                result["checkid"] = v2
+                result["metadata"]["steps"].append({
+                    "step": "identidad_v2",
+                    "elapsed_ms": int((time.time() - t1) * 1000),
+                    "ok": bool(v2.get("rfc") or v2.get("nss")),
+                    "fuente": "consultaunica_v2",
+                    "costo_creditos": v2.get("costo_creditos", 0),
+                })
+            else:
+                result["checkid"] = {"exitoso": False,
+                                     "error": "sin datos locales ni escalada"}
+                result["metadata"]["steps"].append({
+                    "step": "identidad_v2", "elapsed_ms": 0, "ok": False,
+                    "error": "sin datos locales ni escalada",
+                })
         else:
-            result["checkid"] = {"exitoso": False, "error": "API key no configurada"}
-            result["metadata"]["steps"].append({
-                "step": "checkid", "elapsed_ms": 0, "ok": False,
-                "error": "API key no configurada",
-            })
+            api_key = config.checkid_api_key
+            if api_key:
+                client = CheckIdClient(api_key=api_key)
+                checkid_data = client.get_full(curp)
+                result["checkid"] = checkid_data
+                result["metadata"]["steps"].append({
+                    "step": "checkid",
+                    "elapsed_ms": int((time.time() - t1) * 1000),
+                    "ok": checkid_data.get("exitoso", False),
+                })
+            else:
+                result["checkid"] = {"exitoso": False, "error": "API key no configurada"}
+                result["metadata"]["steps"].append({
+                    "step": "checkid", "elapsed_ms": 0, "ok": False,
+                    "error": "API key no configurada",
+                })
     except Exception as e:
         result["checkid"] = {"exitoso": False, "error": str(e)[:200]}
         result["metadata"]["steps"].append({
-            "step": "checkid", "elapsed_ms": 0, "ok": False,
+            "step": "identidad", "elapsed_ms": 0, "ok": False,
             "error": str(e)[:200],
         })
 

@@ -8547,13 +8547,137 @@ def _checkid_creditos_disponibles(umbral: int = 5, ttl_s: int = 60) -> bool:
         return False
 
 
+def _resolver_identidad_v2(curp: str, *, rfc_hint: str = "", nss_hint: str = "",
+                           nombre: str = "", paterno: str = "", materno: str = "",
+                           plan: str = "", validacion_previa: bool = False,
+                           con_ext=None) -> "dict | None":
+    """Compuerta v2: barrido local gratis -> escalada automática a ConsultaÚnica.
+
+    Se usa cuando CheckID está pausado (CHECKID_ENABLED=false) para que los
+    puntos que antes caían a CheckID obtengan RFC/NSS (y contacto de AFOR)
+    del flujo local-primero. Devuelve un dict con la MISMA forma que
+    `CheckIdClient.get_full` para no tocar a los consumidores (mismo esquema
+    con "exitoso"/"rfc"/"nss"), o None si no hay nada que aportar.
+    """
+    from config import config
+    from coherencia import fecnac_desde_curp
+    import flujo_busqueda_v2 as _flujo
+
+    # 1) Barrido local (gratis) de RFC/NSS por CURP.
+    rfc_local, nss_local = "", ""
+    fuentes_rfc, fuentes_nss = [], []
+    if con_ext is not None:
+        try:
+            r = con_ext.execute(
+                "SELECT rfc, nss FROM api.imss_salud_full WHERE curp = ? LIMIT 1",
+                [curp],
+            ).fetchall()
+            if r:
+                rfc_local = (r[0][0] or "").strip()
+                nss_local = (r[0][1] or "").strip()
+                if nss_local:
+                    fuentes_nss.append("imss_salud")
+                if rfc_local:
+                    fuentes_rfc.append("imss_salud")
+        except Exception:
+            pass
+    rfc_local = rfc_local or (rfc_hint or "").strip()
+    nss_local = nss_local or (nss_hint or "").strip()
+
+    # 2) Cache: si el perfil ya tiene cu_* con contacto, no se re-paga.
+    cacheado = {}
+    try:
+        from perfil_completo_db import leer_perfil
+        perfil = leer_perfil(con_ext, curp) if con_ext is not None else None
+        if perfil:
+            cu = perfil.get("cu_data") or {}
+            if isinstance(cu, str):
+                import json as _json
+                cu = _json.loads(cu) if cu else {}
+            cto = perfil.get("cu_contacto") or {}
+            if isinstance(cto, str):
+                import json as _json
+                cto = _json.loads(cto) if cto else {}
+            cacheado = {
+                "afore": cu.get("afore", ""), "email": cto.get("email", ""),
+                "telefono": cto.get("telefono", ""),
+            }
+            if not rfc_local:
+                rfc_local = perfil.get("rfc") or ""
+            if not nss_local:
+                nss_local = perfil.get("nss") or ""
+    except Exception:
+        pass
+
+    local = {
+        "curp": curp, "nombre": nombre, "paterno": paterno, "materno": materno,
+        "fecnac": fecnac_desde_curp(curp) or "",
+        "en_padron": bool(nombre),
+        "rfc": {"rfc": rfc_local, "rfc_fuentes": fuentes_rfc},
+        "nss": {"nss": nss_local, "nss_fuentes": fuentes_nss},
+        "afore": cacheado,
+    }
+    try:
+        res = _flujo.resolver(
+            local=local, plan=plan, validacion_previa=validacion_previa,
+            mock=bool(getattr(config, "consultaunica_mock", False)),
+        )
+    except Exception:
+        return None
+
+    ui = _flujo.formatear_para_ui(res)
+    if not any(ui["valores"].get(k) for k in ("rfc", "nss", "email", "telefono")):
+        return None
+
+    # Persistir lo que se pagó (no re-cobrar en la siguiente corrida).
+    if res["costo_creditos"] > 0 and res["consultado"] and con_ext is not None:
+        try:
+            from perfil_completo_db import updatear_consultaunica
+            updatear_consultaunica(
+                con_ext, curp,
+                {"nss": ui["valores"].get("nss", ""), "rfc": ui["valores"].get("rfc", ""),
+                 "afore": ui["valores"].get("afore", "")},
+                contacto=ui["contacto"], costo_creditos=res["costo_creditos"],
+            )
+        except Exception:
+            pass
+
+    # Forma compatible con CheckIdClient.get_full.
+    return {
+        "exitoso": True,
+        "fuente": "consultaunica_v2",
+        "rfc": ui["valores"].get("rfc") or None,
+        "nss": ui["valores"].get("nss") or None,
+        "afore": ui["valores"].get("afore") or None,
+        "email": ui["contacto"].get("email") or None,
+        "telefono": ui["contacto"].get("telefono") or None,
+        "costo_creditos": ui["costo_creditos"],
+        "consultado": [c["servicio"] for c in ui["consultado"]],
+        "avisos": ui["avisos"],
+    }
+
+
 def _checkid_lookup(curp: str, rfc_hint: str = "") -> "dict | None":
     """Llama CheckID solo si hay créditos. Devuelve dict normalizado o None.
 
     None significa "no se consultó" (sin créditos / error). El caller debe
     distinguir None de un dict con exitoso=False (que sí se consultó y
     devolvió error de negocio).
+
+    2026-10-08 (flujo v2): si CheckID está pausado (CHECKID_ENABLED=false),
+    NO se llama al proveedor; en su lugar corre la compuerta local-primero
+    sobre ConsultaÚnica. Así los tres puntos que caían a CheckID siguen
+    obteniendo RFC/NSS/conacto sin gastar cuando el dato local ya es
+    concluyente.
     """
+    from config import config
+    if not getattr(config, "checkid_enabled", False):
+        try:
+            con_ext = _init_extended_con()
+        except Exception:
+            con_ext = None
+        return _resolver_identidad_v2(curp, rfc_hint=rfc_hint, con_ext=con_ext)
+
     if not _checkid_creditos_disponibles():
         return None
     try:
@@ -10077,6 +10201,20 @@ def _run_validation(validation_id, curp, query, sujeto, rfc, username=None):
     nombre_completo = f"{sujeto.get('nombre','')} {sujeto.get('paterno','')} {sujeto.get('materno','')}".strip()
 
     if provider == "checkid":
+        from config import config
+        if not getattr(config, "checkid_enabled", False):
+            # Flujo v2: CheckID pausado -> compuerta local-primero.
+            try:
+                con_ext = _init_extended_con()
+            except Exception:
+                con_ext = None
+            r = _resolver_identidad_v2(
+                curp, rfc_hint=rfc or "", nombre=sujeto.get("nombre", ""),
+                paterno=sujeto.get("paterno", ""), materno=sujeto.get("materno", ""),
+                con_ext=con_ext,
+            )
+            return (r or {"exitoso": False,
+                          "error": "CheckID pausado y sin datos locales"}), 0
         try:
             cc = get_checkid_client()
             return cc.get_full(curp, rfc_hint=rfc or ""), cost
