@@ -112,32 +112,36 @@ Reglas de ahorro:
 ## 6. Caché (no pagar dos veces)
 
 `perfil_completo` ya guarda `checkid_data` + `checkid_fecha` con caducidad de 30
-días. Se replica el patrón para ConsultaÚnica:
+días. Se replica el patrón para ConsultaÚnica. **Implementado** (columnas
+aditivas, migración idempotente al arrancar):
 
-- columnas `cu_nss`, `cu_rfc`, `cu_afore`, `cu_fecha`, `cu_costo_creditos`
-- reutilizar si `cu_fecha` < TTL (propuesto: 30 días, igual que CheckID)
-- registrar en el perfil el costo real por sujeto (para auditar el gasto)
+- columnas `cu_data` (nss/rfc/afore), `cu_contacto` (email/teléfono),
+  `cu_fecha`, `cu_costo_creditos`
+- **el contacto de AFOR (email/teléfono) no caduca**: es el único dato de
+  contacto del flujo y no se puede regenerar; solo se refresca a petición.
+- se registra el costo real por sujeto (`cu_costo_creditos`) para auditar gasto.
 
 ## 7. CheckID en el flujo v2
 
-- Queda **pausado** (no hay consultas). Se saca de la ruta crítica.
-- `perfil_crear` deja de abortar: si CheckID falla, **continúa con los pasos
-  locales** (es el bug actual).
-- Se conserva como último recurso opcional, detrás de un interruptor
-  `CHECKID_ENABLED` (por defecto `false`), para reactivarlo si renuevas plan.
-- Los tres puntos sin guard de costo pasan a respetar el interruptor.
+- Queda **pausado** vía `CHECKID_ENABLED=false` (default en `.env`). Fuera de la
+  ruta crítica.
+- `perfil_crear` **ya no aborta**: si CheckID falla, registra el error y
+  **continúa con los pasos locales** (era el bug).
+- Se conserva como último recurso, detrás del interruptor, para reactivarlo si
+  se renueva el plan.
 
 ## 8. Puntos de integración
 
 | Punto | Hoy | v2 |
 |---|---|---|
-| `/api/sujeto`, `/api/curp/{}`, `/v1/sujeto/enriquecido`, `perfil_inicial` | fallback CheckID con guard | escalada CU por dato dudoso |
-| `POST /v1/sujeto/mapear` | CheckID directo | local → CU solo si dudoso |
-| `POST /api/perfil/crear` | **aborta en CheckID** | local primero; CU para lo dudoso; nunca aborta |
-| `_run_validation` | CheckID cobra sin control | CU, con confirmación de costo |
+| `POST /api/perfil/crear` | **abortaba en CheckID** | **hecho**: local primero; CU para lo dudoso; nunca aborta |
+| `/api/sujeto`, `/api/curp/{}`, `/v1/sujeto/enriquecido`, `perfil_inicial` | fallback CheckID con guard | pendiente: escalada CU por dato dudoso |
+| `POST /v1/sujeto/mapear` | CheckID directo | pendiente: local → CU solo si dudoso |
+| `_run_validation` | CheckID cobra sin control | pendiente: CU con confirmación de costo |
 
-Falta implementar en `providers/consultaunica.py` los dos servicios necesarios:
-**NSS** (`/v3/imss`) y **RFC** (`/v3/sat`). Hoy solo tiene afore, ifetel y actas.
+**Hecho** en `providers/consultaunica.py`: NSS (`/v3/imss`), RFC
+(`/v3/sat` rfc_search / rfc_validation) y saldo (`creditos_restantes()`), además
+de afore, ifetel y actas.
 
 ## 9. Decisiones cerradas
 
@@ -151,9 +155,18 @@ Falta implementar en `providers/consultaunica.py` los dos servicios necesarios:
    incoherente; no hay confirmación intermedia. El tope de 3 créditos por
    corrida acota el gasto.
 
-## 10. Pendiente
+## 10. Estado de implementación (2026-10-08)
 
-- Conectar el orquestador a los endpoints (`/api/sujeto`, `perfil_crear`).
-- Arreglar `perfil_crear` para que no aborte en CheckID.
-- Columnas de caché `cu_*` en `perfil_completo`.
-- Interruptor `CHECKID_ENABLED=false`.
+**Hecho** (commits `fae0050`, `550159b`, `d2be6f8`, `6d9d59e`):
+- `backend/coherencia.py` — compuerta (lógica pura, sin red).
+- `backend/flujo_busqueda_v2.py` — orquestador local→CU, tope 3 créditos,
+  `dry_run`, `afore_habilitado(plan, validacion_previa)`.
+- `providers/consultaunica.py` — NSS, RFC, afore con contacto, saldo.
+- `perfil_crear.py` — PASO 10 de escalada; CheckID ya no aborta.
+- `perfil_completo_db.py` — columnas `cu_*` + `updatear_consultaunica()`.
+- `config.py` — `CHECKID_ENABLED`; `servir.py` — migración al arranque.
+
+**Pendiente** (siguiente iteración):
+- Escalada en `/api/sujeto`, `/api/curp/{}`, `/v1/sujeto/enriquecido`,
+  `/v1/sujeto/mapear` y `_run_validation`.
+- Exponer el contacto de AFOR en la UI de búsqueda.

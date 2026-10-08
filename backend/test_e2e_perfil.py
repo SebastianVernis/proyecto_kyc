@@ -15,6 +15,8 @@ Valida:
 import json
 import sys
 import time
+import shutil
+import tempfile
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -33,12 +35,19 @@ BASES_PATH = str(Path(__file__).parent.parent / "bases")
 TEST_CURP = "RUVZ750427MOCZGT00"
 TEST_CURP_FAKE = "XXXX000000XXXXXXXX"
 
+# El servidor en vivo mantiene un lock sobre perfil_completo.duckdb y los tests
+# no deben tocar la base de producción: se trabaja sobre una copia temporal.
+_TMP_DIR = tempfile.mkdtemp(prefix="kyc_test_")
+PERFIL_TEST_PATH = str(Path(_TMP_DIR) / "perfil_completo.duckdb")
+
 
 def _build_con_extended():
     con = duckdb.connect(":memory:")
-    # perfil_completo ATTACHed como b_perfil — igual que producción
-    # (_init_extended_con). Sin esto los UPDATE de perfil_completo fallan.
-    con.execute(f"ATTACH '{BASES_PATH}/perfil_completo.duckdb' AS b_perfil")
+    # Copia propia de perfil_completo ATTACHed como b_perfil — igual que
+    # producción (_init_extended_con), pero sobre una copia para no chocar con
+    # el lock del servidor ni escribir en la base real.
+    shutil.copy(str(Path(BASES_PATH) / "perfil_completo.duckdb"), PERFIL_TEST_PATH)
+    con.execute(f"ATTACH '{PERFIL_TEST_PATH}' AS b_perfil")
     con.execute(f"ATTACH '{BASES_PATH}/padron_v1.duckdb' AS b_padron (READ_ONLY)")
     DBS = {
         "b_imss_a": "imss_asegurados_v1.duckdb",
@@ -158,11 +167,27 @@ class TestE2EPerfilCrear(unittest.TestCase):
         cls.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp IN (?, ?)",
                                [TEST_CURP, TEST_CURP_FAKE])
 
+        # SEGURIDAD: forzar ConsultaÚnica en mock durante TODA la clase. Sin esto
+        # los tests que escalan llaman a la API REAL y gastan créditos
+        # (ocurrió: 36 créditos por correr la suite).
+        # También se fija CheckID explícitamente: el .env se carga con
+        # override=True y pisa la variable de entorno del shell.
+        from config import config
+        from perfil_completo_db import _migrar_cu
+        _migrar_cu(cls.con_extended)  # asegura cu_* en la copia
+        cls._cu_patch = patch.object(config, "consultaunica_mock", True)
+        cls._cu_patch.start()
+        cls._chk_patch = patch.object(config, "checkid_enabled", True)
+        cls._chk_patch.start()
+
     @classmethod
     def tearDownClass(cls):
+        cls._chk_patch.stop()
+        cls._cu_patch.stop()
         cls.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp IN (?, ?)",
                                [TEST_CURP, TEST_CURP_FAKE])
         cls.con_extended.close()
+        shutil.rmtree(_TMP_DIR, ignore_errors=True)
 
     def _run_flow(self, curp=TEST_CURP):
         from perfil_crear import crear_perfil
