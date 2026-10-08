@@ -162,7 +162,6 @@ body>*:not(.argos-bg){position:relative;z-index:1}
       </div>
       <div class="topbar-actions">
         <button class="btn sm secondary" onclick="window.location.href='/buscar.html'">← Volver a búsqueda</button>
-        <button class="btn sm" id="btn-mapear" onclick="ejecutarMapeo()">🗺 Mapear</button>
         <button class="btn sm" id="btn-reporte" onclick="window.location.href='/busquedas_adicionales.html?curp='+CURP">🌐 Búsquedas ext.</button>
       </div>
     </div>
@@ -188,6 +187,17 @@ body>*:not(.argos-bg){position:relative;z-index:1}
           <div class="card-title">🪪 Identidad del sujeto</div>
         </div>
         <div class="kv" id="kv-identidad"></div>
+      </div>
+
+      <!-- Contacto (AFOR — única fuente; las bases locales no traen email) -->
+      <div class="card" id="card-contacto" style="display:none">
+        <div class="card-header">
+          <div class="card-title">📧 Contacto</div>
+        </div>
+        <div class="kv" id="kv-contacto"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">
+          Fuente: AFOR (ConsultaÚnica). El contacto no caduca; se refresca a petición.
+        </div>
       </div>
 
       <!-- Sources summary -->
@@ -271,12 +281,6 @@ body>*:not(.argos-bg){position:relative;z-index:1}
           <h4>Apify — OSINT</h4>
           <p>Rastreo de redes sociales y presencia digital.</p>
           <span class="tag tag-apify">APIFY</span>
-        </div>
-        <div class="search-card" onclick="ejecutarMapeo()">
-          <div class="search-card-icon">🗺</div>
-          <h4>Mapeo de sujeto</h4>
-          <p>CheckID + CFE + mapas geográficos.</p>
-          <span class="tag tag-interno">INTERNO</span>
         </div>
         <div class="search-card" onclick="ejecutarReporte()">
           <div class="search-card-icon">📄</div>
@@ -365,6 +369,7 @@ async function load() {
 
     renderKPIs(data, perfil, padron, checkid);
     renderIdentidad(padron, checkid, perfil);
+    renderContacto(perfil);
     renderFuentes(perfil);
     renderTimeline(data.pasos || []);
     renderBases(perfil);
@@ -421,6 +426,31 @@ function renderIdentidad(padron, checkid, perfil) {
   $("kv-identidad").innerHTML = fields.map(([k, v, cls]) => {
     const c = !v ? "empty" : (cls || "");
     return `<div class="k">${k}</div><div class="v ${c}">${esc(v || "—")}</div>`;
+  }).join("");
+}
+
+/* ==== Render: Contacto (AFOR) ==== */
+function renderContacto(perfil) {
+  // El contacto viene plano del backend (perfil.email / perfil.telefono),
+  // poblado desde AFOR vía el flujo v2. Es el único dato de contacto del
+  // expediente: ninguna base local tiene columna de correo.
+  const email = perfil.email || "";
+  const tel = perfil.telefono || "";
+  const afore = perfil.afore || "";
+  const card = $("card-contacto");
+  if (!email && !tel && !afore) { card.style.display = "none"; return; }
+  card.style.display = "";
+  const fields = [
+    ["Correo", email, email ? "highlight" : "empty", email ? `mailto:${email}` : null],
+    ["Teléfono", tel, tel ? "highlight" : "empty", tel ? `tel:${tel}` : null],
+    ["AFOR", afore, afore ? "" : "empty", null],
+  ];
+  $("kv-contacto").innerHTML = fields.map(([k, v, cls, href]) => {
+    const c = !v ? "empty" : (cls || "");
+    const val = href
+      ? `<a href="${esc(href)}" style="color:var(--accent2)">${esc(v)}</a>`
+      : esc(v || "—");
+    return `<div class="k">${k}</div><div class="v ${c}">${val}</div>`;
   }).join("");
 }
 
@@ -527,22 +557,6 @@ function renderRecord(rec) {
     entries.slice(0, 8).map(([k, v]) =>
       `<div style="display:flex;gap:8px"><span style="color:var(--muted);min-width:80px;font-size:10px;text-transform:uppercase">${esc(k)}</span><span style="color:var(--text)">${esc(String(v).substring(0, 60))}</span></div>`
     ).join("") + "</div>";
-}
-
-/* ==== Actions ==== */
-async function ejecutarMapeo() {
-  if (!CURP) return;
-  const overlay = showOverlay("Mapeando sujeto...", "CheckID + CFE + mapas");
-  try {
-    const r = await fetch(`${API_URL}/api/v1/sujeto/mapear`, {
-      method: "POST", headers: authHJ(),
-      body: JSON.stringify({ curp: CURP }),
-    });
-    const data = await r.json();
-    if (data.error) { alert("Error: " + data.error); return; }
-    alert(`Mapeo completado en ${data.metadata?.elapsed_ms || 0}ms\nCFE: ${data.cfe?.total || 0} coincidencias`);
-  } catch (e) { alert("Error: " + e.message); }
-  finally { overlay.remove(); }
 }
 
 async function ejecutarInteligencia() {

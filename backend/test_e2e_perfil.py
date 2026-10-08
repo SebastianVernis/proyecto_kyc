@@ -404,6 +404,68 @@ class TestE2EPerfilCrear(unittest.TestCase):
         cu = result.get("consultaunica") or {}
         self.assertNotIn("afore", str(cu.get("consultado", [])).lower())
 
+    def test_13_fase_local_no_gasta_creditos(self):
+        """Fase local (el popup de 'datos básicos'): cruza bases locales, 0 créditos.
+
+        Es lo que corre en segundo plano al abrir el popup: el perfil se crea
+        con la data local, queda en estado 'parcial' y no toca CheckID ni
+        ConsultaÚnica.
+        """
+        from config import config
+        from perfil_crear import crear_perfil
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
+        with patch.object(config, "checkid_enabled", True), \
+                patch.object(config, "consultaunica_mock", True):
+            result = crear_perfil(
+                curp=TEST_CURP,
+                con_extended=self.con_extended,
+                con_perfil=self.con_perfil,
+                con_padron=self.con_extended,
+                fase="local",
+            )
+
+        # La escalada externa quedó marcada como omitida, sin costo.
+        cu = [p for p in result["pasos"] if p["paso"] == "consultaunica_v2"][0]
+        self.assertTrue(cu.get("omitido"))
+        self.assertEqual(cu.get("creditos"), 0)
+        self.assertEqual(result["metadata"]["creditos"]["total"], 0)
+        self.assertNotIn("consultaunica", result)  # no hubo escalada
+
+        # Sí corrió el cruce local y el perfil quedó guardado como parcial.
+        pasos = [p["paso"] for p in result["pasos"]]
+        self.assertIn("imss", pasos)
+        self.assertIn("bases_rfc", pasos)
+        perfil_db = leer_perfil(self.con_perfil, TEST_CURP)
+        self.assertIsNotNone(perfil_db)
+        self.assertEqual(perfil_db.get("estado"), "parcial")
+
+    def test_14_fase_completa_completa_el_mismo_perfil(self):
+        """Fase completa: reutiliza el perfil local ya creado y lo valida.
+
+        Simula el segundo clic ('Analizar perfil completo'): el perfil local ya
+        existe, así que la fase completa lo completa en vez de duplicarlo.
+        """
+        from config import config
+        from perfil_crear import crear_perfil
+        with patch.object(config, "checkid_enabled", True), \
+                patch.object(config, "consultaunica_mock", True):
+            result = crear_perfil(
+                curp=TEST_CURP,
+                con_extended=self.con_extended,
+                con_perfil=self.con_perfil,
+                con_padron=self.con_extended,
+                plan="corporativo",
+                validacion_previa=True,
+                fase="completo",
+            )
+        perfil_db = leer_perfil(self.con_perfil, TEST_CURP)
+        self.assertEqual(perfil_db.get("estado"), "completo")
+        # No se duplicó: sigue habiendo un solo registro para esa CURP.
+        n = self.con_perfil.execute(
+            "SELECT COUNT(*) FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP]
+        ).fetchone()[0]
+        self.assertEqual(n, 1)
+
     def test_10_elasticsearch_payload_structure(self):
         result = self._run_flow()
         perfil = result["perfil"]

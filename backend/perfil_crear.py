@@ -42,6 +42,12 @@ CREDITOS_CHECKID = 3          # Costo real de CheckID API
 DIAS_CADUCIDAD_CHECKID = 30  # Re-ejecutar CheckID después de 30 días
 
 
+class _FaseLocal(Exception):
+    """Corta la fase externa del perfil cuando solo se pidió la local."""
+
+    pass
+
+
 def crear_perfil(
     *,
     curp: str = "",
@@ -55,6 +61,7 @@ def crear_perfil(
     con_padron=None,  # Conexión a padrón electoral (nuevo)
     plan: str = "",            # plan del usuario (AFOR solo en "corporativo")
     validacion_previa: bool = False,  # habilita AFOR si el plan es corporativo
+    fase: str = "completo",    # "local" (gratis) | "completo" (local + externo pagado)
 ) -> dict:
     """Crea perfil completo con flujo estricto de 9 pasos.
 
@@ -76,6 +83,11 @@ def crear_perfil(
         return {"error": "CURP requerida (18 caracteres)"}
 
     t0 = time.time()
+    # Fase "local": construcción preliminar gratuita. No se paga nada: ni
+    # CheckID ni ConsultaÚnica. Solo match contra las bases locales ya
+    # cacheadas en perfil_completo. La fase externa se hace después, cuando
+    # el usuario confirma que quiere gastar créditos.
+    solo_local = (fase == "local")
     con_perfil = con_perfil or get_con()  # Conexión a perfil_completo
     # Si con_extended tiene b_perfil ATTACHed, usar esa conexión en su lugar
     # para evitar "already attached" error
@@ -118,11 +130,16 @@ def crear_perfil(
             except Exception:
                 checkid_vencido = True
 
-        if not checkid_vencido:
+        # En fase "local" siempre se devuelve lo ya guardado sin re-correr nada
+        # (es la lectura rápida para pintar el modal de datos básicos).
+        if solo_local or not checkid_vencido:
             result["perfil"] = _parse_perfil_from_db(perfil_existente)
             result["estado"] = "ya_completo"
             result["metadata"]["elapsed_ms"] = int((time.time() - t0) * 1000)
-            result["metadata"]["creditos"] = {"checkid": CREDITOS_CHECKID, "bases_locales": 0, "total": CREDITOS_CHECKID}
+            # El cobro por perfil se mantiene aunque salga de caché; solo la
+            # fase local (popup de datos básicos) es gratuita.
+            cobro = 0 if solo_local else CREDITOS_CHECKID
+            result["metadata"]["creditos"] = {"checkid": cobro, "bases_locales": 0, "total": cobro}
             return result
 
     # ────────────────────────────────────────────────────────────────────
@@ -204,6 +221,8 @@ def crear_perfil(
 
     from config import config
     checkid_habilitado = getattr(config, "checkid_enabled", False)
+    if solo_local:
+        checkid_habilitado = False
 
     # Verificar si ya tenemos CheckID válido y reciente
     if perfil_existente and perfil_existente.get("checkid_ok") and perfil_existente.get("checkid_fecha"):
@@ -398,11 +417,19 @@ def crear_perfil(
     # ────────────────────────────────────────────────────────────────────
     # Créditos (se calculan ANTES del paso 10, que suma los de ConsultaÚnica)
     # ────────────────────────────────────────────────────────────────────
-    creditos_locales = CREDITOS_BASES_LOCALES if not perfil_existente else 0
+    # Créditos (se calculan ANTES del paso 10, que suma los de ConsultaÚnica).
+    # En fase local (popup de datos básicos) NADA se cobra: es el vistazo
+    # gratuito que se dispara al hacer clic en la fila.
+    if solo_local:
+        creditos_checkid = 0
+        creditos_locales = 0
+    else:
+        creditos_checkid = CREDITOS_CHECKID if checkid_ok else 0
+        creditos_locales = CREDITOS_BASES_LOCALES if not perfil_existente else 0
     result["metadata"]["creditos"] = {
-        "checkid": CREDITOS_CHECKID if checkid_ok else 0,
+        "checkid": creditos_checkid,
         "bases_locales": creditos_locales,
-        "total": (CREDITOS_CHECKID if checkid_ok else 0) + creditos_locales,
+        "total": creditos_checkid + creditos_locales,
     }
 
     # ────────────────────────────────────────────────────────────────────
@@ -412,8 +439,18 @@ def crear_perfil(
     # compuerta decide qué dato quedó dudoso y se paga SOLO eso (1 crédito por
     # servicio, tope 3). AFOR únicamente en plan corporativo con validación
     # previa, y nunca si la identidad no está resuelta.
+    # En fase "local" NO se toca ningún proveedor externo.
     t1 = time.time()
     try:
+        if solo_local:
+            result["pasos"].append({
+                "paso": "consultaunica_v2",
+                "tiempo_ms": int((time.time() - t1) * 1000),
+                "ok": True, "omitido": True,
+                "motivo": "fase=local (sin costo externo)",
+                "creditos": 0, "consultado": [],
+            })
+            raise _FaseLocal()
         import flujo_busqueda_v2 as _flujo
         local_v2 = {
             "curp": curp,
@@ -466,12 +503,21 @@ def crear_perfil(
             "creditos": ui_v2["costo_creditos"],
             "consultado": [c["servicio"] for c in ui_v2["consultado"]],
         })
+    except _FaseLocal:
+        pass
     except Exception as e:
         result["errores"].append(f"Error flujo v2: {str(e)[:200]}")
 
     # ────────────────────────────────────────────────────────────────────
     # FINALIZADO
     # ────────────────────────────────────────────────────────────────────
+    # Estado según la fase: la local solo cruzó las bases locales (parcial);
+    # la completa ya pagó lo externo.
+    try:
+        from perfil_completo_db import set_estado_perfil
+        set_estado_perfil(con_perfil, curp, "parcial" if solo_local else "completo")
+    except Exception:
+        pass
     perfil_final = leer_perfil(con_perfil, curp)
     result["perfil"] = _parse_perfil_from_db(perfil_final) if perfil_final else {}
     result["estado"] = perfil_final.get("estado", "completo") if perfil_final else "error"
@@ -499,11 +545,30 @@ def _parse_perfil_from_db(perfil_db: dict) -> dict:
     # Descomponer JSON fields
     for key in ["padron_data", "checkid_data", "imss_data", "att_data",
                 "telcel_data", "repuve_data", "empleadores_data",
-                "issste_data", "cfe_data"]:
+                "issste_data", "cfe_data", "cu_data", "cu_contacto"]:
         if perfil_db.get(key):
             try:
                 perfil[key] = json.loads(perfil_db[key]) if isinstance(perfil_db[key], str) else perfil_db[key]
             except:
                 pass
+
+    # 2026-10-08: contacto de AFOR (flujo v2). Es el ÚNICO dato de contacto del
+    # expediente (ninguna base local tiene email), así que se expone plano para
+    # que la ficha lo muestre sin que el frontend tenga que descomponer JSON.
+    cu = perfil.get("cu_data") or {}
+    if isinstance(cu, str):
+        try:
+            cu = json.loads(cu)
+        except Exception:
+            cu = {}
+    cto = perfil.get("cu_contacto") or {}
+    if isinstance(cto, str):
+        try:
+            cto = json.loads(cto)
+        except Exception:
+            cto = {}
+    perfil["email"] = cto.get("email", "") or ""
+    perfil["telefono"] = cto.get("telefono", "") or ""
+    perfil["afore"] = cu.get("afore", "") or ""
 
     return perfil

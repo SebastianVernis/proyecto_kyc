@@ -1285,7 +1285,7 @@ function showRowMenu(tr, base, curp, hints) {
     <div class="menu-item menu-item-action" data-action="ver">
       <span class="text-lg">👁</span>
       <div>
-        <div class="menu-item-label">Ver solo datos</div>
+        <div class="menu-item-label">Ver datos básicos</div>
         <div class="menu-item-desc">Respuesta de ${esc(base.toUpperCase())} • 1 crédito</div>
       </div>
     </div>
@@ -1293,15 +1293,8 @@ function showRowMenu(tr, base, curp, hints) {
     <div class="menu-item menu-item-action" data-action="perfil">
       <span class="text-lg">👤</span>
       <div>
-        <div class="menu-item-label">Crear perfil</div>
-        <div class="menu-item-desc">Busca en todas las bases • 3 créditos</div>
-      </div>
-    </div>
-    <div class="menu-item menu-item-action" data-action="mapear">
-      <span class="text-lg">🗺</span>
-      <div>
-        <div class="menu-item-label">Mapear sujeto</div>
-        <div class="menu-item-desc">CheckID + CFE + mapas • 3 créditos</div>
+        <div class="menu-item-label">Analizar perfil completo</div>
+        <div class="menu-item-desc">Cruza bases locales + valida RFC/NSS • 3 créditos</div>
       </div>
     </div>` : ""}
   `;
@@ -1317,14 +1310,6 @@ function showRowMenu(tr, base, curp, hints) {
     menu.remove();
     verDatos(tr, base, curp, hints);
   });
-
-  const mapearBtn = menu.querySelector('[data-action="mapear"]');
-  if (mapearBtn) {
-    mapearBtn.addEventListener("click", () => {
-      menu.remove();
-      mapearSujeto(curp, hints);
-    });
-  }
 
   const perfilBtn = menu.querySelector('[data-action="perfil"]');
   if (perfilBtn) {
@@ -1347,18 +1332,58 @@ function showRowMenu(tr, base, curp, hints) {
 }
 
 async function verDatos(tr, base, curp, hints) {
-  // Consumir 1 crédito de búsqueda
-  let creditOk = true;
+  // 1) Popup INMEDIATO con la data del padrón (lo que ya trajo la fila).
+  //    El usuario ve los datos básicos al instante, sin esperar nada.
+  renderDatosBasicos(tr, base, curp, hints, null);
+
+  // 2) Cobro del vistazo (admin / planes ilimitados no se afectan).
   try {
     const cr = await authedFetch(`${API_URL}/api/v1/uso/consumir`, { method: "POST" });
     const cd = await cr.json();
-    if (cd.error) { creditOk = false; alert(cd.error); return; }
-  } catch(e) { creditOk = false; }
+    if (cd && cd.error) alert(cd.error);
+  } catch (e) { /* el popup ya está abierto */ }
 
-  // Mostrar popup con los datos de la fila
-  const modal = document.createElement("div");
-  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px";
+  // 3) En SEGUNDO PLANO: se crea el perfil local (gratis, solo bases locales)
+  //    y queda consolidado en la BD. No bloquea el popup; cuando llega, se
+  //    refresca la parte de datos locales del modal.
+  if (curp && curp.length === 18) {
+    authedFetch(`${API_URL}/api/perfil/crear`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ curp, fase: "local" }),
+    })
+      .then((r) => r.json())
+      .then((d) => actualizarBloqueLocal(d))
+      .catch(() => { /* si falla, el popup sigue con la fila */ });
+  }
+}
 
+/* Inserta/actualiza el bloque "perfil local" dentro del modal ya abierto. */
+function actualizarBloqueLocal(dataLocal) {
+  const perfil = (dataLocal && dataLocal.perfil) || {};
+  const locales = Object.keys(perfil).filter(
+    (k) => k.endsWith("_data") && perfil[k] && k !== "checkid_data"
+  );
+  if (!locales.length) return;
+  const host = document.querySelector(".modal-source[data-local-host]");
+  if (!host) return;
+  let bloque = host.querySelector(".bloque-local");
+  if (!bloque) {
+    bloque = document.createElement("div");
+    bloque.className = "modal-source-body bloque-local";
+    bloque.style.borderTop = "1px solid var(--border)";
+    host.appendChild(bloque);
+  }
+  bloque.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">
+      Perfil preliminar (bases locales): ${locales.map((f) => esc(f.replace("_data", "").toUpperCase())).join(" · ")}
+    </div>
+    ${perfil.email ? `<div style="font-size:12px">📧 ${esc(perfil.email)}</div>` : ""}
+    ${perfil.telefono ? `<div style="font-size:12px">📱 ${esc(perfil.telefono)}</div>` : ""}`;
+}
+
+/* Modal de datos básicos: la fila + el perfil local ya consolidado. */
+function renderDatosBasicos(tr, base, curp, hints, perfilLocal) {
   // Recoger todos los data-* de la fila
   const rowData = {};
   for (const attr of tr.attributes) {
@@ -1379,7 +1404,23 @@ async function verDatos(tr, base, curp, hints) {
     }
   }
 
-  modal.innerHTML = `<div class="modal-source">
+  // Si la fase local trajo perfil, se muestran los bloques locales ya cruzados.
+  const perfil = (perfilLocal && perfilLocal.perfil) || {};
+  const locales = Object.keys(perfil).filter(k => k.endsWith("_data") && perfil[k] && k !== "checkid_data");
+  let localHtml = "";
+  if (locales.length) {
+    localHtml = `<div class="modal-source-body bloque-local" style="border-top:1px solid var(--border)">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">
+        Perfil preliminar (bases locales): ${locales.map(f => esc(f.replace("_data","").toUpperCase())).join(" · ")}
+      </div>
+      ${perfil.email ? `<div style="font-size:12px">📧 ${esc(perfil.email)}</div>` : ""}
+      ${perfil.telefono ? `<div style="font-size:12px">📱 ${esc(perfil.telefono)}</div>` : ""}
+    </div>`;
+  }
+
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px";
+  modal.innerHTML = `<div class="modal-source" data-local-host="1">
     <div class="modal-source-header">
       <div>
         <div class="modal-source-title">${sourceIcon} ${esc(sourceTitle)}</div>
@@ -1390,44 +1431,9 @@ async function verDatos(tr, base, curp, hints) {
     <div class="modal-source-body">
       <table class="modal-table">${rowsHtml}</table>
     </div>
+    ${localHtml}
   </div>`;
-
   document.body.appendChild(modal);
-}
-
-async function mapearSujeto(curp, hints) {
-  const overlay = showLoading("Mapeando sujeto...", "CheckID + CFE");
-  try {
-    const body = {
-      curp: curp,
-      nombre: hints.nombre || "",
-      paterno: hints.paterno || "",
-      materno: hints.materno || "",
-      calle: hints.calle || "",
-      ext: hints.ext || "",
-      colonia: hints.colonia || "",
-      cp: hints.cp || "",
-      estado: hints.estado || "",
-      municipio: hints.municipio || "",
-      seccion: hints.seccion || "",
-    };
-    const r = await authedFetch(`${API_URL}/api/v1/sujeto/mapear`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await r.json();
-    if (data.error) {
-      alert("Error: " + data.error);
-      return;
-    }
-    // Renderizar resultado
-    renderMapearResult(data);
-  } catch (e) {
-    alert("Error al mapear: " + e.message);
-  } finally {
-    overlay.remove();
-  }
 }
 
 function showLoading(msg, sub) {
@@ -1443,13 +1449,17 @@ function showLoading(msg, sub) {
 }
 
 async function crearPerfil(curp, hints) {
-  const overlay = showLoading("Creando perfil...", "Buscando en todas las bases");
+  // El perfil LOCAL ya se construyó en segundo plano al abrir el popup, así
+  // que aquí solo se piden las validaciones externas (fase "completo"): es el
+  // perfil que ya tiene toda la data local + NSS/RFC/CURP validados.
+  const overlay = showLoading("Validando perfil...", "Confirmando NSS/RFC contra fuentes externas");
   try {
     const body = {
       curp: curp,
       rfc: hints.rfc || "",
       nss: hints.nss || "",
       nombre: [hints.nombre, hints.paterno, hints.materno].filter(Boolean).join(" "),
+      fase: "completo",
     };
     const r = await authedFetch(`${API_URL}/api/perfil/crear`, {
       method: "POST",

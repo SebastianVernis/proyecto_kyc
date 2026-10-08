@@ -209,6 +209,25 @@ def updatear_consultaunica(con, curp: str, cu_data: dict,
 # PASO 1: INSERT inicial (Padrón)
 # ══════════════════════════════════════════════════════════════════════════
 
+def set_estado_perfil(con, curp: str, estado: str) -> bool:
+    """Fija el estado del perfil (completo | parcial | ...).
+
+    Se llama al final de crear_perfil: 'parcial' cuando solo corrió el cruce
+    local (fase=local), 'completo' cuando ya se pagó lo externo.
+    """
+    try:
+        con.execute(
+            "UPDATE b_perfil.perfil_completo SET estado = ?, actualizado_en = NOW() "
+            "WHERE curp = ?",
+            [estado, curp.upper().strip()],
+        )
+        return True
+    except Exception as e:
+        import logging
+        logging.error(f"Error fijando estado de {curp}: {e}")
+        return False
+
+
 def insertar_padron(con, curp: str, datos_padron: dict) -> bool:
     """INSERT inicial con datos del padrón. Solo datos electorales."""
     try:
@@ -643,6 +662,8 @@ def updatear_cfe(con, curp: str, con_extended, nombre_completo: str,
 
     try:
         curp = curp.upper().strip()
+        # El estado se fija en el caller (crear_perfil) para no marcarlo
+        # "completo" en la fase local, que es solo el cruce de bases locales.
         con.execute("""
             UPDATE b_perfil.perfil_completo SET
                 cfe_data = ?,
@@ -650,7 +671,6 @@ def updatear_cfe(con, curp: str, con_extended, nombre_completo: str,
                     COALESCE(fuentes_consultadas, '{}'),
                     ?
                 ),
-                estado = 'completo',
                 actualizado_en = NOW()
             WHERE curp = ?
         """, [cfe_json, fuentes_update, curp])

@@ -168,19 +168,48 @@ de afore, ifetel y actas.
    incoherente; no hay confirmación intermedia. El tope de 3 créditos por
    corrida acota el gasto.
 
-## 10. Estado de implementación (2026-10-08)
+## 10. Modelo de UI: un clic = datos básicos + perfil local en segundo plano
 
-**Hecho** (commits `fae0050`, `550159b`, `d2be6f8`, `6d9d59e`):
+El flujo de la interfaz se reorganizó alrededor de la idea de que **el cruce de
+bases locales es gratis**, así que se hace solo, siempre, y el usuario decide
+aparte si paga las validaciones externas.
+
+Al hacer clic en una fila de resultado, el menú ofrece **solo dos opciones** (ya
+no hay "Mapear sujeto" por separado):
+
+| Opción | Qué hace | Costo |
+|--------|----------|-------|
+| 👁 **Ver datos básicos** | Abre el popup de inmediato con la data del padrón y, en segundo plano, lanza `POST /api/perfil/crear` con `fase:"local"`: cruza todas las bases locales y deja el perfil consolidado en `perfil_completo` (estado `parcial`). Cuando termina, el bloque "perfil preliminar" se inserta en el popup ya abierto. | 1 crédito (vistazo) |
+| 👤 **Analizar perfil completo** | Toma ese mismo perfil (ya con toda la data local) y ejecuta la fase `completo`: valida NSS/RFC/CURP contra las fuentes externas según la compuerta de coherencia, y escala a ConsultaÚnica (y AFOR si aplica) solo lo dudoso. | 3 créditos |
+
+**Por qué quitar "Mapear":** el mapeo (CheckID + clasificación CFE) ya lo produce
+el perfil completo — `cfe_data` guarda la misma clasificación de domicilio. No
+se pierde nada; era un botón que duplicaba trabajo y confundía.
+
+### Fases en el backend (`crear_perfil(..., fase=)`)
+
+- `fase="local"` — solo pasos 1-9 (padrón, IMSS, ATT, Telcel, REPUVE,
+  empleadores, ISSSTE, CFE). Fuerza `checkid_enabled=False` y corta antes del
+  PASO 10 con `_FaseLocal`. **Cero costo externo.** Deja estado `parcial`.
+- `fase="completo"` (default) — lo anterior + PASO 10 (escalada v2). Deja estado
+  `completo`.
+
+El endpoint `POST /api/perfil/crear` acepta `fase` en el cuerpo; con `fase=local`
+no exige suscripción ni consume cuota de uso (es solo lectura de bases locales).
+
+## 11. Estado de implementación (2026-10-08)
+
+**Hecho** (commits `fae0050`, `550159b`, `d2be6f8`, `6d9d59e`, `4c32c9d`):
 - `backend/coherencia.py` — compuerta (lógica pura, sin red).
 - `backend/flujo_busqueda_v2.py` — orquestador local→CU, tope 3 créditos,
   `dry_run`, `afore_habilitado(plan, validacion_previa)`.
 - `providers/consultaunica.py` — NSS, RFC, afore con contacto, saldo.
-- `perfil_crear.py` — PASO 10 de escalada; CheckID ya no aborta.
-- `perfil_completo_db.py` — columnas `cu_*` + `updatear_consultaunica()`.
+- `perfil_crear.py` — PASO 10 de escalada; CheckID ya no aborta; parámetro
+  `fase` (local/completo) y `set_estado_perfil`.
+- `perfil_completo_db.py` — columnas `cu_*` + `updatear_consultaunica()`;
+  `updatear_cfe` ya no fija el estado (lo hace `crear_perfil`).
 - `config.py` — `CHECKID_ENABLED`; `servir.py` — migración al arranque.
+- Frontend: `buscar.html` con el menú de dos opciones y el perfil local en
+  segundo plano; `sujeto.html` muestra el contacto AFOR (`card-contacto`) y ya
+  no tiene el botón "Mapear".
 
-**Pendiente** (siguiente iteración):
-- Exponer el contacto de AFOR en la UI de búsqueda (el dato ya se persiste en
-  `cu_contacto`; falta mostrarlo).
-- (Opcional) Interruptor para desactivar la escalada en los endpoints de
-  lectura si se quiere control todavía más fino.

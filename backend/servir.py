@@ -1542,7 +1542,7 @@ class Handler(BaseHTTPRequestHandler):
         (el resultado llega por webhook y queda como anexo en el reporte).
         Nunca rompe el flujo del perfil.
         """
-        session = self._require_subscription_with_usage("busqueda")
+        session = self._require_session()
         if not session:
             return
 
@@ -1551,6 +1551,15 @@ class Handler(BaseHTTPRequestHandler):
         if not curp or len(curp) != 18:
             self._json(400, {"error": "CURP requerida (18 caracteres)"})
             return
+
+        # Fase "local" (gratis): construye el perfil con las bases locales y
+        # devuelve de inmediato los datos del padrón. No cobra crédito ni toca
+        # proveedores externos. La fase "completo" (default) sí cobra el uso.
+        fase = (body.get("fase") or "completo").lower()
+        if fase != "local":
+            session = self._require_subscription_with_usage("busqueda")
+            if not session:
+                return
 
         try:
             from perfil_crear import crear_perfil
@@ -1568,6 +1577,7 @@ class Handler(BaseHTTPRequestHandler):
                 con_padron=Handler.db.con,
                 plan=plan_usuario,
                 validacion_previa=bool(session.get("is_admin")),
+                fase=fase,
             )
         except Exception as e:
             self._json(500, {"error": f"Error creando perfil: {str(e)[:200]}"})
