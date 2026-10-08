@@ -5,7 +5,9 @@ y conteo de filas consistente con healthcheck.last.json.
 
 NO modifica las bases (siempre read_only=True).
 """
+import shutil
 import sqlite3
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -88,7 +90,16 @@ class TestBasesOpen(unittest.TestCase):
     def _open(self, name, filename, kind):
         path = BASES / filename
         if kind == "duckdb":
-            return duckdb.connect(str(path), read_only=True)
+            try:
+                return duckdb.connect(str(path), read_only=True)
+            except Exception as e:
+                # El servidor en vivo puede tener el lock del archivo. No es un
+                # fallo de la base: se valida sobre una copia temporal.
+                if "lock" not in str(e).lower():
+                    raise
+                tmp = Path(tempfile.mkdtemp(prefix="kyc_base_")) / filename
+                shutil.copy(str(path), str(tmp))
+                return duckdb.connect(str(tmp), read_only=True)
         return sqlite3.connect(f"file:{path}?mode=ro", uri=True)
 
     def test_all_12_bases_abren(self):
