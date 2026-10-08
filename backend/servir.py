@@ -497,25 +497,25 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_html_protected("buscar.html")
             return
         if path == "/subscribe.html":
-            self._serve_html("pages/subscribe.html")
+            self._serve_html("subscribe.html")
             return
         if path == "/checkout.html":
-            self._serve_html("pages/checkout.html")
+            self._serve_html("checkout.html")
             return
         if path == "/payment-success.html":
-            self._serve_html("pages/payment-success.html")
+            self._serve_html("payment-success.html")
             return
         if path == "/payment-declined.html":
-            self._serve_html("pages/payment-declined.html")
+            self._serve_html("payment-declined.html")
             return
         if path == "/terms.html":
-            self._serve_html("pages/terms.html")
+            self._serve_html("terms.html")
             return
         if path == "/privacy.html":
-            self._serve_html("pages/privacy.html")
+            self._serve_html("privacy.html")
             return
         if path == "/contact.html":
-            self._serve_html("pages/contact.html")
+            self._serve_html("contact.html")
             return
         if path.startswith("/payment/success/"):
             self._serve_payment_page("success", path)
@@ -536,8 +536,8 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/css/") or path.startswith("/js/") or path.startswith("/assets/"):
             self._serve_frontend_file(path)
             return
-        if path.startswith("/pages/"):
-            # Serve from frontend/pages/ subdirectory
+        if path.startswith("/"):
+            # Serve from frontend/ subdirectory
             try:
                 frontend_dir = ROOT.parent / "frontend"
                 page_file = frontend_dir / "pages" / path[7:]
@@ -2151,9 +2151,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         # Serve the appropriate page
         if page_type == "success":
-            self._serve_html("pages/payment-success.html")
+            self._serve_html("payment-success.html")
         else:
-            self._serve_html("pages/payment-declined.html")
+            self._serve_html("payment-declined.html")
 
     def _handle_payment_create_token(self):
         """POST /api/payment/create-token — Generate a one-time token before going to Clip."""

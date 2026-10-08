@@ -186,7 +186,7 @@ proyecto_kyc/
 │   ├── issste.html                # empleados federales
 │   ├── oraculo.html               # chat con Oráculo LLM
 │   ├── m.html                     # mobile
-│   ├── css/ js/ static/ pages/ assets/
+│   ├── css/ js/ static/  assets/
 │
 ├── bases/                         # 29 DuckDB + 5 infra (~38 GB)
 │   ├── padron.duckdb              # 88.4M filas, 6.2 GB (TABLA MAESTRA)
