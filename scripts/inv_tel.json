@@ -1,0 +1,1853 @@
+{
+ "amex_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 2054,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "amex_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 2054,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "att.duckdb": [
+  {
+   "tabla": "att",
+   "filas": 1048575,
+   "telcols": [
+    "tel1",
+    "celular"
+   ],
+   "doccols": [
+    "nombres",
+    "nombre",
+    "rfc",
+    "tel1",
+    "celular",
+    "colonia",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "att_valid",
+   "filas": 1048570,
+   "telcols": [
+    "tel1",
+    "celular"
+   ],
+   "doccols": [
+    "nombres",
+    "nombre",
+    "rfc",
+    "tel1",
+    "celular",
+    "colonia",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "att_v1.duckdb": [
+  {
+   "tabla": "att",
+   "filas": 1048575,
+   "telcols": [
+    "tel1",
+    "celular"
+   ],
+   "doccols": [
+    "nombres",
+    "nombre",
+    "rfc",
+    "tel1",
+    "celular",
+    "colonia",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "att_valid",
+   "filas": 1048570,
+   "telcols": [
+    "tel1",
+    "celular"
+   ],
+   "doccols": [
+    "nombres",
+    "nombre",
+    "rfc",
+    "tel1",
+    "celular",
+    "colonia",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "bancomer_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 9993,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "bancomer_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 9993,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "bancoppel_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 10000,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "bancoppel_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 10000,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "banorte_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 1924172,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "banorte_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 1924172,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "cfe.duckdb": [
+  {
+   "tabla": "medidores",
+   "filas": 66003291,
+   "telcols": [],
+   "doccols": [
+    "zona_nombre",
+    "zona_nombre_2",
+    "zona_nombre_3",
+    "agencia_nombre",
+    "agencia_nombre_2",
+    "agencia_nombre_3",
+    "nombre",
+    "calle_adicional_1",
+    "calle_adicional_2",
+    "colonia",
+    "cp"
+   ]
+  }
+ ],
+ "cfe_SIN_ESTADO-003.duckdb": [],
+ "cfe_v1.duckdb": [
+  {
+   "tabla": "medidores",
+   "filas": 66003291,
+   "telcols": [],
+   "doccols": [
+    "zona_nombre",
+    "zona_nombre_2",
+    "zona_nombre_3",
+    "agencia_nombre",
+    "agencia_nombre_2",
+    "agencia_nombre_3",
+    "nombre",
+    "calle_adicional_1",
+    "calle_adicional_2",
+    "colonia",
+    "cp"
+   ]
+  }
+ ],
+ "citibanamex_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 2627930,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "citibanamex_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 2627930,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "clavijero_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 13444,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "clavijero_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 13444,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "covid23_master.duckdb": [
+  {
+   "tabla": "covid_clinico",
+   "filas": 19609795,
+   "telcols": [
+    "TELEFONO"
+   ],
+   "doccols": [
+    "NOMBRE",
+    "CURP",
+    "DOMICILIO",
+    "CP",
+    "TELEFONO"
+   ]
+  },
+  {
+   "tabla": "personas",
+   "filas": 19609795,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "covid_v1.duckdb": [
+  {
+   "tabla": "covid_clinico",
+   "filas": 19609795,
+   "telcols": [
+    "TELEFONO"
+   ],
+   "doccols": [
+    "NOMBRE",
+    "CURP",
+    "DOMICILIO",
+    "CP",
+    "TELEFONO"
+   ]
+  },
+  {
+   "tabla": "personas",
+   "filas": 19609795,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "docentes_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 51538,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "docentes_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 51538,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "empleadores.duckdb": [
+  {
+   "tabla": "empleadores",
+   "filas": 161933,
+   "telcols": [
+    "contacto.telefono"
+   ],
+   "doccols": [
+    "contacto.correoElectronico",
+    "contacto.nombre",
+    "contacto.primerApellido",
+    "contacto.segundoApellido",
+    "contacto.telefono",
+    "correoElectronico",
+    "curp",
+    "nombre",
+    "nombreComercial",
+    "nombreCompleto",
+    "otraUbicacion.calle",
+    "otraUbicacion.colonia",
+    "otraUbicacion.domicilioRef",
+    "otraUbicacion.id_colonia",
+    "primerApellido",
+    "rfc",
+    "segundoApellido",
+    "ubicacion.calle",
+    "ubicacion.colonia",
+    "ubicacion.domicilioRef",
+    "rfc_clean",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "empleadores_v1.duckdb": [
+  {
+   "tabla": "empleadores",
+   "filas": 161933,
+   "telcols": [
+    "contacto.telefono"
+   ],
+   "doccols": [
+    "contacto.correoElectronico",
+    "contacto.nombre",
+    "contacto.primerApellido",
+    "contacto.segundoApellido",
+    "contacto.telefono",
+    "correoElectronico",
+    "curp",
+    "nombre",
+    "nombreComercial",
+    "nombreCompleto",
+    "otraUbicacion.calle",
+    "otraUbicacion.colonia",
+    "otraUbicacion.domicilioRef",
+    "otraUbicacion.id_colonia",
+    "primerApellido",
+    "rfc",
+    "segundoApellido",
+    "ubicacion.calle",
+    "ubicacion.colonia",
+    "ubicacion.domicilioRef",
+    "rfc_clean",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "fotos.duckdb": [
+  {
+   "tabla": "fotos",
+   "filas": 14942,
+   "telcols": [],
+   "doccols": [
+    "rfc"
+   ]
+  },
+  {
+   "tabla": "resumen",
+   "filas": 1,
+   "telcols": [],
+   "doccols": [
+    "rfc_unicos"
+   ]
+  }
+ ],
+ "fotos_v1.duckdb": [
+  {
+   "tabla": "fotos",
+   "filas": 14942,
+   "telcols": [],
+   "doccols": [
+    "rfc"
+   ]
+  },
+  {
+   "tabla": "resumen",
+   "filas": 1,
+   "telcols": [],
+   "doccols": [
+    "rfc_unicos"
+   ]
+  }
+ ],
+ "geo.db": [
+  {
+   "tabla": "ageb_urbana",
+   "filas": 4320,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cp",
+   "filas": 155040,
+   "telcols": [],
+   "doccols": [
+    "cp",
+    "colonia"
+   ]
+  },
+  {
+   "tabla": "manzanas",
+   "filas": 160100,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "municipios",
+   "filas": 125,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "sqlite_sequence",
+   "filas": 1,
+   "telcols": [],
+   "doccols": []
+  }
+ ],
+ "hospital_angeles_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 23331,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "hospital_angeles_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 23331,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "hsbc_2_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 35340,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "hsbc_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999267,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "hsbc_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999267,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "hsbc_v2.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 35340,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "imss_asegurados.duckdb": [
+  {
+   "tabla": "imss_2025",
+   "filas": 57760242,
+   "telcols": [],
+   "doccols": [
+    "nss",
+    "nombre",
+    "curp",
+    "nombre_patron",
+    "domicilio_patron",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "cp5",
+    "nss_clean"
+   ]
+  },
+  {
+   "tabla": "imss_valid",
+   "filas": 56948742,
+   "telcols": [],
+   "doccols": [
+    "nss",
+    "nombre",
+    "curp",
+    "nombre_patron",
+    "domicilio_patron",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "cp5",
+    "nss_clean"
+   ]
+  }
+ ],
+ "imss_asegurados_v1.duckdb": [
+  {
+   "tabla": "imss_2025",
+   "filas": 57760242,
+   "telcols": [],
+   "doccols": [
+    "nss",
+    "nombre",
+    "curp",
+    "nombre_patron",
+    "domicilio_patron",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "cp5",
+    "nss_clean"
+   ]
+  },
+  {
+   "tabla": "imss_valid",
+   "filas": 56948742,
+   "telcols": [],
+   "doccols": [
+    "nss",
+    "nombre",
+    "curp",
+    "nombre_patron",
+    "domicilio_patron",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "cp5",
+    "nss_clean"
+   ]
+  }
+ ],
+ "imss_segmentacion.duckdb": [
+  {
+   "tabla": "imss_personas",
+   "filas": 23803445,
+   "telcols": [
+    "ref_celular",
+    "telefono"
+   ],
+   "doccols": [
+    "apellido_materno",
+    "apellido_paterno",
+    "correo_electronico",
+    "curp",
+    "nombre",
+    "nss",
+    "ref_celular",
+    "rfc",
+    "telefono",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "nss_clean",
+    "rfc_clean",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "imss_personas_valid",
+   "filas": 23480424,
+   "telcols": [
+    "ref_celular",
+    "telefono"
+   ],
+   "doccols": [
+    "apellido_materno",
+    "apellido_paterno",
+    "correo_electronico",
+    "curp",
+    "nombre",
+    "nss",
+    "ref_celular",
+    "rfc",
+    "telefono",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "nss_clean",
+    "rfc_clean",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "imss_segmentacion_v1.duckdb": [
+  {
+   "tabla": "imss_personas",
+   "filas": 23803445,
+   "telcols": [
+    "ref_celular",
+    "telefono"
+   ],
+   "doccols": [
+    "apellido_materno",
+    "apellido_paterno",
+    "correo_electronico",
+    "curp",
+    "nombre",
+    "nss",
+    "ref_celular",
+    "rfc",
+    "telefono",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "nss_clean",
+    "rfc_clean",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "imss_personas_valid",
+   "filas": 23480424,
+   "telcols": [
+    "ref_celular",
+    "telefono"
+   ],
+   "doccols": [
+    "apellido_materno",
+    "apellido_paterno",
+    "correo_electronico",
+    "curp",
+    "nombre",
+    "nss",
+    "ref_celular",
+    "rfc",
+    "telefono",
+    "curp_clean",
+    "curp_len",
+    "curp_kind",
+    "nss_clean",
+    "rfc_clean",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "ine_2018.duckdb": [],
+ "issste.duckdb": [
+  {
+   "tabla": "cat_entidades",
+   "filas": 33,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_estados",
+   "filas": 32,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_modalidades",
+   "filas": 20,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_ramos",
+   "filas": 453,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_sectores",
+   "filas": 12,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "empleados",
+   "filas": 2706651,
+   "telcols": [],
+   "doccols": [
+    "paterno",
+    "materno",
+    "nombres"
+   ]
+  }
+ ],
+ "issste_v1.duckdb": [
+  {
+   "tabla": "cat_entidades",
+   "filas": 33,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_estados",
+   "filas": 32,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_modalidades",
+   "filas": 20,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_ramos",
+   "filas": 453,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "cat_sectores",
+   "filas": 12,
+   "telcols": [],
+   "doccols": []
+  },
+  {
+   "tabla": "empleados",
+   "filas": 2706651,
+   "telcols": [],
+   "doccols": [
+    "paterno",
+    "materno",
+    "nombres"
+   ]
+  }
+ ],
+ "padron.duckdb": [
+  {
+   "tabla": "padron",
+   "filas": 88402547,
+   "telcols": [],
+   "doccols": [
+    "nombre",
+    "paterno",
+    "materno",
+    "calle",
+    "colonia",
+    "cp",
+    "curp"
+   ]
+  }
+ ],
+ "padron_v1.duckdb": [
+  {
+   "tabla": "padron",
+   "filas": 88402547,
+   "telcols": [],
+   "doccols": [
+    "nombre",
+    "paterno",
+    "materno",
+    "calle",
+    "colonia",
+    "cp",
+    "curp"
+   ]
+  }
+ ],
+ "perfil_completo.duckdb": [
+  {
+   "tabla": "perfil_completo",
+   "filas": 7,
+   "telcols": [
+    "telcel_data"
+   ],
+   "doccols": [
+    "curp",
+    "rfc",
+    "nss",
+    "telcel_data"
+   ]
+  },
+  {
+   "tabla": "perfil_completo_flat",
+   "filas": 7,
+   "telcols": [
+    "telcel_lineas_count"
+   ],
+   "doccols": [
+    "curp",
+    "rfc",
+    "nss",
+    "nombre",
+    "paterno",
+    "materno",
+    "calle",
+    "colonia",
+    "cp_padron",
+    "cp_fiscal",
+    "telcel_lineas_count"
+   ]
+  }
+ ],
+ "repuve.duckdb": [
+  {
+   "tabla": "repuve",
+   "filas": 1745627,
+   "telcols": [
+    "TEL_PROP"
+   ],
+   "doccols": [
+    "TEL_PROP",
+    "RFC",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "repuve_valid",
+   "filas": 1745536,
+   "telcols": [
+    "TEL_PROP"
+   ],
+   "doccols": [
+    "TEL_PROP",
+    "RFC",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "repuve_v1.duckdb": [
+  {
+   "tabla": "repuve",
+   "filas": 1745627,
+   "telcols": [
+    "TEL_PROP"
+   ],
+   "doccols": [
+    "TEL_PROP",
+    "RFC",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "repuve_valid",
+   "filas": 1745536,
+   "telcols": [
+    "TEL_PROP"
+   ],
+   "doccols": [
+    "TEL_PROP",
+    "RFC",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "santander_1_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999236,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "santander_2_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 917270,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "santander_3_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999276,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "santander_5_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999262,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "santander_6_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999254,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "santander_7_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999255,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "santander_v1.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999236,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "santander_v2.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 917270,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "santander_v3.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999276,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "santander_v5.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999262,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "santander_v6.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999254,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "santander_v7.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 999255,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "sepomex.db": [
+  {
+   "tabla": "cp",
+   "filas": 155040,
+   "telcols": [],
+   "doccols": [
+    "cp",
+    "colonia"
+   ]
+  }
+ ],
+ "telcel.duckdb": [
+  {
+   "tabla": "telcel",
+   "filas": 9709461,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "telcel_valid",
+   "filas": 9561315,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "telcel1_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 6819832,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "telcel_master_v2.duckdb": [
+  {
+   "tabla": "telcel_46m_proc",
+   "filas": 44649922,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "telcel_mexico_master.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 8610455,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp"
+   ]
+  }
+ ],
+ "telcel_v1.duckdb": [
+  {
+   "tabla": "telcel",
+   "filas": 9709461,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  },
+  {
+   "tabla": "telcel_valid",
+   "filas": 9561315,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind"
+   ]
+  }
+ ],
+ "telcel_v2.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 6819832,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "telcel_v3.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 44649922,
+   "telcols": [
+    "telefono",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind",
+    "telefono_clean"
+   ]
+  },
+  {
+   "tabla": "telcel_46m_proc",
+   "filas": 44649922,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "rfc_clean",
+    "rfc_len",
+    "rfc_kind",
+    "telefono_clean"
+   ]
+  }
+ ],
+ "telcel_v4.duckdb": [
+  {
+   "tabla": "personas",
+   "filas": 8610455,
+   "telcols": [
+    "telefono",
+    "st_tel",
+    "tel_contacto",
+    "telefono_clean"
+   ],
+   "doccols": [
+    "cuenta",
+    "telefono",
+    "st_tel",
+    "nombre1",
+    "nombre2",
+    "rfc",
+    "domicilio",
+    "colonia",
+    "cp",
+    "tel_contacto",
+    "tp_rfc",
+    "curp",
+    "telefono_clean"
+   ]
+  }
+ ]
+}

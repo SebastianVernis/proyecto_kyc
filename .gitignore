@@ -6,3 +6,5 @@ _backups/*
 'nuevas a normalizar'/*
 backend/__pycache__/*
 backend/providers/__pycache__/*
+reportes/*
+scripts/*/
