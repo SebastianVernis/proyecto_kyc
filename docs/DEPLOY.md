@@ -33,16 +33,19 @@ Servicios: `backend` (8765) y `gateway` (8001). El resto de la plataforma KYC
 
 ### Verificación tras cada despliegue
 
-El healthcheck del contenedor solo comprueba que el socket TCP abra, así que un
-despliegue puede quedar "healthy" con la API entera rota. **Comprobar endpoints
-de verdad:**
+El healthcheck del contenedor pide `GET /health` (liveness real, sin auth);
+antes solo abría el socket TCP, así que un despliegue podía quedar "healthy" con
+la API entera devolviendo 404. **Comprobar endpoints de verdad:**
 
 ```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8765/health       # 200
 curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8765/login.html   # 200
 curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8765/api/total    # 401 sin token (404 = API sombreada)
 ```
 
-`/api/v1/health/bases` (con sesión) lista las bases attacheadas y sus conteos.
+`healthcheck.py` incluye además el mismo chequeo de `/health` como parte de su
+estado global (`KYC_HEALTH_URL` lo sobreescribe). `/api/v1/health/bases` (con
+sesión) lista las bases attacheadas y sus conteos.
 
 ---
 

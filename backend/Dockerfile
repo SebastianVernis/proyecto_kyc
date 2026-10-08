@@ -46,9 +46,10 @@ RUN chmod -R a+rX /app
 # Puerto del backend
 EXPOSE 8765
 
-# Healthcheck (TCP socket — los endpoints API requieren auth)
+# Healthcheck — pide /health (liveness real: confirma que el HTTP responde,
+# no solo que el socket abre; un serve que devuelve 404 a todo pasaría el TCP)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD python -c "import socket; s=socket.socket(); s.settimeout(3); s.connect(('localhost',8765)); s.close()"
+    CMD python -c "import http.client,sys; c=http.client.HTTPConnection('localhost',8765,timeout=4); c.request('GET','/health'); sys.exit(0 if c.getresponse().status==200 else 1)"
 
 # No correr como root
 RUN useradd -m -s /bin/bash kyc && chown -R kyc:kyc /app

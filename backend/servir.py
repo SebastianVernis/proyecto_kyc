@@ -481,6 +481,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
         self._set_auth_rp()
+        # /health — liveness sin auth: confirma que el proceso HTTP responde,
+        # no solo que el socket abre. Lo usan los healthchecks de Docker/compose.
+        if path == "/health":
+            self._json(200, {"status": "ok", "service": "kyc-backend"})
+            return
         if path == "/login.html":
             self._serve_html("login.html")
             return

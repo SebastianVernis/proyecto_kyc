@@ -19,6 +19,7 @@ import json
 import os
 import sqlite3
 import sys
+import urllib.request
 from pathlib import Path
 
 import duckdb
@@ -124,6 +125,20 @@ def main():
             overall_ok = False
 
     print(f"\n=== TOTAL: {total_gb:,.2f} GB, {total_rows:,} filas consultables ===")
+
+    # ¿La API responde de verdad? (un TCP abierto no basta: un serve que
+    # devuelve 404 a todo pasaba el healthcheck de socket durante días)
+    api_url = os.environ.get("KYC_HEALTH_URL", "http://127.0.0.1:8765/health")
+    api_ok = False
+    try:
+        with urllib.request.urlopen(api_url, timeout=5) as r:
+            api_ok = r.status == 200
+    except Exception as e:
+        print(f"\n--- API ---\n  [FAIL] {api_url}: {e}")
+        overall_ok = False
+    if api_ok:
+        print(f"\n--- API ---\n  [ OK ] {api_url} responde 200")
+
     print(f"=== Estado global: {'PASS' if overall_ok else 'FAIL'} ===")
 
     out = ROOT / "healthcheck.last.json"
