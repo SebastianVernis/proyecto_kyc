@@ -70,12 +70,139 @@ def get_con():
 
 
 def _migrar(con):
-    """Aplica migrate_perfil_completo.sql si la tabla no existe."""
+    """Aplica migrate_perfil_completo.sql si la tabla no existe.
+
+    2026-10-08: además aplica las columnas aditivas de ConsultaÚnica (flujo v2)
+    a bases ya existentes. Cada ALTER es idempotente (checa information_schema).
+    """
     try:
         con.execute("SELECT 1 FROM b_perfil.perfil_completo LIMIT 0")
     except Exception:
         sql = open("scripts/migrate_perfil_completo.sql").read()
         con.execute(sql)
+    _migrar_cu(con)
+
+
+def _columnas(con) -> set:
+    try:
+        rows = con.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'perfil_completo'"
+        ).fetchall()
+        return {r[0] for r in rows}
+    except Exception:
+        return set()
+
+
+VIEW_PERFIL_FLAT = """
+CREATE OR REPLACE VIEW perfil_completo_flat AS
+SELECT
+    curp, rfc, nss,
+    json_extract_string(padron_data, '$.nombre')      AS nombre,
+    json_extract_string(padron_data, '$.paterno')     AS paterno,
+    json_extract_string(padron_data, '$.materno')     AS materno,
+    json_extract_string(padron_data, '$.fecnac')      AS fecha_nacimiento,
+    json_extract_string(padron_data, '$.sexo')        AS sexo,
+    json_extract_string(padron_data, '$.calle')       AS calle,
+    json_extract_string(padron_data, '$.ext')         AS num_ext,
+    json_extract_string(padron_data, '$.int')         AS num_int,
+    json_extract_string(padron_data, '$.colonia')     AS colonia,
+    json_extract_string(padron_data, '$.cp')          AS cp_padron,
+    json_extract_string(padron_data, '$.clave_elector') AS ine_clave,
+    json_extract_string(padron_data, '$.folio')       AS ine_folio,
+    json_extract_string(checkid_data, '$.codigo_postal_fiscal') AS cp_fiscal,
+    json_extract_string(checkid_data, '$.regimen_fiscal')       AS regimen_fiscal,
+    json_extract_string(checkid_data, '$.situacion_69b')        AS situacion_69b,
+    json_array_length(imss_data->'asegurado')                    AS imss_trabajos,
+    json_array_length(att_data->'pasada1_exacto')                AS att_contactos,
+    json_array_length(telcel_data->'lineas')                     AS telcel_lineas_count,
+    json_array_length(repuve_data->'vehiculos')                  AS vehiculos_count,
+    json_array_length(issste_data->'empleos')                    AS issste_empleos,
+    json_array_length(cfe_data->'servicios')                     AS cfe_servicios_count,
+    estado, creditos_consumidos, creado_en, actualizado_en
+FROM perfil_completo;
+"""
+
+
+def _migrar_cu(con):
+    """Agrega las columnas de ConsultaÚnica si faltan (idempotente).
+
+    En DuckDB, ALTER TABLE falla si hay una vista o índices que dependen de la
+    tabla ("Dependency Error"), así que se sueltan, se altera y se recrean. Las
+    columnas son aditivas: las filas existentes quedan con NULL y todo sigue
+    funcionando.
+
+    cu_data: JSON con lo que devolvió la escalada (nss/rfc/afore + contacto).
+    cu_contacto: JSON con email/teléfono (únicos datos de contacto del flujo).
+    cu_fecha / cu_costo_creditos: control de caché y gasto.
+    """
+    nuevas = {
+        "cu_data": "JSON",
+        "cu_contacto": "JSON",
+        "cu_fecha": "TIMESTAMP",
+        "cu_costo_creditos": "INTEGER DEFAULT 0",
+    }
+    try:
+        existentes = _columnas(con)
+        if not existentes:
+            return
+        faltantes = {c: t for c, t in nuevas.items() if c not in existentes}
+        if not faltantes:
+            return
+
+        # Soltar dependencias (vista + índices), alterar y recrear.
+        con.execute("DROP VIEW IF EXISTS perfil_completo_flat")
+        for ix in ("idx_perfil_rfc", "idx_perfil_nss", "idx_perfil_estado"):
+            con.execute(f"DROP INDEX IF EXISTS {ix}")
+        for col, tipo in faltantes.items():
+            con.execute(f"ALTER TABLE b_perfil.perfil_completo ADD COLUMN {col} {tipo}")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_perfil_rfc ON perfil_completo(rfc)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_perfil_nss ON perfil_completo(nss)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_perfil_estado ON perfil_completo(estado)")
+        con.execute(VIEW_PERFIL_FLAT)
+        import logging
+        logging.info(f"Migración cu_*: agregadas {list(faltantes)}")
+    except Exception as e:
+        import logging
+        logging.error(f"Error migrando columnas cu_*: {e}")
+
+
+def updatear_consultaunica(con, curp: str, cu_data: dict,
+                           contacto: dict = None, costo_creditos: int = 0) -> bool:
+    """Persiste el resultado de la escalada a ConsultaÚnica (flujo v2).
+
+    Guarda NSS/RFC/AFOR resueltos, el contacto (email/teléfono) y el costo real.
+    Actualiza rfc/nss de la fila si vinieron del externo y no estaban.
+    """
+    try:
+        curp = curp.upper().strip()
+        cu_json = json.dumps(cu_data or {}, ensure_ascii=False)
+        cto_json = json.dumps(contacto or {}, ensure_ascii=False)
+        rfc = (cu_data or {}).get("rfc") or None
+        nss = (cu_data or {}).get("nss") or None
+        fuentes_update = json.dumps({"consultaunica": True})
+        sql = """
+            UPDATE b_perfil.perfil_completo SET
+                cu_data = ?,
+                cu_contacto = ?,
+                cu_fecha = NOW(),
+                cu_costo_creditos = COALESCE(cu_costo_creditos, 0) + ?,
+                rfc = COALESCE(NULLIF(?, ''), rfc),
+                nss = COALESCE(NULLIF(?, ''), nss),
+                creditos_consumidos = COALESCE(creditos_consumidos, 0) + ?,
+                fuentes_consultadas = JSON_MERGE_PATCH(
+                    COALESCE(fuentes_consultadas, '{}'), ?
+                ),
+                actualizado_en = NOW()
+            WHERE curp = ?
+        """
+        con.execute(sql, [cu_json, cto_json, costo_creditos, rfc or "", nss or "",
+                          costo_creditos, fuentes_update, curp])
+        return True
+    except Exception as e:
+        import logging
+        logging.error(f"Error actualizando ConsultaÚnica para {curp}: {e}")
+        return False
 
 
 # ══════════════════════════════════════════════════════════════════════════

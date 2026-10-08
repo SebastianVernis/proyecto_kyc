@@ -1555,10 +1555,19 @@ class Handler(BaseHTTPRequestHandler):
         try:
             from perfil_crear import crear_perfil
             con_ext = _init_extended_con()
+            # Plan real del usuario (de su suscripción): AFOR solo aplica en
+            # "corporativo". `validacion_previa` la marca el administrador.
+            try:
+                sub = auth.check_subscription_access(session["user_id"])
+                plan_usuario = (sub.get("plan") or "").lower()
+            except Exception:
+                plan_usuario = ""
             result = crear_perfil(
                 curp=curp,
                 con_extended=con_ext,
                 con_padron=Handler.db.con,
+                plan=plan_usuario,
+                validacion_previa=bool(session.get("is_admin")),
             )
         except Exception as e:
             self._json(500, {"error": f"Error creando perfil: {str(e)[:200]}"})
@@ -11079,8 +11088,14 @@ def _init_extended_con():
         """)
 
     _extended_con = con
-    from perfil_completo_db import set_server_con
+    from perfil_completo_db import set_server_con, _migrar_cu
     set_server_con(con)
+    # Migración aditiva de columnas de ConsultaÚnica (flujo v2) al arranque:
+    # la conexión de producción llega ATTACHed, así que get_con()/lazy no corre.
+    try:
+        _migrar_cu(con)
+    except Exception as e:
+        print(f"[!] no se pudo migrar cu_*: {e}", file=sys.stderr)
     print(f"[*] Bases externas attacheadas ({len(attached)}): {', '.join(attached)}")
     return con
 

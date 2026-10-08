@@ -36,6 +36,9 @@ TEST_CURP_FAKE = "XXXX000000XXXXXXXX"
 
 def _build_con_extended():
     con = duckdb.connect(":memory:")
+    # perfil_completo ATTACHed como b_perfil — igual que producción
+    # (_init_extended_con). Sin esto los UPDATE de perfil_completo fallan.
+    con.execute(f"ATTACH '{BASES_PATH}/perfil_completo.duckdb' AS b_perfil")
     con.execute(f"ATTACH '{BASES_PATH}/padron_v1.duckdb' AS b_padron (READ_ONLY)")
     DBS = {
         "b_imss_a": "imss_asegurados_v1.duckdb",
@@ -147,15 +150,17 @@ class TestE2EPerfilCrear(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.con_perfil = get_con()
+        # Igual que producción: UNA conexión in-memory con perfil_completo
+        # ATTACHed como b_perfil (el código referencia b_perfil.perfil_completo).
         cls.con_extended = _build_con_extended()
+        cls.con_perfil = cls.con_extended
         _create_views(cls.con_extended)
-        cls.con_perfil.execute("DELETE FROM perfil_completo WHERE curp IN (?, ?)",
+        cls.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp IN (?, ?)",
                                [TEST_CURP, TEST_CURP_FAKE])
 
     @classmethod
     def tearDownClass(cls):
-        cls.con_perfil.execute("DELETE FROM perfil_completo WHERE curp IN (?, ?)",
+        cls.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp IN (?, ?)",
                                [TEST_CURP, TEST_CURP_FAKE])
         cls.con_extended.close()
 
@@ -219,12 +224,12 @@ class TestE2EPerfilCrear(unittest.TestCase):
 
     def test_03_checkid_vencido_re_ejecuta(self):
         from perfil_crear import crear_perfil
-        self.con_perfil.execute("DELETE FROM perfil_completo WHERE curp = ?", [TEST_CURP])
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
         result1 = self._run_flow()
         self.assertEqual(result1["estado"], "completo")
 
         self.con_perfil.execute(
-            "UPDATE perfil_completo SET checkid_fecha = ? WHERE curp = ?",
+            "UPDATE b_perfil.perfil_completo SET checkid_fecha = ? WHERE curp = ?",
             [datetime.now() - timedelta(days=31), TEST_CURP]
         )
 
@@ -245,7 +250,7 @@ class TestE2EPerfilCrear(unittest.TestCase):
         self.assertEqual(checkid_step.get("creditos"), 3)
 
     def test_04_creditos_siempre_se_cobran(self):
-        self.con_perfil.execute("DELETE FROM perfil_completo WHERE curp = ?", [TEST_CURP])
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
         result1 = self._run_flow()
         creditos1 = result1["metadata"]["creditos"]
         self.assertEqual(creditos1["checkid"], 3)
@@ -263,7 +268,7 @@ class TestE2EPerfilCrear(unittest.TestCase):
         perfil = result["perfil"]
         fuentes = json.loads(
             self.con_perfil.execute(
-                "SELECT fuentes_consultadas FROM perfil_completo WHERE curp = ?",
+                "SELECT fuentes_consultadas FROM b_perfil.perfil_completo WHERE curp = ?",
                 [TEST_CURP]
             ).fetchone()[0]
         )
@@ -287,7 +292,7 @@ class TestE2EPerfilCrear(unittest.TestCase):
         self.assertIn("error", result)
 
     def test_08_estado_transicion_padron_a_completo(self):
-        self.con_perfil.execute("DELETE FROM perfil_completo WHERE curp = ?", [TEST_CURP])
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
 
         result = self._run_flow()
         perfil_db = leer_perfil(self.con_perfil, TEST_CURP)
@@ -295,9 +300,14 @@ class TestE2EPerfilCrear(unittest.TestCase):
         self.assertEqual(perfil_db["estado"], "completo")
         self.assertIsNotNone(perfil_db["rfc"])
 
-    def test_09_parcial_checkid_error_detiene(self):
+    def test_09_checkid_error_no_detiene_flujo(self):
+        """Contrato nuevo (flujo v2): un fallo de CheckID NO aborta el perfil.
+
+        Antes se detenía en 'checkid_error' y los 9 pasos locales nunca corrían.
+        Ahora se registra el error y el flujo continúa con las bases locales.
+        """
         from perfil_crear import crear_perfil
-        self.con_perfil.execute("DELETE FROM perfil_completo WHERE curp = ?", [TEST_CURP])
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
 
         with patch("perfil_crear.CheckIdClient") as MockClient:
             mock_client = MagicMock()
@@ -308,12 +318,66 @@ class TestE2EPerfilCrear(unittest.TestCase):
                 curp=TEST_CURP,
                 con_extended=self.con_extended,
                 con_perfil=self.con_perfil,
+                con_padron=self.con_extended,
             )
 
-        self.assertEqual(result["estado"], "checkid_error")
+        # No aborta: sigue y corre los pasos locales.
+        self.assertNotEqual(result["estado"], "checkid_error")
         pasos_nombres = [p["paso"] for p in result["pasos"]]
-        self.assertNotIn("imss", pasos_nombres)
-        self.assertNotIn("cfe", pasos_nombres)
+        self.assertIn("imss", pasos_nombres)
+        self.assertIn("cfe", pasos_nombres)
+        self.assertTrue(any("CheckID sin resultado" in e for e in result["errores"]))
+
+    def test_11_flujo_v2_escala_y_persiste_contacto(self):
+        """Flujo v2: local primero, escala a ConsultaÚnica y guarda el contacto.
+
+        Con CheckID pausado y ConsultaÚnica en mock: los 9 pasos locales corren,
+        la escalada se dispara sola y el email/teléfono quedan persistidos.
+        """
+        from config import config
+        from perfil_crear import crear_perfil
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
+        with patch.object(config, "checkid_enabled", False), \
+                patch.object(config, "consultaunica_mock", True):
+            result = crear_perfil(
+                curp=TEST_CURP,
+                con_extended=self.con_extended,
+                con_perfil=self.con_perfil,
+                con_padron=self.con_extended,
+                plan="corporativo",
+                validacion_previa=True,
+            )
+
+        pasos = [p["paso"] for p in result["pasos"]]
+        self.assertIn("consultaunica_v2", pasos)          # escaló
+        self.assertIn("imss", pasos)                      # corrió lo local
+        self.assertTrue([p for p in result["pasos"] if p["paso"] == "checkid"][0].get("omitido"))
+
+        cu = result.get("consultaunica") or {}
+        self.assertGreater(cu.get("costo_creditos", 0), 0)
+        self.assertIn("afore", str(cu.get("consultado")).lower())  # AFOR solo con corporativo
+
+        perfil_db = leer_perfil(self.con_perfil, TEST_CURP)
+        self.assertIsNotNone(perfil_db.get("cu_contacto"))
+        self.assertGreater(perfil_db.get("cu_costo_creditos") or 0, 0)
+
+    def test_12_flujo_v2_sin_corporativo_no_gasta_afore(self):
+        """AFOR no se consulta fuera del plan corporativo (no se gasta el crédito)."""
+        from config import config
+        from perfil_crear import crear_perfil
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
+        with patch.object(config, "checkid_enabled", False), \
+                patch.object(config, "consultaunica_mock", True):
+            result = crear_perfil(
+                curp=TEST_CURP,
+                con_extended=self.con_extended,
+                con_perfil=self.con_perfil,
+                con_padron=self.con_extended,
+                plan="basico",
+                validacion_previa=True,
+            )
+        cu = result.get("consultaunica") or {}
+        self.assertNotIn("afore", str(cu.get("consultado", [])).lower())
 
     def test_10_elasticsearch_payload_structure(self):
         result = self._run_flow()

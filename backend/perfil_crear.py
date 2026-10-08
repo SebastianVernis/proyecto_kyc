@@ -30,6 +30,7 @@ from perfil_completo_db import (
     get_con,
     insertar_padron, updatear_checkid, updatear_imss,
     updatear_bases_rfc, updatear_issste, updatear_cfe,
+    updatear_consultaunica,
     leer_perfil, existe_en_padron,
 )
 from providers.checkid import CheckIdClient
@@ -52,6 +53,8 @@ def crear_perfil(
     datos_pendientes: dict = None,
     con_perfil=None,  # Conexión a perfil_completo (nuevo)
     con_padron=None,  # Conexión a padrón electoral (nuevo)
+    plan: str = "",            # plan del usuario (AFOR solo en "corporativo")
+    validacion_previa: bool = False,  # habilita AFOR si el plan es corporativo
 ) -> dict:
     """Crea perfil completo con flujo estricto de 9 pasos.
 
@@ -193,6 +196,14 @@ def crear_perfil(
     checkid_data = {}
     checkid_ok = False
     checkid_reutilizado = False
+    # RFC/NSS locales: pueden venir del perfil cacheado o de CheckID. Se
+    # inicializan aquí para que los 9 pasos locales corran aunque CheckID
+    # esté pausado o falle (antes un fallo de CheckID abortaba el perfil).
+    rfc = (perfil_existente or {}).get("rfc", "") or ""
+    nss = (perfil_existente or {}).get("nss", "") or ""
+
+    from config import config
+    checkid_habilitado = getattr(config, "checkid_enabled", False)
 
     # Verificar si ya tenemos CheckID válido y reciente
     if perfil_existente and perfil_existente.get("checkid_ok") and perfil_existente.get("checkid_fecha"):
@@ -219,10 +230,20 @@ def crear_perfil(
         except Exception:
             pass  # Si hay error parseando fecha, re-ejecutar
 
-    if not checkid_reutilizado:
-        # Ejecutar CheckID (3 créditos)
+    if not checkid_habilitado:
+        # CheckID PAUSADO (CHECKID_ENABLED=false): se omite y el flujo sigue
+        # con las bases locales. No se gasta y no se aborta.
+        result["pasos"].append({
+            "paso": "checkid",
+            "tiempo_ms": int((time.time() - t1) * 1000),
+            "ok": False,
+            "omitido": True,
+            "motivo": "CHECKID_ENABLED=false",
+            "creditos": 0,
+        })
+    elif not checkid_reutilizado:
+        # Ejecutar CheckID (3 créditos) — un fallo NO aborta el perfil.
         try:
-            from config import config
             api_key = config.checkid_api_key
             if api_key:
                 client = CheckIdClient(api_key=api_key)
@@ -230,12 +251,8 @@ def crear_perfil(
                 checkid_ok = checkid_data.get("exitoso", False)
             else:
                 result["errores"].append("CheckID API key no configurada")
-                result["estado"] = "error"
-                return result
         except Exception as e:
             result["errores"].append(f"Error CheckID: {str(e)[:200]}")
-            result["estado"] = "error"
-            return result
 
         result["pasos"].append({
             "paso": "checkid",
@@ -247,20 +264,23 @@ def crear_perfil(
         })
 
         if not checkid_ok:
+            # No se aborta: se registra el error y se continúa con lo local.
             updatear_checkid(con_perfil, curp, {"error": checkid_data.get("error")}, False)
-            result["estado"] = "checkid_error"
-            return result
+            result["errores"].append(
+                f"CheckID sin resultado ({checkid_data.get('codigoError', 'sin código')}): "
+                "se continúa con bases locales"
+            )
+        else:
+            rfc = checkid_data.get("rfc", "").upper()
+            nss = checkid_data.get("nss", "")
 
-        rfc = checkid_data.get("rfc", "").upper()
-        nss = checkid_data.get("nss", "")
-
-        t1 = time.time()
-        updatear_checkid(con_perfil, curp, checkid_data, True)
-        result["pasos"].append({
-            "paso": "update_checkid_db",
-            "tiempo_ms": int((time.time() - t1) * 1000),
-            "ok": True,
-        })
+            t1 = time.time()
+            updatear_checkid(con_perfil, curp, checkid_data, True)
+            result["pasos"].append({
+                "paso": "update_checkid_db",
+                "tiempo_ms": int((time.time() - t1) * 1000),
+                "ok": True,
+            })
 
     nombre_sujeto = f"{datos_padron.get('nombre', '')} {datos_padron.get('paterno', '')} {datos_padron.get('materno', '')}".strip()
 
@@ -376,19 +396,86 @@ def crear_perfil(
         result["errores"].append(f"Error CFE: {str(e)[:200]}")
 
     # ────────────────────────────────────────────────────────────────────
-    # FINALIZADO
+    # Créditos (se calculan ANTES del paso 10, que suma los de ConsultaÚnica)
     # ────────────────────────────────────────────────────────────────────
-    perfil_final = leer_perfil(con_perfil, curp)
-    result["perfil"] = _parse_perfil_from_db(perfil_final) if perfil_final else {}
-    result["estado"] = perfil_final.get("estado", "completo") if perfil_final else "error"
-    result["metadata"]["elapsed_ms"] = int((time.time() - t0) * 1000)
-
     creditos_locales = CREDITOS_BASES_LOCALES if not perfil_existente else 0
     result["metadata"]["creditos"] = {
         "checkid": CREDITOS_CHECKID if checkid_ok else 0,
         "bases_locales": creditos_locales,
         "total": (CREDITOS_CHECKID if checkid_ok else 0) + creditos_locales,
     }
+
+    # ────────────────────────────────────────────────────────────────────
+    # PASO 10: Escalada a ConsultaÚnica (flujo v2) — solo lo dudoso.
+    # ────────────────────────────────────────────────────────────────────
+    # Local primero: los 9 pasos anteriores ya corrieron gratis. Ahora la
+    # compuerta decide qué dato quedó dudoso y se paga SOLO eso (1 crédito por
+    # servicio, tope 3). AFOR únicamente en plan corporativo con validación
+    # previa, y nunca si la identidad no está resuelta.
+    t1 = time.time()
+    try:
+        import flujo_busqueda_v2 as _flujo
+        local_v2 = {
+            "curp": curp,
+            "fecnac": datos_padron.get("fecnac", ""),
+            "en_padron": True,
+            "nombre": datos_padron.get("nombre", ""),
+            "paterno": datos_padron.get("paterno", ""),
+            "materno": datos_padron.get("materno", ""),
+            "nss": {"nss": nss or ""},
+            "rfc": {"rfc": rfc or ""},
+            "afore": {"afore": "", "email": "", "telefono": ""},
+        }
+        # Contacto/AFOR ya cacheados (si el perfil existe) para no re-pagar.
+        if perfil_existente:
+            cto = perfil_existente.get("cu_contacto") or {}
+            if isinstance(cto, str):
+                cto = json.loads(cto) if cto else {}
+            local_v2["afore"] = {
+                "afore": perfil_existente.get("cu_data", {}).get("afore", "") if isinstance(perfil_existente.get("cu_data"), dict) else "",
+                "email": cto.get("email", ""),
+                "telefono": cto.get("telefono", ""),
+            }
+            local_v2["hint_estrategia"] = (perfil_existente.get("fuentes_consultadas") or {}).get("hint_estrategia", "") if isinstance(perfil_existente.get("fuentes_consultadas"), dict) else ""
+
+        res_v2 = _flujo.resolver(
+            local=local_v2, plan=plan, validacion_previa=validacion_previa,
+            mock=bool(getattr(config, "consultaunica_mock", False)),
+        )
+        ui_v2 = _flujo.formatear_para_ui(res_v2)
+        result["consultaunica"] = ui_v2
+        result["metadata"]["creditos"]["consultaunica"] = ui_v2["costo_creditos"]
+        result["metadata"]["creditos"]["total"] = (
+            result["metadata"]["creditos"].get("total", 0) + ui_v2["costo_creditos"]
+        )
+
+        if res_v2["costo_creditos"] > 0 and res_v2["consultado"]:
+            cu_data = {
+                "nss": ui_v2["valores"].get("nss", ""),
+                "rfc": ui_v2["valores"].get("rfc", ""),
+                "afore": ui_v2["valores"].get("afore", ""),
+            }
+            updatear_consultaunica(
+                con_perfil, curp, cu_data,
+                contacto=ui_v2["contacto"], costo_creditos=res_v2["costo_creditos"],
+            )
+        result["pasos"].append({
+            "paso": "consultaunica_v2",
+            "tiempo_ms": int((time.time() - t1) * 1000),
+            "ok": True,
+            "creditos": ui_v2["costo_creditos"],
+            "consultado": [c["servicio"] for c in ui_v2["consultado"]],
+        })
+    except Exception as e:
+        result["errores"].append(f"Error flujo v2: {str(e)[:200]}")
+
+    # ────────────────────────────────────────────────────────────────────
+    # FINALIZADO
+    # ────────────────────────────────────────────────────────────────────
+    perfil_final = leer_perfil(con_perfil, curp)
+    result["perfil"] = _parse_perfil_from_db(perfil_final) if perfil_final else {}
+    result["estado"] = perfil_final.get("estado", "completo") if perfil_final else "error"
+    result["metadata"]["elapsed_ms"] = int((time.time() - t0) * 1000)
 
     result["metadata"]["pendientes"] = ["singula", "apify"]
 

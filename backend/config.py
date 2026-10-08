@@ -116,6 +116,9 @@ class Config:
         # === CheckID ===
         self.checkid_api_key: Optional[str] = _get_optional("CHECKID_API_KEY")
         self.checkid_base_url: str = _get("CHECKID_BASE_URL", "https://www.checkid.mx/api")
+        # Pausado por defecto (2026-10: cuenta sin consultas, E901 en cada búsqueda).
+        # Con False se omite CheckID y el flujo sigue con las bases locales.
+        self.checkid_enabled: bool = _get_bool("CHECKID_ENABLED", False)
 
         # === Consulta Única (Afore / Ifetel / Actas Registro Civil) ===
         self.consultaunica_api_key: Optional[str] = _get_optional("CONSULTAUNICA_API_KEY")
