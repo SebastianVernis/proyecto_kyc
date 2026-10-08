@@ -42,6 +42,11 @@ _SERVICES = {
     "afore":        {"method": "POST", "path": "/afore"},
     "ifetel":       {"method": "POST", "path": "/phones"},
     "actas_submit": {"method": "POST", "path": "/actas"},
+    # 2026-10-08: NSS (IMSS) y RFC (SAT) — 1 crédito cada uno.
+    "imss":         {"method": "POST", "path": "/imss"},
+    "sat":          {"method": "POST", "path": "/sat"},
+    # Saldo de créditos: gratis, no consume.
+    "user_stats":   {"method": "GET",  "path": "/user-stats"},
     # actas_status y actas_replay usan path construido con uuid.
 }
 
@@ -49,6 +54,14 @@ ACTA_TYPES = ("nacimiento", "matrimonio", "defuncion", "divorcio")
 
 # Tolerancia para la firma del webhook (±5 minutos, según docs)
 WEBHOOK_TS_TOLERANCE_S = 300
+
+
+def _safe_json(resp) -> dict:
+    """Devuelve el JSON de la respuesta o {} si no es JSON (para rutas de error)."""
+    try:
+        return resp.json()
+    except Exception:
+        return {}
 
 
 class ConsultaUnicaClient(BaseProvider):
@@ -141,8 +154,140 @@ class ConsultaUnicaClient(BaseProvider):
             "raw": body,
         }
 
-    # === Ifetel (teléfono) ===
+    # === NSS del Seguro Social (IMSS) — 1 crédito ===
 
+    def nss_lookup(self, curp: str, *, user_email: str = "", enviar_email: bool = False) -> dict:
+        """Consulta el NSS por CURP. Costo: 1 crédito.
+
+        Envía `sendNssToEmail: false` para usar la variante rápida (no manda
+        correo). `user_email` es obligatorio para la API aunque no se envíe.
+
+        Returns:
+            {
+              "ok": bool,
+              "curp": str,
+              "nss": str,            # 11 dígitos
+              "name": str, "paternalName": str, "maternalName": str,
+              "birthDate": str,
+              "encontrado": bool,
+              "raw": dict,
+            }
+        Un 422 significa "no se encontró NSS para esa CURP" — **no cobra**.
+        """
+        curp_clean = normalize_curp(curp)
+        if len(curp_clean) != 18:
+            raise ProviderError("cu", f"CURP inválida (longitud {len(curp_clean)})")
+
+        payload = {
+            "type": "nss",
+            "nss": {"curp": curp_clean},
+            "userEmail": (user_email or "no-reply@example.com"),
+            "sendNssToEmail": bool(enviar_email),
+        }
+        r = self.session.post(
+            self._service_path("imss"),
+            json=payload, headers=self._headers(), timeout=self.timeout,
+        )
+        if r.status_code == 422:
+            # "No se encontró un número de seguro social" — consulta sin cargo
+            return {"ok": False, "encontrado": False, "curp": curp_clean,
+                    "nss": "", "raw": _safe_json(r)}
+        if r.status_code >= 400:
+            raise ProviderError("cu", f"nss HTTP {r.status_code}: {r.text[:300]}",
+                                r.status_code)
+        body = r.json()
+        return {
+            "ok": bool(body.get("nss")),
+            "encontrado": bool(body.get("nss")),
+            "curp": body.get("curp", curp_clean),
+            "nss": body.get("nss", ""),
+            "name": body.get("name", ""),
+            "paternalName": body.get("paternalName", ""),
+            "maternalName": body.get("maternalName", ""),
+            "birthDate": body.get("birthDate", ""),
+            "raw": body,
+        }
+
+    # === Hacienda / SAT (RFC) — 1 crédito ===
+
+    def rfc_validate(self, rfc: str) -> dict:
+        """Valida ante Hacienda un RFC que ya se tiene. Costo: 1 crédito.
+
+        Un 200 significa que el RFC es válido (`isValid` siempre es true en 200;
+        un RFC no localizado produce 400, no un 200 con false).
+
+        Returns: {"ok": bool, "valido": bool, "rfc": str, "raw": dict}
+        """
+        rfc_clean = (rfc or "").strip().upper()
+        if not rfc_clean:
+            raise ProviderError("cu", "RFC requerido para validación")
+        r = self.session.post(
+            self._service_path("sat"),
+            json={"variant": "rfc_validation", "rfcValidation": {"rfc": rfc_clean}},
+            headers=self._headers(), timeout=self.timeout,
+        )
+        if r.status_code == 400:
+            return {"ok": True, "valido": False, "rfc": rfc_clean, "raw": _safe_json(r)}
+        if r.status_code >= 400:
+            raise ProviderError("cu", f"rfc HTTP {r.status_code}: {r.text[:300]}",
+                                r.status_code)
+        body = r.json()
+        node = body.get("rfcValidation") or {}
+        return {"ok": True, "valido": True, "rfc": node.get("rfc", rfc_clean),
+                "raw": body}
+
+    def rfc_search(self, nombre: str, paterno: str, materno: str,
+                   birth_date: str) -> dict:
+        """Busca el RFC ante Hacienda desde nombre + fecha de nacimiento. 1 crédito.
+
+        `birth_date` en formato YYYY-MM-DD (el que devuelve el padrón/`fecnac`).
+
+        Returns: {"ok": bool, "rfc": str, "valido": bool, "raw": dict}
+        Un 400 significa que el RFC reconstruido no se localizó (sin cobro de dato).
+        """
+        payload = {
+            "variant": "rfc_search",
+            "rfcSearch": {
+                "name": (nombre or "").strip().upper(),
+                "paternalName": (paterno or "").strip().upper(),
+                "maternalName": (materno or "").strip().upper(),
+                "birthDate": (birth_date or "").strip(),
+            },
+        }
+        r = self.session.post(
+            self._service_path("sat"),
+            json=payload, headers=self._headers(), timeout=self.timeout,
+        )
+        if r.status_code == 400:
+            return {"ok": False, "rfc": "", "valido": False, "raw": _safe_json(r)}
+        if r.status_code >= 400:
+            raise ProviderError("cu", f"rfc_search HTTP {r.status_code}: {r.text[:300]}",
+                                r.status_code)
+        body = r.json()
+        node = body.get("rfcSearch") or {}
+        return {"ok": True, "rfc": node.get("rfc", ""),
+                "valido": bool(node.get("isValid", False)), "raw": body}
+
+    # === Saldo de créditos (gratis) ===
+
+    def creditos_restantes(self) -> Optional[int]:
+        """Créditos disponibles de la API key. No consume créditos.
+
+        None si no se pudo consultar. `0` significa saldo agotado (no error).
+        Siempre usa el endpoint real (`/v3/user-stats`): es gratis y el modo
+        mock no expone saldo.
+        """
+        try:
+            base = self.base_url.replace("/v3/mock", "/v3", 1)
+            r = self.session.get(f"{base}/user-stats",
+                                 headers=self._headers(), timeout=self.timeout)
+            if r.status_code >= 400:
+                return None
+            return int(r.json().get("remainingCredits", 0))
+        except Exception:
+            return None
+
+    # === Ifetel (teléfono) ===
     def ifetel_lookup(self, phone_number: str) -> dict:
         """Consulta el registro Ifetel de un número (10 dígitos).
 
