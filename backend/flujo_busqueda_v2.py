@@ -21,6 +21,18 @@ import coherencia
 # Tope duro por corrida: ninguna llamada externa puede exceder esto.
 MAX_CREDITOS_POR_CORRIDA = 3
 
+# AFOR: solo en plan corporativo y con validación previa.
+PLAN_AFOR = "corporativo"
+
+
+def afore_habilitado(plan: str, validacion_previa: bool) -> bool:
+    """AFOR solo se consulta en plan corporativo y con validación previa.
+
+    Es el único dato sin fuente local, así que se trata como un extra de plan
+    alto y nunca se dispara por defecto.
+    """
+    return (str(plan or "").strip().lower() == PLAN_AFOR) and bool(validacion_previa)
+
 
 def _cu_client(mock: bool = False):
     """Cliente de ConsultaÚnica desde config. None si no hay key."""
@@ -31,10 +43,10 @@ def _cu_client(mock: bool = False):
         return None
 
 
-def resolver(*, local: dict, pedir_afore: bool = False,
+def resolver(*, local: dict, plan: str = "", validacion_previa: bool = False,
              mock: bool = False, dry_run: bool = False,
              cliente=None) -> dict:
-    """Flujo completo: evalúa lo local y escala lo dudoso.
+    """Flujo completo: evalúa lo local y escala lo dudoso. Escalada automática.
 
     Args:
         local: datos ya recolectados del barrido local. Forma esperada:
@@ -46,7 +58,8 @@ def resolver(*, local: dict, pedir_afore: bool = False,
               "afore": {},
               "hint_estrategia": str, "hint_score": float,
             }
-        pedir_afore: si True, AFOR también se consulta cuando no haya local.
+        plan: plan del usuario. AFOR solo aplica si es "corporativo".
+        validacion_previa: la identidad ya fue validada; requisito para AFOR.
         mock: usar rutas /v3/mock (no cobra). Para pruebas.
         dry_run: no llama nada; solo reporta qué se consultaría y cuánto costaría.
         cliente: cliente inyectable (tests).
@@ -59,9 +72,14 @@ def resolver(*, local: dict, pedir_afore: bool = False,
           "valores": {"nss","rfc","afore"},
           "errores": [str],
         }
+    La escalada es automática: se dispara sola cuando el dato local es dudoso o
+    incoherente. No hay confirmación intermedia.
     """
     local = local or {}
-    decision = coherencia.evaluar({**local, "pedir_afore": pedir_afore})
+    decision = coherencia.evaluar({
+        **local,
+        "permitir_afore": afore_habilitado(plan, validacion_previa),
+    })
 
     out = {
         "decision": decision,

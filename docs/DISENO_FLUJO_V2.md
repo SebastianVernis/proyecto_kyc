@@ -58,8 +58,11 @@ Solo `DUDOSO` e `INCOHERENTE` escalan.
 - `INCOHERENTE`: nombre/fecha del padrón no cuadra con la CURP.
 
 ### AFOR
-- Siempre `DUDOSO` (no hay fuente local). Se consulta **solo si se pide**; si no,
-  se omite sin gastar.
+- Siempre `DUDOSO` (no hay fuente local).
+- **Solo se consulta si: plan = `corporativo` Y validación previa.** Requiere
+  además que la identidad del sujeto esté resuelta (fecha coherente y sin
+  ambigüedad): no se gasta un crédito de AFOR en alguien cuya identidad no cuadra.
+- En cualquier otro caso se omite sin gastar y se deja como aviso.
 
 ### Señales transversales de incoherencia
 - CURP no existe en el padrón (`found=False`) → sujeto huérfano.
@@ -76,7 +79,7 @@ Solo `DUDOSO` e `INCOHERENTE` escalan.
 | NSS ausente/dudoso | **NSS** (rápido) | `POST /v3/imss` `{"type":"nss","nss":{"curp":...},"userEmail":...}` | **1 crédito** |
 | RFC sin homoclave | **Búsqueda de RFC** | `POST /v3/sat` `{"variant":"rfc_search","rfcSearch":{name,paternalName,maternalName,birthDate}}` | **1 crédito** |
 | RFC a confirmar | **Validación de RFC** | `POST /v3/sat` `{"variant":"rfc_validation","rfcValidation":{"rfc":...}}` | **1 crédito** |
-| AFOR (si se pide) | **Detalles de Afore** | `POST /v3/afore` `{"variant":"encrypt","curp":...}` | **1 crédito** |
+| AFOR (si se pide) | **Detalles de Afore** | `POST /v3/afore` `{"variant":"encrypt","curp":...}` | **1 crédito** — solo plan corporativo + validación previa |
 | NSS a correo (evitar) | NSS regular | `POST /v3/imss?_v=2` | no usar (más caro, redundante) |
 
 **Costo por servicio: 1 crédito (todos los servicios simples).** El único más
@@ -125,9 +128,21 @@ días. Se replica el patrón para ConsultaÚnica:
 Falta implementar en `providers/consultaunica.py` los dos servicios necesarios:
 **NSS** (`/v3/imss`) y **RFC** (`/v3/sat`). Hoy solo tiene afore, ifetel y actas.
 
-## 9. Pendiente para cerrar el diseño
+## 9. Decisiones cerradas
 
-1. **Costos por servicio** (me los das tú) → llenar la matriz §5.
-2. Confirmar la diferencia real entre la variante rápida y la de correo de NSS.
-3. TTL del caché (¿30 días como CheckID?).
-4. ¿AFOR se consulta siempre o solo a pedido?
+1. **Costo por servicio: 1 crédito** (todos los servicios simples de un dato).
+   El único más caro es *semanas cotizadas* (3 créditos), que no se usa.
+2. **AFOR: solo plan `corporativo` y con validación previa.** Es el único dato
+   sin fuente local, así que se trata como extra de plan alto. Requiere además
+   identidad resuelta (fecha coherente, sin ambigüedad). En cualquier otro caso
+   se omite sin gastar.
+3. **Escalada automática.** Se dispara sola cuando el dato local es dudoso o
+   incoherente; no hay confirmación intermedia. El tope de 3 créditos por
+   corrida acota el gasto.
+
+## 10. Pendiente
+
+- Conectar el orquestador a los endpoints (`/api/sujeto`, `perfil_crear`).
+- Arreglar `perfil_crear` para que no aborte en CheckID.
+- Columnas de caché `cu_*` en `perfil_completo`.
+- Interruptor `CHECKID_ENABLED=false`.

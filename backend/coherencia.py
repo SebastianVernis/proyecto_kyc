@@ -148,14 +148,15 @@ def evaluar(dp: dict) -> dict:
           "nss": {...}, "rfc": {...}, "afore": {...},
           "hint_estrategia": str,     # de resolver_desde_hint
           "hint_score": float,
-          "pedir_afore": bool,        # si el operador pidió AFOR
+          "permitir_afore": bool,     # plan corporativo + validación previa
         }
 
     Returns: {
           "datos": {nss,rfc,afore,fecha: {...}},
           "escalar": [ {"dato","servicio","costo_creditos","motivo"} ],
           "costo_estimado": int,
-          "motivos": [str],           # para el operador
+          "motivos_escalada": [str],
+          "avisos": [str],
         }
     """
     dp = dp or {}
@@ -191,8 +192,14 @@ def evaluar(dp: dict) -> dict:
     if res["nss"]["escalar"]:
         escalar.append({"dato": "nss", "servicio": "imss/nss_fast",
                         "costo_creditos": 1, "motivo": res["nss"]["motivo"]})
-    # AFOR: solo si el operador lo pidió (no se gasta por defecto).
-    if res["afore"]["escalar"] and dp.get("pedir_afore"):
+    # AFOR: solo plan corporativo, y solo con la identidad ya validada.
+    # Nunca se gasta un crédito de AFOR en un sujeto cuya identidad no cuadra
+    # (fecha incoherente o resolución ambigua): primero hay que resolver quién es.
+    identificado = (res.get("fecha", {}).get("estado") != INCOHERENTE
+                    and res.get("_identidad", {}).get("estado") != DUDOSO
+                    and res.get("_global", {}).get("estado") != DUDOSO)
+    afore_habilitado = bool(dp.get("permitir_afore"))
+    if res["afore"]["escalar"] and afore_habilitado and identificado:
         escalar.append({"dato": "afore", "servicio": "afore/detalles",
                         "costo_creditos": 1, "motivo": res["afore"]["motivo"]})
 
@@ -202,8 +209,11 @@ def evaluar(dp: dict) -> dict:
         v = res.get(k)
         if isinstance(v, dict) and v["estado"] != CONCLUYENTE:
             avisos.append(f"{k.lstrip('_')}: {v['motivo']}")
-    if res["afore"]["escalar"] and not dp.get("pedir_afore"):
-        avisos.append("afore: no existe local y no se pidió (no se consulta)")
+    if res["afore"]["escalar"]:
+        if not afore_habilitado:
+            avisos.append("afore: no existe local — solo se consulta en plan corporativo")
+        elif not identificado:
+            avisos.append("afore: omitido hasta validar la identidad del sujeto")
 
     return {
         "datos": res,
