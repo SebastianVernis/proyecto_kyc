@@ -1,6 +1,6 @@
 # Planeación para integración con el sistema de consultas del padrón
 
-Estado: 2026-08-04 · bases_consolidadas/ en /Descargas/Bases/
+Estado: 2026-08-04 · bases consolidadas en `bases/` (histórico: `/Descargas/Bases/`)
 
 ## Contexto
 

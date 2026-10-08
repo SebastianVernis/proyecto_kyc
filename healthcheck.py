@@ -6,8 +6,8 @@ Verifica que cada base en bases/ abre correctamente
 en modo read-only y reporta conteo de filas.
 
 Uso:
-    # en server de produccion (/root/proyecto_kyc):
-    /root/ine_server/.venv/bin/python /root/proyecto_kyc/healthcheck.py
+    # este servidor:
+    /mnt/disco2/projects/kyc/.venv/bin/python healthcheck.py
 
     # en dev (cualquier path):
     PROYECTO_KYC_ROOT=/path/to/proyecto_kyc python3 healthcheck.py
@@ -76,7 +76,7 @@ def check_sqlite(path: Path) -> dict:
 
 
 def main():
-    print(f"=== Healthcheck /root/proyecto_kyc/ ===\n")
+    print(f"=== Healthcheck proyecto_kyc ===\n")
     overall_ok = True
     summary = []
     total_rows = 0

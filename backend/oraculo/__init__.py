@@ -5,7 +5,7 @@ Stack:
   - Tools: wrappers tipados sobre DuckDB extendido + providers externos
   - Memoria: SQLite por-tenant (oraculo_mem_<tenant_id>.db)
   - Auditoría: SQLite compartido (bases/oraculo_audit.db)
-  - Wiki: /home/sebastianvernis/proyectos/kyc/wiki/ (formato llm-wiki/gitnexus)
+  - Wiki: índice GitNexus del repo (`.gitnexus/`, formato llm-wiki/gitnexus)
 
 Diseño de bucle:
   1. Carga memoria del tenant + wiki recall

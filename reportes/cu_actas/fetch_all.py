@@ -3,7 +3,7 @@
 import json, time, base64, os, requests
 
 API_KEY = "24a1a22c0b3fb973c8369b6af1020eb2746503734985177f"
-OUT_DIR = "/home/sebastianvernis/proyectos/kyc/proyecto_kyc/reportes/cu_actas"
+OUT_DIR = "/mnt/disco2/projects/kyc/proyecto_kyc/reportes/cu_actas"
 HEADERS_JSON = {"Content-Type": "application/json", "x-api-key": API_KEY}
 BASE = "https://api.consultaunica.mx/v3/actas"
 

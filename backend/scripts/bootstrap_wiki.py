@@ -17,8 +17,8 @@ Y crea las páginas de concept:
   - concepts/particle-handling.md
 
 Uso:
-  cd /home/sebastianvernis/proyectos/kyc/proyecto_kyc/backend
-  /home/sebastianvernis/.venv/bin/python scripts/bootstrap_wiki.py
+  cd /mnt/disco2/projects/kyc/proyecto_kyc/backend
+  /mnt/disco2/projects/kyc/.venv/bin/python scripts/bootstrap_wiki.py
 """
 from __future__ import annotations
 import os, sys, hashlib, json

@@ -2,7 +2,7 @@
 """Crea la base perfil_completo.duckdb con la tabla de sujetos consolidados.
 
 Uso:
-  cd /home/sebastianvernis/proyectos/kyc/proyecto_kyc
+  cd /mnt/disco2/projects/kyc/proyecto_kyc
   python3 backend/scripts/init_perfil_completo.py
 
 O:

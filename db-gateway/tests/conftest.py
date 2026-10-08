@@ -21,7 +21,7 @@ def anyio_backend():
 @pytest.fixture(scope="session")
 def bases_dir():
     """Directorio de bases DuckDB (del host o mock)."""
-    d = os.getenv("BASES_DIR", "/home/sebastianvernis/proyectos/kyc/proyecto_kyc/bases")
+    d = os.getenv("BASES_DIR", "/mnt/disco2/projects/kyc/proyecto_kyc/bases")
     return Path(d)
 
 

@@ -2,8 +2,8 @@
 """Runner que ejecuta toda la suite y devuelve exit code.
 
 Uso:
-    /root/ine_server/.venv/bin/python tests/run_all.py
-    /root/ine_server/.venv/bin/python -m unittest discover -s tests -v
+    /mnt/disco2/projects/kyc/.venv/bin/python tests/run_all.py
+    /mnt/disco2/projects/kyc/.venv/bin/python -m unittest discover -s tests -v
 """
 import sys
 import unittest
