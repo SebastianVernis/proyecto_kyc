@@ -114,10 +114,18 @@ def clasificar_rfc(local: dict) -> dict:
 
 
 def clasificar_afore(local: dict) -> dict:
-    """AFOR no tiene fuente local: siempre dudoso (se consulta solo si se pide)."""
-    val = str((local or {}).get("afore") or "").strip()
-    if val:
-        return _r(CONCLUYENTE, val, "AFOR ya cacheada")
+    """AFOR no tiene fuente local: siempre dudoso (se consulta solo si se pide).
+
+    Su valor no es solo la administradora: devuelve también **email y teléfono**,
+    los únicos datos de contacto del flujo (las bases locales no tienen ninguna
+    columna de correo). Por eso, si ya se cacheó contacto, cuenta como concluyente.
+    """
+    local = local or {}
+    val = str(local.get("afore") or "").strip()
+    email = str(local.get("email") or "").strip()
+    tel = str(local.get("telefono") or "").strip()
+    if val or email or tel:
+        return _r(CONCLUYENTE, val or email or tel, "AFOR/contacto ya cacheados")
     return _r(DUDOSO, "", "AFOR no existe en ninguna base local")
 
 

@@ -37,6 +37,11 @@ gasto externo es una excepción justificada, no un paso del pipeline.
 | teléfono → identidad | `telcel`, `att` | |
 | domicilio | `cfe`, `padron`, `sepomex`, `geo` | |
 | **AFOR** | — | no existe en ninguna base local |
+| **email / teléfono de contacto** | — | **ninguna base local tiene columna de correo**; solo los aporta AFOR |
+
+> Nota: el corpus se revisó completo (63 archivos) y **no hay una sola columna de
+> email/correo**. El único contacto telefónico local es el de Telcel/ATT (líneas
+> a nombre del RFC), que no es lo mismo que el contacto personal de AFOR.
 
 ## 4. Compuerta de coherencia (el corazón del diseño)
 
@@ -58,7 +63,13 @@ Solo `DUDOSO` e `INCOHERENTE` escalan.
 - `INCOHERENTE`: nombre/fecha del padrón no cuadra con la CURP.
 
 ### AFOR
-- Siempre `DUDOSO` (no hay fuente local).
+- Siempre `DUDOSO` (no hay fuente local) **mientras no haya contacto cacheado**.
+- Su valor real no es solo la administradora: devuelve **email y teléfono**, y
+  son los únicos datos de contacto de todo el flujo — el corpus local **no tiene
+  ni una sola columna de correo** (verificado en las 63 bases). Con CheckID fuera,
+  AFOR es la única fuente de correo/teléfono.
+- Por eso, si ya hay `afore`, `email` o `telefono` cacheados, el dato pasa a
+  `CONCLUYENTE` y **no se vuelve a pagar**.
 - **Solo se consulta si: plan = `corporativo` Y validación previa.** Requiere
   además que la identidad del sujeto esté resuelta (fecha coherente y sin
   ambigüedad): no se gasta un crédito de AFOR en alguien cuya identidad no cuadra.

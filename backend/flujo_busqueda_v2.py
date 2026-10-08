@@ -89,6 +89,9 @@ def resolver(*, local: dict, plan: str = "", validacion_previa: bool = False,
             "nss": (local.get("nss") or {}).get("nss", ""),
             "rfc": (local.get("rfc") or {}).get("rfc", ""),
             "afore": (local.get("afore") or {}).get("afore", ""),
+            # contacto: solo AFOR lo aporta (el corpus local no tiene emails).
+            "email": (local.get("afore") or {}).get("email", ""),
+            "telefono": (local.get("afore") or {}).get("telefono", ""),
         },
         "errores": [],
     }
@@ -138,8 +141,15 @@ def resolver(*, local: dict, plan: str = "", validacion_previa: bool = False,
 
             elif servicio == "afore/detalles":
                 r = cu.afore_details(local.get("curp", ""))
-                if r.get("afore"):
-                    out["valores"]["afore"] = r["afore"]
+                # AFOR es la ÚNICA fuente de email/teléfono del flujo: ninguna
+                # base local tiene columna de correo. Cuando responde contacto,
+                # se guarda junto con la administradora.
+                if r.get("afore") or r.get("email") or r.get("phoneNumber"):
+                    out["valores"]["afore"] = r.get("afore", "")
+                    if r.get("email"):
+                        out["valores"]["email"] = r["email"]
+                    if r.get("phoneNumber"):
+                        out["valores"]["telefono"] = r["phoneNumber"]
                     entrada.update(ok=True, costo_creditos=1, resultado=r)
                 else:
                     entrada.update(ok=False, costo_creditos=0, resultado=r)
@@ -162,6 +172,10 @@ def formatear_para_ui(res: dict) -> dict:
     return {
         "costo_creditos": res["costo_creditos"],
         "valores": res["valores"],
+        "contacto": {
+            "email": res["valores"].get("email", ""),
+            "telefono": res["valores"].get("telefono", ""),
+        },
         "consultado": [
             {"dato": c["dato"], "servicio": c["servicio"], "ok": c["ok"],
              "costo_creditos": c["costo_creditos"]}
