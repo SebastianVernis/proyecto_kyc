@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Suscripción — Argos OSINT</title>
   <link rel="icon" href="../assets/argos-osint_favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="css/common.css">
   <style>
     .page-content{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
     .page-title{text-align:center;margin-bottom:32px}
@@ -102,6 +102,6 @@
     updateBtn();
     fetch('/api/auth/me',{headers:{'Authorization':'Bearer '+localStorage.getItem('session_token')}}).then(r=>{if(!r.ok)window.location.href='/login.html'}).catch(()=>window.location.href='/login.html');
   </script>
-<script src="common.js"></script>
+<script src="js/common.js"></script>
 </body>
 </html>
