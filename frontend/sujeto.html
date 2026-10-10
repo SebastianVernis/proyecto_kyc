@@ -163,6 +163,7 @@ body>*:not(.argos-bg){position:relative;z-index:1}
       <div class="topbar-actions">
         <button class="btn sm secondary" onclick="window.location.href='/buscar.html'">← Volver a búsqueda</button>
         <button class="btn sm" id="btn-reporte" onclick="window.location.href='/busquedas_adicionales.html?curp='+CURP">🌐 Búsquedas ext.</button>
+        <button class="btn sm" id="btn-dossier" onclick="generarDossier()">📦 Generar dossier</button>
       </div>
     </div>
 
@@ -538,7 +539,7 @@ function renderBases(perfil) {
       for (const f of fields) {
         const v = data[f];
         if (v !== undefined && v !== null && v !== "") {
-          html += `<div class="k">${esc(f)}</div><div class="v">${esc(typeof v === "object" ? JSON.stringify(v) : String(v))}</div>`;
+          html += `<div class="k">${esc(f)}</div><div class="v">${esc(fmtValor(v))}</div>`;
         }
       }
       html += '</div>';
@@ -559,17 +560,247 @@ function renderRecord(rec) {
     ).join("") + "</div>";
 }
 
+/* ==== Utilidades de render (nunca JSON crudo) ==== */
+
+/* Convierte cualquier valor en texto legible. Un objeto anidado se aplana a
+   "clave: valor · clave: valor" en vez de volcarse como JSON: es lo que hacía
+   ilegible la pestaña de bases. */
+function fmtValor(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  if (Array.isArray(v)) {
+    if (!v.length) return "—";
+    return v.map(fmtValor).filter(x => x !== "—").join(", ") || "—";
+  }
+  if (typeof v === "object") {
+    const partes = Object.entries(v)
+      .filter(([k, x]) => x !== null && x !== undefined && x !== "" && !k.startsWith("_"))
+      .map(([k, x]) => `${k.replace(/_/g, " ")}: ${fmtValor(x)}`);
+    return partes.join(" · ") || "—";
+  }
+  return String(v);
+}
+
+const OCULTAS = new Set(["id", "curp_raw", "_id", "rowid"]);
+
+/* Tabla genérica: sirve para bancos, hallazgos y para cualquier resultado de
+   validación que antes caía al `JSON.stringify` de respaldo. */
+function tablaGenerica(rows, opt) {
+  opt = opt || {};
+  if (!Array.isArray(rows) || !rows.length) {
+    return `<div style="color:var(--muted);font-size:12px;padding:8px 0">${esc(opt.vacio || "Sin registros.")}</div>`;
+  }
+  const max = opt.max || 25;
+  const cols = [];
+  const datos = rows.filter(r => r && typeof r === "object");
+  for (const r of datos.slice(0, max)) {
+    for (const k of Object.keys(r)) {
+      if (OCULTAS.has(k) || cols.includes(k)) continue;
+      if (r[k] === null || r[k] === undefined || r[k] === "") continue;
+      cols.push(k);
+    }
+  }
+  if (!cols.length) {
+    // filas de escalares (["a","b"]) — se muestran como lista
+    return '<div class="kv">' + rows.slice(0, max).map((r, i) =>
+      `<div class="k">${i + 1}</div><div class="v">${esc(fmtValor(r))}</div>`).join("") + "</div>";
+  }
+  const cap = opt.maxCols || 12;
+  const visibles = cols.slice(0, cap);
+  let h = `<div style="overflow:auto;max-height:${opt.alto || 320}px;border:1px solid var(--border);border-radius:6px">
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr>${visibles.map(c => `<th style="position:sticky;top:0;background:var(--panel2);color:var(--muted);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap">${esc(c.replace(/_/g, " "))}</th>`).join("")}</tr></thead>
+      <tbody>`;
+  for (const r of datos.slice(0, max)) {
+    h += "<tr>" + visibles.map(c =>
+      `<td style="padding:5px 8px;border-top:1px solid var(--border);vertical-align:top;max-width:280px">${esc(fmtValor(r[c]))}</td>`
+    ).join("") + "</tr>";
+  }
+  h += "</tbody></table></div>";
+  const notas = [];
+  if (datos.length > max) notas.push(`mostrando ${max} de ${datos.length} registros`);
+  if (cols.length > cap) notas.push(`${cols.length - cap} columnas ocultas`);
+  if (notas.length) h += `<div style="color:var(--muted);font-size:11px;margin-top:5px">${esc(notas.join(" · "))}</div>`;
+  return h;
+}
+
+/* ==== Render: inteligencia integral (interpretada) ==== */
+
+const CAT_INTEL = {
+  "sujeto":                { lbl: "Sujeto",       ico: "🎯", color: "var(--accent)" },
+  "familiar":              { lbl: "Familia",      ico: "🧬", color: "#a78bfa" },
+  "conviviente":           { lbl: "Conviviente",  ico: "🏠", color: "#22d3ee" },
+  "cfe":                   { lbl: "Titular CFE",  ico: "⚡", color: "#facc15" },
+  "apellido":              { lbl: "Apellido",     ico: "👥", color: "#f472b6" },
+  "vecino":                { lbl: "Vecino",       ico: "🏘️", color: "#fb923c" },
+};
+
+function catIntel(cat) {
+  const c = String(cat || "").toLowerCase();
+  if (c.startsWith("sujeto")) return CAT_INTEL.sujeto;
+  if (c.startsWith("núcleo") || c.startsWith("nucleo")) return CAT_INTEL.familiar;
+  if (c.startsWith("conviviente")) return CAT_INTEL.conviviente;
+  if (c.startsWith("titular")) return CAT_INTEL.cfe;
+  if (c.startsWith("apellido")) return CAT_INTEL.apellido;
+  if (c.startsWith("vecino")) return CAT_INTEL.vecino;
+  return { lbl: cat || "Otro", ico: "📦", color: "var(--muted)" };
+}
+
+function kpiIntel(etiqueta, valor, color) {
+  return `<div class="kpi"><div class="kpi-label">${esc(etiqueta)}</div>
+    <div class="kpi-value" style="color:${color || "var(--text)"}">${esc(String(valor))}</div></div>`;
+}
+
+function fichaDossier(s, idx) {
+  const idt = s.identidad || {};
+  const c = catIntel(s.categoria);
+  const nombre = idt.nombre_completo || [idt.nombre, idt.paterno, idt.materno].filter(Boolean).join(" ") || "(sin nombre)";
+  const dom = [idt.calle, idt.ext, idt.colonia ? "· " + idt.colonia : "", idt.cp ? "CP " + idt.cp : ""]
+    .filter(Boolean).join(" ");
+  const h = s.hallazgos || {};
+  let hallazgos = "";
+  const bloques = [
+    ["Empleo (IMSS)", h.empleo_imss], ["Salud (IMSS)", h.salud_imss],
+    ["Telefonía", h.telefonia], ["Banca", h.banca],
+  ];
+  for (const [titulo, regs] of bloques) {
+    if (!Array.isArray(regs) || !regs.length) continue;
+    hallazgos += `<div style="margin-top:8px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px">${esc(titulo)} (${regs.length})</div>
+      ${tablaGenerica(regs, { max: 8, alto: 190, maxCols: 8 })}</div>`;
+  }
+  return `<div style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--panel2);overflow:hidden">
+    <div style="display:flex;gap:8px;align-items:center;padding:9px 11px;cursor:pointer" onclick="this.parentNode.querySelector('.dosi-body').style.display = this.parentNode.querySelector('.dosi-body').style.display==='none'?'block':'none'">
+      <span style="color:${c.color};font-size:15px">${c.ico}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${esc(nombre)}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace">${esc(idt.curp || "sin CURP")}${idt.fecnac ? " · " + esc(idt.fecnac) : ""}</div>
+      </div>
+      <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--panel);color:${c.color};border:1px solid ${c.color};white-space:nowrap">${esc(c.lbl)}</span>
+    </div>
+    <div class="dosi-body" style="display:${idx < 3 ? "block" : "none"};padding:0 11px 11px">
+      ${dom ? `<div style="font-size:11px;color:var(--muted);margin-bottom:6px">📍 ${esc(dom)}</div>` : ""}
+      ${s.relacion_origen ? `<div style="font-size:11px;color:var(--text);background:var(--panel);border-left:3px solid ${c.color};padding:6px 8px;border-radius:3px;margin-bottom:6px"><b>Origen del vínculo:</b> ${esc(s.relacion_origen)}</div>` : ""}
+      ${s.dictamen_analitico ? `<div style="font-size:11px;color:var(--text);background:var(--panel);border-left:3px solid var(--accent2);padding:6px 8px;border-radius:3px"><b>Dictamen:</b> ${esc(s.dictamen_analitico)}</div>` : ""}
+      ${hallazgos}
+    </div>
+  </div>`;
+}
+
+function renderInteligencia(d) {
+  const dict = d.dictamen_conclusivo || {};
+  const kpis = [
+    ["Sujetos auditados", d.total_sujetos_auditados || 0, "var(--accent)"],
+    ["Núcleo consanguíneo", d.total_familiares_consanguineos || 0, "#a78bfa"],
+    ["Convivientes del predio", d.total_convivientes_inmueble || 0, "#22d3ee"],
+    ["Servicios CFE", (d.servicios_cfe_inmueble || []).length, "#facc15"],
+    ["Vecinos de la calle", d.total_vecinos_misma_calle || 0, "#fb923c"],
+    ["Tiempo del motor", (d.tiempo_ejecucion_s || 0) + "s", "var(--muted)"],
+  ];
+
+  // Dictamen
+  let dictHtml = "";
+  const camposDict = [
+    ["Identidad", dict.estatus_identidad], ["Nivel de riesgo KYC", dict.nivel_riesgo_kyc],
+    ["Alertas fiscales 69/69-B", dict.alertas_fiscales_69_69b], ["Dinámica relacional", dict.dinamica_relacional],
+  ].filter(([, v]) => v);
+  if (camposDict.length) {
+    dictHtml = `<div class="card" style="margin-bottom:12px">
+      <div class="card-header"><div class="card-title">⚖️ Dictamen conclusivo</div></div>
+      <div class="kv">${camposDict.map(([k, v]) =>
+        `<div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>`).join("")}</div></div>`;
+  }
+
+  // CFE del predio
+  const cfe = d.servicios_cfe_inmueble || [];
+  let cfeHtml = "";
+  if (cfe.length) {
+    cfeHtml = `<div class="card" style="margin-bottom:12px">
+      <div class="card-header"><div class="card-title">⚡ Suministros CFE en el domicilio declarado (${cfe.length})</div></div>
+      <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr>${["Servicio", "Titular", "Dirección", "Relación con el sujeto", "Coincidencia"]
+          .map(c => `<th style="background:var(--panel2);color:var(--muted);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase">${c}</th>`).join("")}</tr></thead>
+        <tbody>${cfe.map(s => {
+          const sc = Number(s.score_match_titular || 0);
+          const color = sc >= 0.8 ? "var(--accent2)" : sc >= 0.5 ? "#facc15" : "var(--muted)";
+          return `<tr>
+            <td style="padding:6px 8px;border-top:1px solid var(--border);font-family:monospace">${esc(s.numero_servicio || "—")}</td>
+            <td style="padding:6px 8px;border-top:1px solid var(--border)">${esc(s.titular || "—")}</td>
+            <td style="padding:6px 8px;border-top:1px solid var(--border)">${esc([s.direccion, s.colonia, s.cp ? "CP " + s.cp : ""].filter(Boolean).join(", ") || "—")}</td>
+            <td style="padding:6px 8px;border-top:1px solid var(--border);color:${color};font-weight:600">${esc(s.tipo_relacion_titular || "sin match")}<div style="font-weight:400;font-size:10px;color:var(--muted)">${esc(s.detalle_match_titular || "")}</div></td>
+            <td style="padding:6px 8px;border-top:1px solid var(--border)">${s.coincidencia_domicilio ? "mismo domicilio" : "domicilio distinto"}</td>
+          </tr>`;
+        }).join("")}</tbody></table></div></div>`;
+  }
+
+  // Dossier por categorías con filtro
+  const dos = d.dossier_sujetos || [];
+  const porCat = {};
+  for (const s of dos) {
+    const k = catIntel(s.categoria).lbl;
+    porCat[k] = (porCat[k] || 0) + 1;
+  }
+  const chips = Object.entries(porCat).map(([k, n]) => {
+    const c = Object.values(CAT_INTEL).find(x => x.lbl === k) || { color: "var(--muted)", ico: "📦" };
+    return `<span class="dosi-chip" data-cat="${esc(k)}" style="cursor:pointer;font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid ${c.color};color:${c.color};background:var(--panel2)">${c.ico} ${esc(k)} (${n})</span>`;
+  }).join("");
+
+  return `<div class="kpi-row" style="margin-bottom:12px">${kpis.map(k => kpiIntel(k[0], k[1], k[2])).join("")}</div>
+    ${dictHtml}${cfeHtml}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🧬 Universo relacional — ${dos.length} sujetos auditados</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="dosi-chips">
+        ${chips}
+        <input id="dosi-buscar" placeholder="Filtrar por nombre o CURP…"
+          style="flex:1;min-width:180px;padding:5px 9px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:12px">
+      </div>
+      <div id="dosi-lista">${dos.map((s, i) => fichaDossier(s, i)).join("")}</div>
+    </div>`;
+}
+
+function activarFiltrosDossier() {
+  const cont = $("dosi-lista");
+  if (!cont) return;
+  const buscar = $("dosi-buscar");
+  const chips = Array.from(document.querySelectorAll(".dosi-chip"));
+  const aplica = () => {
+    const q = (buscar && buscar.value || "").trim().toUpperCase();
+    const activos = new Set(chips.filter(c => !c.dataset.off).map(c => c.dataset.cat));
+    Array.from(cont.children).forEach((el, i) => {
+      const txt = (el.textContent || "").toUpperCase();
+      const cat = el.querySelector(".dosi-chip, span[style*='border-radius:10px']");
+      const lbl = cat ? cat.textContent.trim() : "";
+      const okCat = !chips.length || activos.has(lbl);
+      el.style.display = (okCat && (!q || txt.includes(q))) ? "" : "none";
+    });
+  };
+  chips.forEach(c => c.addEventListener("click", () => {
+    c.dataset.off = c.dataset.off ? "" : "1";
+    c.style.opacity = c.dataset.off ? "0.35" : "1";
+    aplica();
+  }));
+  if (buscar) buscar.addEventListener("input", aplica);
+}
+
 async function ejecutarInteligencia() {
   if (!CURP) return;
   const btn = $("btn-intel");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Ejecutando...';
+  const original = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Consultando las bases (puede tardar ~20s)…';
   try {
     const r = await fetch(`${API_URL}/api/v1/sujeto/inteligencia_completa?curp=${encodeURIComponent(CURP)}`, { headers: authH() });
     const data = await r.json();
-    if (data.error) { alert("Error: " + data.error); return; }
-    $("intel-result").innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;white-space:pre-wrap;max-height:400px;overflow:auto">${esc(JSON.stringify(data, null, 2))}</div>`;
-  } catch (e) { alert("Error: " + e.message); }
-  finally { btn.disabled = false; btn.innerHTML = "⚡ Ejecutar inteligencia"; }
+    if (data.error && !data.dossier_sujetos) {
+      $("intel-result").innerHTML = `<div class="error-msg">No se pudo ejecutar el motor: ${esc(data.error)}</div>`;
+      return;
+    }
+    ultimaInteligencia = data;
+    $("intel-result").innerHTML = renderInteligencia(data);
+    activarFiltrosDossier();
+  } catch (e) {
+    $("intel-result").innerHTML = `<div class="error-msg">Error: ${esc(e.message)}</div>`;
+  } finally { btn.disabled = false; btn.innerHTML = original; }
 }
 
 async function buscarBanco() {
@@ -580,16 +811,176 @@ async function buscarBanco() {
   const q = new URLSearchParams({ banco });
   if (nombre) q.set("nombre", nombre);
   if (rfc) q.set("rfc", rfc);
+  const cont = $("banco-result");
+  cont.innerHTML = '<div style="color:var(--muted);font-size:12px"><span class="spinner"></span> Consultando…</div>';
   try {
     const r = await fetch(`${API_URL}/api/v1/bancos/buscar?${q}`, { headers: authH() });
     const data = await r.json();
-    $("banco-result").innerHTML = `<pre style="background:var(--panel2);padding:12px;border-radius:6px;font-size:11px;max-height:300px;overflow:auto">${esc(JSON.stringify(data, null, 2))}</pre>`;
-  } catch (e) { alert("Error: " + e.message); }
+    if (data.error) { cont.innerHTML = `<div class="error-msg">${esc(data.error)}</div>`; return; }
+    // El endpoint puede devolver una lista o un dict con la lista dentro:
+    // se busca la primera clave que sea un arreglo de registros.
+    let filas = null;
+    if (Array.isArray(data)) filas = data;
+    else {
+      for (const k of ["resultados", "registros", "rows", "data", "hits", "cuentas", "coincidencias"]) {
+        if (Array.isArray(data[k])) { filas = data[k]; break; }
+      }
+      if (!filas) {
+        for (const v of Object.values(data)) {
+          if (Array.isArray(v) && v.length && typeof v[0] === "object") { filas = v; break; }
+        }
+      }
+    }
+    const encabezado = `<div style="font-size:11px;color:var(--muted);margin-bottom:6px">
+      ${filas ? filas.length + " registro(s)" : "resultado"} · banco <b>${esc(banco)}</b></div>`;
+    cont.innerHTML = encabezado + (filas
+      ? tablaGenerica(filas, { max: 40, alto: 420, maxCols: 12, vacio: "El banco no devolvió coincidencias." })
+      : tablaGenerica([data], { max: 1, alto: 320 }));
+  } catch (e) { cont.innerHTML = `<div class="error-msg">Error: ${esc(e.message)}</div>`; }
 }
 
-function ejecutarReporte() {
-  alert("Funcionalidad de reporte próximamente");
+/* ==== Dossier: PDF + mapa interactivo, en segundo plano ==== */
+
+let dossierJob = null, dossierTimer = null, ultimaInteligencia = null;
+
+function panelDossier() {
+  let ov = document.getElementById("dossier-overlay");
+  if (ov) { ov.style.display = "flex"; return ov; }
+  ov = document.createElement("div");
+  ov.id = "dossier-overlay";
+  ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px";
+  ov.innerHTML = `<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;max-width:600px;width:100%;padding:20px;max-height:86vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <strong style="font-size:15px">📦 Dossier del expediente</strong>
+      <button id="dossier-cerrar" class="btn sm" style="display:none">Cerrar</button>
+    </div>
+    <div id="dossier-paso" style="font-size:13px;margin-bottom:8px">Iniciando…</div>
+    <div style="height:8px;background:var(--panel2);border-radius:99px;overflow:hidden">
+      <div id="dossier-barra" style="height:100%;width:0%;background:var(--accent);transition:width .4s"></div>
+    </div>
+    <div id="dossier-pct" style="font-size:11px;color:var(--muted);margin-top:6px">0%</div>
+    <div id="dossier-archivos" style="margin-top:16px"></div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector("#dossier-cerrar").onclick = () => {
+    if (dossierJob) return;
+    ov.remove();
+    const b = $("btn-dossier"); if (b) { b.disabled = false; b.innerHTML = "📦 Generar dossier"; }
+  };
+  return ov;
 }
+
+async function bajarArchivo(job, nombre) {
+  // El token va en la cabecera, no en la URL: un <a href> "pelado" llegaría sin
+  // sesión y el backend devolvería 401. Por eso se baja como blob.
+  const r = await fetch(`${API_URL}/api/v1/familia/dossier/archivo/${job}/${encodeURIComponent(nombre)}`,
+    { headers: authH() });
+  if (!r.ok) { alert("No se pudo descargar " + nombre + " (" + r.status + ")"); return; }
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+}
+
+function pintarArchivosDossier(job, archivos) {
+  const cont = $("dossier-archivos");
+  if (!cont) return;
+  const iconos = { pdf: "📄", html: "🗺️", csv: "📊", json: "🧾", zip: "📦" };
+  const bonitos = {
+    "dossier.pdf": "Expediente completo (todo el análisis)",
+    "mapa_familia.html": "Mapa interactivo de la familia (abre offline)",
+    "ubicaciones.csv": "Dataset de ubicaciones (trazabilidad)",
+    "inteligencia.json": "Inteligencia relacional (datos crudos)",
+    "expediente.html": "Expediente en HTML",
+    "mapa_stats.json": "Estadísticas del mapa",
+  };
+  let h = "";
+  for (const a of archivos) {
+    const ext = (a.nombre.split(".").pop() || "").toLowerCase();
+    let etiqueta = a.nombre;
+    for (const clave of Object.keys(bonitos)) {
+      if (a.nombre.endsWith(clave)) { etiqueta = bonitos[clave]; break; }
+    }
+    h += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px">
+      <span style="font-size:16px">${iconos[ext] || "📁"}</span>
+      <div style="flex:1">
+        <div style="font-size:12px;color:var(--text)">${esc(etiqueta)}</div>
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">${esc(a.nombre)} · ${esc(String(a.mb))} MB</div>
+      </div>
+      <button class="btn sm" onclick="bajarArchivo('${esc(job)}','${esc(a.nombre)}')">⬇ Bajar</button>
+    </div>`;
+  }
+  const zip = archivos.find(a => a.nombre.endsWith(".zip"));
+  if (zip) {
+    h += `<button class="btn" style="width:100%;margin-top:4px" onclick="bajarArchivo('${esc(job)}','${esc(zip.nombre)}')">📦 Bajar todo en un ZIP (PDF + mapa + CSV + JSON)</button>`;
+  }
+  cont.innerHTML = h;
+}
+
+async function generarDossier() {
+  if (!CURP) { alert("Falta la CURP del sujeto."); return; }
+  if (dossierJob) { panelDossier(); return; }
+  const btn = $("btn-dossier");
+  const original = btn ? btn.innerHTML : "";
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generando…'; }
+
+  const ov = panelDossier();
+  $("dossier-paso").textContent = "Arrancando el trabajo…";
+  $("dossier-barra").style.width = "2%";
+  $("dossier-archivos").innerHTML = "";
+  ov.querySelector("#dossier-cerrar").style.display = "none";
+
+  try {
+    const r = await fetch(`${API_URL}/api/v1/familia/dossier`, {
+      method: "POST", headers: authHJ(), body: JSON.stringify({ curp: CURP }),
+    });
+    const d = await r.json();
+    if (!r.ok || d.error || !d.job_id) {
+      $("dossier-paso").innerHTML = `<span style="color:var(--error)">No se pudo arrancar: ${esc(d.error || r.status)}</span>`;
+      if (btn) { btn.disabled = false; btn.innerHTML = original; }
+      ov.querySelector("#dossier-cerrar").style.display = "";
+      return;
+    }
+    dossierJob = d.job_id;
+    const t0 = Date.now();
+    const sondea = async () => {
+      try {
+        const rr = await fetch(`${API_URL}/api/v1/familia/dossier/estado/${dossierJob}`, { headers: authH() });
+        const est = await rr.json();
+        if (est.error) throw new Error(est.error);
+        $("dossier-paso").textContent = est.paso || "…";
+        $("dossier-barra").style.width = (est.pct || 0) + "%";
+        $("dossier-pct").textContent = `${est.pct || 0}% · ${Math.round(est.elapsed_s || ((Date.now() - t0) / 1000))}s`;
+        if (est.estado === "completo") {
+          dossierTimer = null;
+          $("dossier-paso").innerHTML = `<span style="color:var(--accent2)">✓ Dossier completo</span>`;
+          pintarArchivosDossier(dossierJob, est.archivos || []);
+          ov.querySelector("#dossier-cerrar").style.display = "";
+          return;
+        }
+        if (est.estado === "error") {
+          dossierTimer = null;
+          $("dossier-paso").innerHTML = `<span style="color:var(--error)">✗ Falló: ${esc(est.error || "error desconocido")}</span>`;
+          ov.querySelector("#dossier-cerrar").style.display = "";
+          return;
+        }
+        dossierTimer = setTimeout(sondea, 2500);
+      } catch (e) {
+        dossierTimer = null;
+        $("dossier-paso").innerHTML = `<span style="color:var(--error)">Error sondeando: ${esc(e.message)}</span>`;
+        ov.querySelector("#dossier-cerrar").style.display = "";
+      }
+    };
+    sondea();
+  } catch (e) {
+    $("dossier-paso").innerHTML = `<span style="color:var(--error)">Error: ${esc(e.message)}</span>`;
+    if (btn) { btn.disabled = false; btn.innerHTML = original; }
+  }
+}
+
+function ejecutarReporte() { generarDossier(); }
 
 function showOverlay(msg, sub) {
   const o = document.createElement("div");

@@ -332,7 +332,265 @@ def parse_coord_input(text: str, allow_network: bool = True) -> dict:
     return {"lat": round(lat, 7), "lon": round(lon, 7), "source": src}
 
 
+# === Generación del expediente (compartida HTTP + job de dossier) ==========
+
+
+def _generar_reporte_sujeto_html_pdf(sujeto: dict, enrichment: dict, narrative: str,
+                                     out_format: str, *, ai_meta: dict | None = None,
+                                     inteligencia_data: dict | None = None) -> dict:
+    """Arma el expediente completo de un sujeto en HTML/PDF.
+
+    Es la parte cara —mapas estáticos, direcciones en todas las bases, actas y
+    render— y vive FUERA del Handler a propósito: el job de dossier corre en un
+    hilo de fondo y no tiene un `self` con socket al que responder.
+
+    `inteligencia_data` es la salida de `inteligencia_completa.ejecutar_inteligencia_completa`;
+    cuando se pasa, el reporte incluye la sección 08b (domicilio, parentesco,
+    CFE y banca). Sin ella el PDF sale con todo lo demás pero SIN el análisis
+    relacional, que es justamente lo que el usuario pide leer.
+
+    Devuelve {"formato": "pdf"|"html"|"json", "contenido": bytes|str, "html": str}.
+    """
+    ai_meta = ai_meta or {}
+    from report_generator import generate_subject_html, generate_html_to_pdf
+    sujeto["_modelo_ia"] = ai_meta.get("model") or "none"
+
+    # Generar mapa estático del padrón
+    map_b64, map_location = _generate_map_for_sujeto(sujeto)
+
+    # Generar mapa del CP de CheckID si difiere del padrón
+    checkid_cp = ""
+    checkid_map_b64 = None
+    checkid_map_location = None
+    try:
+        checkid_data = (enrichment or {}).get("checkid", {}) if isinstance(enrichment, dict) else {}
+        if isinstance(checkid_data, dict):
+            chk_cp = _extract_checkid_str(checkid_data.get("codigo_postal"), "codigoPostal")
+            if chk_cp and chk_cp != str(sujeto.get("cp", "")):
+                checkid_cp = str(chk_cp).strip().zfill(5)[:5]
+                checkid_map_b64, checkid_map_location = _generate_map_for_cp(
+                    checkid_cp, source="checkid"
+                )
+    except Exception:
+        pass
+
+    # 2026-08-13: recolectar TODAS las direcciones en TODAS las bases
+    extra_maps = []
+    repuve_list = []
+    non_matched_list = []
+    try:
+        addresses, repuve_list = _collect_addresses_for_sujeto(sujeto, enrichment=enrichment)
+        extra_maps, non_matched_list = _generate_maps_for_addresses(
+            addresses, max_maps=25, subject=sujeto
+        )
+    except Exception:
+        extra_maps = []
+        non_matched_list = []
+        repuve_list = []
+
+    # recolectar actas del sujeto para anexos al final del reporte
+    actas_anexos = []
+    curp_sujeto = (sujeto.get("curp") or "").upper().strip()
+    if curp_sujeto and len(curp_sujeto) == 18:
+        try:
+            import auth
+            from config import config
+            r2_base = getattr(config, "r2_public_base_url", "").rstrip("/")
+            with auth._db() as conn:
+                rows = conn.execute(
+                    """SELECT uuid, acta_type, con_folio, status,
+                              created_at, received_at
+                       FROM actas_submissions
+                       WHERE curp=? AND status='completed'
+                       ORDER BY created_at DESC""",
+                    (curp_sujeto,),
+                ).fetchall()
+            for r in rows:
+                key = (
+                    f"actas/{r['curp']}/{r['acta_type']}"
+                    f"{'.foliada' if r['con_folio'] else ''}/{r['uuid']}.pdf"
+                )
+                actas_anexos.append({
+                    "uuid": r["uuid"],
+                    "acta_type": r["acta_type"],
+                    "con_folio": bool(r["con_folio"]),
+                    "created_at": r["created_at"],
+                    "status": r["status"],
+                    "r2_key": key,
+                    "r2_url": f"{r2_base}/{key}" if r2_base else "",
+                })
+        except Exception:
+            actas_anexos = []
+
+    html = generate_subject_html(sujeto, narrative=narrative, enrichment=enrichment,
+                                 map_image_base64=map_b64,
+                                 map_location=map_location,
+                                 checkid_map_image_base64=checkid_map_b64,
+                                 checkid_map_location=checkid_map_location,
+                                 checkid_cp=checkid_cp,
+                                 extra_maps=extra_maps,
+                                 repuve_addresses=repuve_list,
+                                 non_matched_addresses=non_matched_list,
+                                 inteligencia_data=inteligencia_data,
+                                 actas_anexos=actas_anexos)
+    if out_format == "pdf":
+        return {"formato": "pdf", "contenido": generate_html_to_pdf(html), "html": html}
+    if out_format == "json":
+        return {"formato": "json", "contenido": html, "html": html}
+    return {"formato": "html", "contenido": html, "html": html}
+
+
+# === Dossier de fondo: inteligencia + mapa familiar + PDF ==================
+
+
+def _cargar_enrichment_singula(curp: str) -> dict:
+    """Envoltorio de `Handler._load_singula_enrichment` para el job de fondo.
+
+    Ese método no usa `self` (sólo lee el store Singula de disco), así que se
+    puede invocar sin instancia. El llamador lo envuelve en try/except: un
+    expediente sin las secciones externas es aceptable, un expediente que no
+    sale no lo es.
+    """
+    return Handler._load_singula_enrichment(None, curp)  # type: ignore[arg-type]
+
+
+def _slug_dossier(sujeto: dict, curp: str) -> str:
+    """Nombre de archivo del dossier: APELLIDOS_NOMBRE_CURP, como el resto de
+    los reportes del proyecto."""
+    partes = [sujeto.get("paterno"), sujeto.get("materno"),
+              sujeto.get("nombre") or sujeto.get("nombre_completo"), curp]
+    crudo = "_".join(str(p) for p in partes if p)
+    limpio = re.sub(r"[^A-Za-z0-9]+", "_", crudo).strip("_").upper()
+    return limpio[:90] or ("SUJETO_" + curp)
+
+
+def _sujeto_desde_inteligencia(data: dict, curp: str) -> dict:
+    """Arma el `subject_data` que espera report_generator a partir del sujeto
+    raíz del dossier: el padrón ya lo trajo la propia inteligencia, así que no
+    hay que volver a consultarlo."""
+    sujeto: dict = {}
+    for x in (data.get("dossier_sujetos") or []):
+        if str(x.get("categoria") or "").lower().startswith("sujeto"):
+            sujeto = dict(x.get("identidad") or {})
+            break
+    if not sujeto:
+        for x in (data.get("dossier_sujetos") or []):
+            if x.get("identidad"):
+                sujeto = dict(x["identidad"])
+                break
+
+    sujeto["curp"] = (sujeto.get("curp") or curp or "").upper().strip()
+    sujeto["rfc"] = (data.get("rfc") or sujeto.get("rfc") or "").upper().strip()
+    if not sujeto.get("nombre_completo"):
+        sujeto["nombre_completo"] = " ".join(
+            p for p in (sujeto.get("nombre"), sujeto.get("paterno"), sujeto.get("materno")) if p
+        ).strip()
+    sujeto["interior"] = sujeto.get("interior") or sujeto.get("int") or ""
+    # El padrón guarda la entidad como clave numérica (`e`/`m`): el nombre del
+    # estado y del municipio se resuelven por CP contra SEPOMEX, que es local.
+    sujeto.setdefault("municipio", "")
+    sujeto.setdefault("estado", "")
+    try:
+        from mapa_familia import resolver_municipio_estado
+        resolver_municipio_estado([sujeto])
+    except Exception:
+        pass
+    return sujeto
+
+
+def _job_dossier(curp: str, opciones: dict | None = None):
+    """Devuelve el `fn(progreso, carpeta, job_id)` que corre el dossier completo.
+
+    Orden deliberado: primero lo barato y determinista (el motor), luego el
+    mapa (lo más lento por la geocodificación), y al final el PDF, que reutiliza
+    la inteligencia ya calculada en vez de volver a pagarla.
+    """
+    opciones = opciones or {}
+
+    def fn(progreso, carpeta, job_id):
+        import dossier_jobs as jobs
+
+        curp_u = (curp or "").upper().strip()
+        if len(curp_u) != 18:
+            raise ValueError("CURP inválida: se requieren 18 caracteres")
+
+        # ── 1. Motor de inteligencia relacional ────────────────────────────
+        progreso("Ejecutando el motor de inteligencia relacional…", 3)
+        from inteligencia_completa import ejecutar_inteligencia_completa
+        data = ejecutar_inteligencia_completa(
+            curp=curp_u,
+            extended_con=_init_extended_con(),
+        )
+        if not isinstance(data, dict):
+            raise RuntimeError("el motor de inteligencia no devolvió datos")
+        if data.get("error") and "dossier_sujetos" not in data:
+            raise RuntimeError(str(data["error"]))
+
+        sujeto = _sujeto_desde_inteligencia(data, curp_u)
+        slug = _slug_dossier(sujeto, curp_u)
+        jobs.guardar_json(job_id, f"{slug}_inteligencia.json", data)
+        progreso(f"Inteligencia lista: {data.get('total_sujetos_auditados', 0)} sujetos auditados.", 20)
+
+        # ── 2. Mapa interactivo de la familia ───────────────────────────────
+        progreso("Generando el mapa interactivo de la familia…", 22)
+        from mapa_familia import generar_mapa_familia
+        mapa = generar_mapa_familia(
+            data, curp=curp_u, rfc=sujeto.get("rfc") or "",
+            workdir=carpeta,
+            progress=lambda msg, pct=None: progreso(msg, 22 + int((pct or 0) * 0.5)),
+            presupuesto_tiles=int(opciones.get("presupuesto_tiles") or 1600),
+        )
+        (carpeta / f"{slug}_mapa_familia.html").write_text(mapa["html"], encoding="utf-8")
+        (carpeta / f"{slug}_ubicaciones.csv").write_text(mapa["csv"], encoding="utf-8")
+        jobs.guardar_json(job_id, f"{slug}_mapa_stats.json", mapa["stats"])
+        progreso(
+            f"Mapa listo: {mapa['stats']['con_coordenada']} nodos ubicados de "
+            f"{mapa['stats']['nodos']}.", 72)
+
+        # ── 3. Expediente PDF con TODO el análisis ──────────────────────────
+        progreso("Armando el expediente PDF con todo el análisis…", 74)
+        enrichment = {}
+        try:
+            enrichment = _cargar_enrichment_singula(curp_u) or {}
+        except Exception:
+            enrichment = {}
+        narrativa = opciones.get("narrativa")
+        texto_nar = ""
+        if narrativa:
+            try:
+                from config import config
+                if config.ollama_api_key:
+                    from providers.ollama_cloud import OllamaCloudClient
+                    texto_nar = OllamaCloudClient(
+                        config.ollama_api_key, model=config.ollama_model
+                    ).generate_report_narrative({"padron": sujeto, "enrichment": enrichment}) or ""
+            except Exception:
+                texto_nar = ""
+        res = _generar_reporte_sujeto_html_pdf(
+            sujeto, enrichment, texto_nar, "pdf",
+            ai_meta={"model": None}, inteligencia_data=data,
+        )
+        (carpeta / f"{slug}_dossier.pdf").write_bytes(res["contenido"])
+        (carpeta / f"{slug}_expediente.html").write_text(res["html"], encoding="utf-8")
+        progreso("Expediente listo.", 96)
+
+        # ── 4. Paquete ──────────────────────────────────────────────────────
+        progreso("Comprimiendo el paquete…", 97)
+        jobs.empaquetar_zip(job_id)
+        progreso("Dossier completo.", 100)
+
+    return fn
+
+
 # === HTTP handler ========================================================
+
+# Extensiones que el catch-all puede servir desde `frontend/`. La lista es
+# explícita a propósito: sin ella, una ruta manipulada podría alcanzar
+# cualquier archivo legible por el proceso (un `.env`, por ejemplo).
+EXT_PAGINA_SERVIBLE = frozenset({
+    ".html", ".htm", ".md", ".txt", ".json", ".css", ".js",
+    ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico", ".woff", ".woff2",
+})
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -987,6 +1245,47 @@ class Handler(BaseHTTPRequestHandler):
             if not session: return
             self._handle_familia_progenitores()
             return
+        # ── Dossier de fondo: inteligencia + mapa familiar + PDF ───────────
+        # El trabajo tarda minutos (motor + geocodificación + mosaicos + PDF),
+        # así que se modela como job: se crea con POST y aquí se sondea el
+        # avance y se bajan los archivos. Sondear y bajar son baratos; por eso
+        # van antes del catch-all estático, que se los tragaría.
+        if path.startswith("/api/v1/familia/dossier/estado/"):
+            session = self._require_session()
+            if not session: return
+            import dossier_jobs as _dj
+            est = _dj.estado(path.split("/")[-1])
+            if not est:
+                self._json(404, {"error": "job no encontrado (¿expirado?)"})
+                return
+            self._json(200, est)
+            return
+        if path.startswith("/api/v1/familia/dossier/archivo/"):
+            session = self._require_session()
+            if not session: return
+            import dossier_jobs as _dj
+            import mimetypes as _mt
+            import urllib.parse as _up
+            partes = path[len("/api/v1/familia/dossier/archivo/"):].split("/", 1)
+            if len(partes) != 2 or not partes[0] or not partes[1]:
+                self._json(400, {"error": "se espera /archivo/<job_id>/<nombre>"})
+                return
+            archivo = _dj.ruta_archivo(partes[0], _up.unquote(partes[1]))
+            if not archivo:
+                self._json(404, {"error": "archivo no encontrado"})
+                return
+            ctype = _mt.guess_type(archivo.name)[0] or "application/octet-stream"
+            if ctype.startswith("text/") or ctype in ("application/json", "application/xml"):
+                ctype += "; charset=utf-8"
+            self._send(200, archivo.read_bytes(), ctype)
+            return
+        if path.startswith("/api/v1/familia/dossier/borrar/"):
+            session = self._require_session()
+            if not session: return
+            import dossier_jobs as _dj
+            ok = _dj.borrar(path.split("/")[-1])
+            self._json(200 if ok else 404, {"ok": ok})
+            return
         # 2026-08-15: /api/v1/sujeto/resolver_desde_hint — hint→curp.
         # Inverso de _enriquecer_bases_externas: dado un hit de una base
         # sin CURP (CFE, Telcel, ATT, REPUVE, ISSSTE), encuentra la CURP
@@ -1126,16 +1425,43 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         # 2026-10-08: catch-all de páginas del frontend — AL FINAL a propósito.
-        # Todo lo que no casó arriba (rutas /api/* no reconocidas, /admin.html,
-        # /checkout.html, /payment/*, /m, estáticos no previstos) se intenta
-        # servir como página; si no existe, 404 de texto plano como antes.
+        # Todo lo que no casó arriba (rutas /api/* no reconocidas, /m,
+        # estáticos no previstos) se intenta servir como página; si no existe,
+        # 404 de texto plano como antes.
+        #
+        # 2026-10-09: estaba doblemente roto y dejaba DOS páginas muertas
+        # (busquedas_adicionales.html y buscar_direccion.html, a la primera
+        # apunta el botón "Búsquedas ext." del expediente):
+        #   1) buscaba en `frontend/pages/`, un subdirectorio que no existe en
+        #      el repo — ni en local ni en el contenedor;
+        #   2) recortaba la ruta con `path[7:]`, un desplazamiento pensado para
+        #      "/pages/" que sobre una ruta raíz se comía 7 letras del propio
+        #      nombre del archivo ("/busquedas…" -> "das_…").
+        # Ahora busca en la raíz real del frontend y valida la ruta resuelta.
         if path.startswith("/"):
-            try:
-                page_file = self._frontend_dir() / "pages" / path[7:]
-                data = page_file.read_bytes()
-                self._send(200, data, "text/html; charset=utf-8")
-            except FileNotFoundError:
-                self._send(404, f"{path} no encontrado".encode(), "text/plain")
+            import mimetypes as _mt
+            rel = path.lstrip("/")
+            raiz = self._frontend_dir().resolve()
+            for candidato in (raiz / rel, raiz / "pages" / rel):
+                try:
+                    objetivo = candidato.resolve()
+                    # la ruta debe seguir colgando del frontend: nada de ../ ni
+                    # de enlaces simbólicos que salgan del árbol
+                    objetivo.relative_to(raiz)
+                except (ValueError, OSError):
+                    continue
+                if objetivo.suffix.lower() not in EXT_PAGINA_SERVIBLE:
+                    continue
+                try:
+                    data = objetivo.read_bytes()
+                except (FileNotFoundError, IsADirectoryError, PermissionError):
+                    continue
+                ctype = _mt.guess_type(objetivo.name)[0] or "text/html"
+                if ctype.startswith("text/") or ctype in ("application/json", "image/svg+xml"):
+                    ctype += "; charset=utf-8"
+                self._send(200, data, ctype)
+                return
+            self._send(404, f"{path} no encontrado".encode(), "text/plain")
             return
 
         self._json(404, {"error": "not found", "path": path})
@@ -1227,6 +1553,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_oraculo()
         elif url.path == "/api/v1/sujeto/mapear":
             self._handle_sujeto_mapear()
+        elif url.path == "/api/v1/familia/dossier":
+            self._handle_dossier_crear()
         elif url.path == "/api/v1/uso/consumir":
             self._handle_uso_consumir()
         elif url.path == "/api/perfil/crear":
@@ -3735,105 +4063,51 @@ class Handler(BaseHTTPRequestHandler):
 
         # 2) generar HTML/PDF
         try:
-            from report_generator import generate_subject_html, generate_html_to_pdf
-            sujeto["_modelo_ia"] = ai_model or "none"
-
-            # Generar mapa estático del padrón
-            map_b64, map_location = _generate_map_for_sujeto(sujeto)
-
-            # Generar mapa del CP de CheckID si difiere del padrón
-            checkid_cp = ""
-            checkid_map_b64 = None
-            checkid_map_location = None
-            try:
-                checkid_data = (enrichment or {}).get("checkid", {}) if isinstance(enrichment, dict) else {}
-                if isinstance(checkid_data, dict):
-                    chk_cp = _extract_checkid_str(checkid_data.get("codigo_postal"), "codigoPostal")
-                    if chk_cp and chk_cp != str(sujeto.get("cp", "")):
-                        checkid_cp = str(chk_cp).strip().zfill(5)[:5]
-                        checkid_map_b64, checkid_map_location = _generate_map_for_cp(
-                            checkid_cp, source="checkid"
-                        )
-            except Exception:
-                pass
-
-            # 2026-08-13: recolectar TODAS las direcciones en TODAS las bases
-            extra_maps = []
-            try:
-                addresses, repuve_list = _collect_addresses_for_sujeto(sujeto, enrichment=enrichment)
-                extra_maps, non_matched_list = _generate_maps_for_addresses(
-                    addresses, max_maps=25, subject=sujeto
-                )
-            except Exception:
-                extra_maps = []
-                non_matched_list = []
-                repuve_list = []
-
-            # recolectar actas del sujeto para anexos al final del reporte
-            actas_anexos = []
-            curp_sujeto = (sujeto.get("curp") or "").upper().strip()
-            if curp_sujeto and len(curp_sujeto) == 18:
+            # El análisis relacional es opcional y CARO (20 s de consultas
+            # nacionales): se acepta ya calculado (`inteligencia_data`, lo que
+            # hace el botón del frontend tras pintar la pestaña) o se pide
+            # calcular aquí con `inteligencia: true`.
+            inteligencia_data = payload.get("inteligencia_data") or None
+            if inteligencia_data is None and payload.get("inteligencia"):
                 try:
-                    import auth
-                    from config import config
-                    r2_base = getattr(config, "r2_public_base_url", "").rstrip("/")
-                    with auth._db() as conn:
-                        rows = conn.execute(
-                            """SELECT uuid, acta_type, con_folio, status,
-                                      created_at, received_at
-                               FROM actas_submissions
-                               WHERE curp=? AND status='completed'
-                               ORDER BY created_at DESC""",
-                            (curp_sujeto,),
-                        ).fetchall()
-                    for r in rows:
-                        key = (
-                            f"actas/{r['curp']}/{r['acta_type']}"
-                            f"{'.foliada' if r['con_folio'] else ''}/{r['uuid']}.pdf"
-                        )
-                        actas_anexos.append({
-                            "uuid": r["uuid"],
-                            "acta_type": r["acta_type"],
-                            "con_folio": bool(r["con_folio"]),
-                            "created_at": r["created_at"],
-                            "status": r["status"],
-                            "r2_key": key,
-                            "r2_url": f"{r2_base}/{key}" if r2_base else "",
-                        })
+                    from inteligencia_completa import ejecutar_inteligencia_completa
+                    inteligencia_data = ejecutar_inteligencia_completa(
+                        curp=(sujeto.get("curp") or "").upper().strip(),
+                        rfc=(sujeto.get("rfc") or "").upper().strip(),
+                        nombre=sujeto.get("nombre") or "",
+                        paterno=sujeto.get("paterno") or "",
+                        materno=sujeto.get("materno") or "",
+                        fecnac=sujeto.get("fecnac") or "",
+                        extended_con=_init_extended_con(),
+                    )
+                    if isinstance(inteligencia_data, dict) and inteligencia_data.get("error"):
+                        inteligencia_data = None
                 except Exception:
-                    actas_anexos = []
+                    inteligencia_data = None
 
-            html = generate_subject_html(sujeto, narrative=narrative, enrichment=enrichment,
-                                         map_image_base64=map_b64,
-                                         map_location=map_location,
-                                         checkid_map_image_base64=checkid_map_b64,
-                                         checkid_map_location=checkid_map_location,
-                                         checkid_cp=checkid_cp,
-                                         extra_maps=extra_maps,
-                                         repuve_addresses=repuve_list,
-                                         non_matched_addresses=non_matched_list,
-                                         actas_anexos=actas_anexos)
-            if out_format == "pdf":
-                pdf = generate_html_to_pdf(html)
-                self._send(200, pdf, "application/pdf")
-                return
-            elif out_format == "json":
+            res = _generar_reporte_sujeto_html_pdf(
+                sujeto, enrichment, narrative, out_format,
+                ai_meta={"status": ai_status, "provider": ai_provider, "model": ai_model},
+                inteligencia_data=inteligencia_data,
+            )
+            if res["formato"] == "pdf":
+                self._send(200, res["contenido"], "application/pdf")
+            elif res["formato"] == "json":
                 self._json(200, {
-                    "html": html,
+                    "html": res["contenido"],
                     "narrative": narrative,
                     "ai_status": ai_status,
                     "ai_provider": ai_provider,
                     "ai_model": ai_model,
+                    "inteligencia_incluida": bool(inteligencia_data),
                     "metadata": {
                         "sujeto": sujeto.get("nombre_completo"),
                         "curp": sujeto.get("curp"),
                         "timestamp": time.time(),
                     }
                 })
-                return
             else:  # html
-                body = html.encode("utf-8")
-                self._send(200, body, "text/html; charset=utf-8")
+                self._send(200, res["contenido"].encode("utf-8"), "text/html; charset=utf-8")
         except Exception as e:
             import traceback
             self._json(500, {"error": f"error generando reporte: {e}", "trace": traceback.format_exc()[:500]})
@@ -7649,6 +7923,57 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, data)
         except Exception as e:
             self._json(500, {"error": f"Error en motor de inteligencia: {str(e)}"})
+
+    def _handle_dossier_crear(self):
+        """POST /api/v1/familia/dossier — arranca el dossier completo de fondo.
+
+        Body: {"curp": "<18 chars>", "presupuesto_tiles": 1600, "narrativa": false}
+
+        Responde {job_id} en milisegundos; el trabajo (inteligencia + mapa
+        familiar + PDF + ZIP) sigue en un hilo. El frontend sondea
+        `/api/v1/familia/dossier/estado/<job_id>` y luego baja los archivos.
+        """
+        session = self._require_session()
+        if not session:
+            return
+        try:
+            ln = int(self.headers.get("Content-Length", 0))
+            raw = self.rfile.read(ln) if ln else b"{}"
+            payload = json.loads(raw.decode("utf-8")) if raw.strip() else {}
+        except (ValueError, json.JSONDecodeError) as e:
+            self._json(400, {"error": f"JSON inválido: {e}"})
+            return
+        if not isinstance(payload, dict):
+            self._json(400, {"error": "el cuerpo debe ser un objeto JSON"})
+            return
+
+        curp = (payload.get("curp") or "").upper().strip()
+        if len(curp) != 18:
+            self._json(400, {"error": "curp requerida (18 caracteres)"})
+            return
+
+        import dossier_jobs as jobs
+        try:
+            fn = _job_dossier(curp, {
+                "presupuesto_tiles": payload.get("presupuesto_tiles"),
+                "narrativa": bool(payload.get("narrativa")),
+            })
+            job_id = jobs.crear(f"Dossier de {curp}", fn, slug=curp)
+        except Exception as e:
+            self._json(500, {"error": f"no se pudo arrancar el dossier: {e}"})
+            return
+
+        self._audit(
+            session=session, action="dossier_crear",
+            endpoint="/api/v1/familia/dossier", method="POST",
+            status_code=200, duration_ms=0,
+            query_summary={"curp_prefix": curp[:4]},
+        )
+        self._json(200, {
+            "job_id": job_id,
+            "estado": "en_cola",
+            "sondeo": f"/api/v1/familia/dossier/estado/{job_id}",
+        })
 
     # 2026-08-24: Handlers para validación individual/unificada por entidad.
     # GET /api/v1/sujeto/validar/<entidad>?curp=...&rfc=...&telefono=...

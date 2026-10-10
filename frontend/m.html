@@ -669,17 +669,48 @@ function renderAudit(queries) {
 }
 
 // ============== ACCOUNT ==============
+
+/* La memoria del oráculo se mostraba como JSON en un <pre>. Se aplana a texto
+   legible: cualquier valor anidado se vuelve "clave: valor". */
+function fmtMemoria(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  if (Array.isArray(v)) return v.length ? v.map(fmtMemoria).filter(x => x !== "—").join(", ") || "—" : "—";
+  if (typeof v === "object") {
+    const partes = Object.entries(v)
+      .filter(([k, x]) => x !== null && x !== undefined && x !== "" && !k.startsWith("_"))
+      .map(([k, x]) => `${k.replace(/_/g, " ")}: ${fmtMemoria(x)}`);
+    return partes.join(" · ") || "—";
+  }
+  return String(v);
+}
+function listaMemoria(rows, vacio) {
+  if (!Array.isArray(rows) || !rows.length) {
+    return `<div style="color:var(--muted);font-size:12px">${escapeHtml(vacio || "Sin datos")}</div>`;
+  }
+  return rows.map((r, i) =>
+    `<div style="padding:5px 8px;background:var(--m-panel2,rgba(255,255,255,.04));border-radius:6px;margin-bottom:4px;font-size:12px">
+      <b style="color:var(--m-muted,#8ea1c0)">${i + 1}.</b> ${escapeHtml(fmtMemoria(r))}</div>`).join("");
+}
+function kvMemoria(obj) {
+  const pares = Object.entries(obj || {}).filter(([, v]) => v !== null && v !== undefined && v !== "");
+  if (!pares.length) return '<div style="color:var(--muted);font-size:12px">Sin datos</div>';
+  return pares.map(([k, v]) =>
+    `<div style="display:flex;gap:8px;font-size:12px;padding:3px 0">
+      <span style="color:var(--m-muted,#8ea1c0);min-width:120px">${escapeHtml(k)}</span>
+      <span style="flex:1">${escapeHtml(fmtMemoria(v))}</span></div>`).join("");
+}
+
 $("#row-memoria").onclick = async () => {
   try {
     const r = memoryCache || await api("/api/oraculo/memoria");
     const body = `
       <div><b>Tenants:</b> ${r.tenants?.map(t => t.slug).join(", ") || "—"}</div>
       <div class="m-memoria-section"><b>Preferencias:</b></div>
-      <pre>${escapeHtml(JSON.stringify(r.preferencias || [], null, 2))}</pre>
+      ${listaMemoria(r.preferencias, "Sin preferencias")}
       <div class="m-memoria-section"><b>Aliases:</b></div>
-      <pre>${escapeHtml(JSON.stringify(r.aliases || {}, null, 2))}</pre>
+      ${kvMemoria(r.aliases)}
       <div class="m-memoria-section"><b>Sujetos recientes:</b></div>
-      <pre>${escapeHtml(JSON.stringify(r.sujetos || [], null, 2).slice(0, 500))}</pre>
+      ${listaMemoria(r.sujetos, "Sin sujetos recientes")}
     `;
     sheet("Memoria del oráculo", body);
   } catch (e) { toast("Error: " + e.message, "error"); }

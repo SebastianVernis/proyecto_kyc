@@ -38,7 +38,9 @@ REPORT_CSS = """
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin: 0; padding: 0;
-  color: #1a1d24; background: #fafbfc;
+  /* Blanco, no gris: una sección corta no llena la hoja, y con fondo gris el
+     sobrante se veía como un recuadro vacío al final de la página. */
+  color: #1a1d24; background: #ffffff;
   font-size: 10pt; line-height: 1.45;
 }
 .cover {
@@ -416,6 +418,60 @@ def _build_direccion(sujeto: dict) -> str:
     return ", ".join(partes) if partes else "—"
 
 
+def _resumen_sin_ia(subject_data: dict, inteligencia_data: dict | None) -> str:
+    """Resumen ejecutivo determinista, sin modelo de lenguaje.
+
+    Existe porque el hueco de la narrativa IA no puede quedar en blanco: el PDF
+    se entrega igual y un recuadro vacío se lee como «el reporte falló». Aquí se
+    redacta con los datos que sí llegaron.
+    """
+    nombre = (subject_data.get("nombre_completo")
+              or " ".join(p for p in (subject_data.get("nombre"),
+                                      subject_data.get("paterno"),
+                                      subject_data.get("materno")) if p).strip()
+              or "El sujeto")
+    datos = []
+    if subject_data.get("curp"):
+        datos.append("CURP " + str(subject_data["curp"]))
+    if subject_data.get("rfc"):
+        datos.append("RFC " + str(subject_data["rfc"]))
+    dom = _build_direccion(subject_data)
+    if dom:
+        datos.append("domicilio " + dom)
+
+    partes = []
+    parrafo = f"<p><b>{_esc(nombre)}</b> quedó identificado en el Padrón Electoral Federal (INE)"
+    if datos:
+        parrafo += ", con " + _esc(", ".join(datos))
+    parrafo += (". En la tabla «Estado de las Fuentes» de abajo aparece qué se consultó: "
+                "una fuente marcada como «No consultado» simplemente no se ejecutó en esta "
+                "corrida — no es un hallazgo negativo sobre el sujeto.</p>")
+    partes.append(parrafo)
+
+    intel = inteligencia_data if isinstance(inteligencia_data, dict) else {}
+    if intel.get("dossier_sujetos"):
+        d = intel.get("dictamen_conclusivo") or {}
+        partes.append(
+            "<p><b>Motor de inteligencia relacional.</b> Se auditaron "
+            f"{intel.get('total_sujetos_auditados', 0)} sujetos: "
+            f"{intel.get('total_familiares_consanguineos', 0)} del núcleo consanguíneo, "
+            f"{intel.get('total_convivientes_inmueble', 0)} convivientes del mismo predio, "
+            f"{intel.get('total_vecinos_misma_calle', 0)} vecinos de la misma vialidad y "
+            f"{len(intel.get('servicios_cfe_inmueble') or [])} suministros CFE en el domicilio "
+            "declarado. El desglose, con la evidencia de cada vínculo, está en la sección 08b.</p>")
+        dictamen = " · ".join(_esc(str(v)) for v in (
+            d.get("estatus_identidad"), d.get("nivel_riesgo_kyc"),
+            d.get("alertas_fiscales_69_69b")) if v)
+        if dictamen:
+            partes.append("<p><b>Dictamen.</b> " + dictamen + "</p>")
+    else:
+        partes.append("<p><b>Este expediente no incluye el análisis relacional.</b> Para que "
+                      "lleve el cruce de domicilio, parentesco y CFE (sección 08b), genere el "
+                      "dossier completo desde el expediente del sujeto: ese paso es el que "
+                      "ejecuta el motor.</p>")
+    return "".join(partes)
+
+
 def _render_inteligencia_section(data):
     """Renderiza la sección 'Inteligencia Integral' del reporte.
 
@@ -682,12 +738,33 @@ def generate_subject_html(subject_data: dict, narrative: str = "",
 </table>
 """
 
+    # Resumen ejecutivo. La narrativa con IA es opcional (y depende de un
+    # proveedor externo): cuando no la hay, el hueco NO se deja con un
+    # "modelo none" ni con un recuadro vacío — se compone un resumen
+    # determinista con los datos que SÍ llegaron, empezando por el dictamen
+    # del motor relacional cuando está disponible.
+    if narrative:
+        intro_narrativa = (
+            "Síntesis narrativa generada con IA (modelo "
+            + _esc(subject_data.get("_modelo_ia") or "sin identificar")
+            + ") a partir de los datos recolectados en el padrón, fuentes "
+            "oficiales (RENAPO/SAT/IMSS vía CheckID) y redes sociales."
+        )
+        cuerpo_narrativa = _nl2p(narrative)
+    else:
+        intro_narrativa = (
+            "Resumen construido SIN modelo de lenguaje: sólo datos duros del "
+            "padrón, las fuentes oficiales que sí respondieron y el motor de "
+            "inteligencia relacional."
+        )
+        cuerpo_narrativa = _resumen_sin_ia(subject_data, inteligencia_data)
+
     narrative_html = f"""
 <section class="page">
   <h2><span class="num">02</span> Resumen Ejecutivo</h2>
-  <p class="section-intro">Síntesis narrativa generada con IA (modelo {_esc(subject_data.get('_modelo_ia', 'glm-5.2'))}) a partir de los datos recolectados en el padrón, fuentes oficiales (RENAPO/SAT/IMSS vía CheckID) y redes sociales.</p>
+  <p class="section-intro">{intro_narrativa}</p>
   <div class="narrative">
-    {_nl2p(narrative) if narrative else '<p>El sujeto fue identificado en el padrón electoral y los datos base fueron recolectados. Para generar el resumen narrativo AI, ejecute primero las validaciones disponibles.</p>'}
+    {cuerpo_narrativa}
   </div>
   <h3>Estado de las Fuentes</h3>
   {summary_kpis}

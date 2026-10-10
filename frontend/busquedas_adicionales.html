@@ -154,6 +154,93 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;
 const authH = () => { const t = localStorage.getItem("session_token"); return t ? {"Authorization": `Bearer ${t}`} : {}; };
 const authHJ = () => ({ "Content-Type": "application/json", ...authH() });
 
+/* ==== Interpretación de resultados (nunca JSON crudo) ==== */
+
+/* Aplana cualquier valor a texto legible; un objeto anidado se vuelve
+   "clave: valor · clave: valor" en vez de un volcado JSON. */
+function fmtValor(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  if (Array.isArray(v)) {
+    if (!v.length) return "—";
+    return v.map(fmtValor).filter(x => x !== "—").join(", ") || "—";
+  }
+  if (typeof v === "object") {
+    const partes = Object.entries(v)
+      .filter(([k, x]) => x !== null && x !== undefined && x !== "" && !k.startsWith("_"))
+      .map(([k, x]) => `${k.replace(/_/g, " ")}: ${fmtValor(x)}`);
+    return partes.join(" · ") || "—";
+  }
+  return String(v);
+}
+
+/* Tabla a partir de una lista de registros: unión de claves, tope de filas y
+   de columnas para que un volcado bancario de 60 columnas siga siendo usable. */
+function tablaGenerica(rows, opt) {
+  opt = opt || {};
+  const datos = (Array.isArray(rows) ? rows : []).filter(r => r && typeof r === "object");
+  if (!datos.length) {
+    return `<div style="color:var(--muted);font-size:12px;padding:6px 0">${esc(opt.vacio || "Sin registros.")}</div>`;
+  }
+  const max = opt.max || 25, cap = opt.maxCols || 12;
+  const cols = [];
+  for (const r of datos.slice(0, max)) {
+    for (const k of Object.keys(r)) {
+      if (["id", "_id", "rowid"].includes(k) || cols.includes(k)) continue;
+      if (r[k] === null || r[k] === undefined || r[k] === "") continue;
+      cols.push(k);
+    }
+  }
+  if (!cols.length) {
+    return '<div style="font-size:12px">' + datos.slice(0, max).map((r, i) =>
+      `<div style="padding:3px 0"><b>${i + 1}.</b> ${esc(fmtValor(r))}</div>`).join("") + "</div>";
+  }
+  const visibles = cols.slice(0, cap);
+  const th = c => `<th style="position:sticky;top:0;background:#1a2333;color:var(--muted);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap">${esc(c.replace(/_/g, " "))}</th>`;
+  let h = `<div style="overflow:auto;max-height:${opt.alto || 320}px;border:1px solid var(--border);border-radius:6px">
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr>${visibles.map(th).join("")}</tr></thead><tbody>`;
+  for (const r of datos.slice(0, max)) {
+    h += "<tr>" + visibles.map(c =>
+      `<td style="padding:5px 8px;border-top:1px solid var(--border);vertical-align:top;max-width:300px">${esc(fmtValor(r[c]))}</td>`
+    ).join("") + "</tr>";
+  }
+  h += "</tbody></table></div>";
+  const notas = [];
+  if (datos.length > max) notas.push(`mostrando ${max} de ${datos.length} registros`);
+  if (cols.length > cap) notas.push(`${cols.length - cap} columnas ocultas`);
+  if (notas.length) h += `<div style="color:var(--muted);font-size:11px;margin-top:5px">${esc(notas.join(" · "))}</div>`;
+  return h;
+}
+
+/* Traduce la respuesta de una validación a algo legible cuando NO encaja en
+   ningún formato conocido: escalares como ficha, listas como tabla. */
+function resultadoInterpretado(d) {
+  if (d === null || d === undefined) return '<div style="color:var(--muted);font-size:12px">Sin resultado.</div>';
+  if (Array.isArray(d)) return tablaGenerica(d, {});
+  if (typeof d !== "object") return `<div style="font-size:12px">${esc(fmtValor(d))}</div>`;
+
+  const escalares = [], bloques = [];
+  for (const [k, v] of Object.entries(d)) {
+    if (k.startsWith("_") || v === null || v === undefined || v === "") continue;
+    if (Array.isArray(v) && v.length && typeof v[0] === "object") bloques.push([k, v]);
+    else if (v && typeof v === "object") bloques.push([k, [v]]);
+    else escalares.push([k, v]);
+  }
+  let h = "";
+  if (escalares.length) {
+    h += '<div style="display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:12px">'
+      + escalares.map(([k, v]) =>
+        `<div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding-top:2px">${esc(k.replace(/_/g, " "))}</div>
+         <div>${esc(fmtValor(v))}</div>`).join("") + "</div>";
+  }
+  for (const [k, filas] of bloques) {
+    h += `<div style="margin-top:12px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px">${esc(k.replace(/_/g, " "))} (${filas.length})</div>
+      ${tablaGenerica(filas, { max: 30, alto: 340 })}</div>`;
+  }
+  return h || '<div style="color:var(--muted);font-size:12px">Sin datos.</div>';
+}
+
 let sujetoData = null;
 let validationDefs = [];
 
@@ -316,7 +403,11 @@ async function runValidation(vId) {
 
 function renderResult(data, vId) {
   const res = data?.result;
-  if (!res) return `<pre style="font-size:11px">${esc(JSON.stringify(data, null, 2))}</pre>`;
+  if (!res) {
+    // Sin bloque `result`: se interpreta la respuesta completa en vez de
+    // volcarla como JSON.
+    return resultadoInterpretado(data);
+  }
 
   // Singula with profiles
   if (res.sin_coincidencias_determinantes || Array.isArray(res.perfiles)) {
@@ -339,8 +430,9 @@ function renderResult(data, vId) {
     return html;
   }
 
-  // Generic JSON result
-  return `<pre style="font-size:11px;white-space:pre-wrap">${esc(JSON.stringify(data, null, 2))}</pre>`;
+  // Resultado genérico: se traduce a fichas y tablas. Antes esto era un
+  // `JSON.stringify` en un <pre>, que es justo lo que hace ilegible la página.
+  return resultadoInterpretado(res);
 }
 
 function addToResults(vId, data) {
