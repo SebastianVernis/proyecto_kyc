@@ -274,6 +274,37 @@ class TestE2EPerfilCrear(unittest.TestCase):
         self.assertFalse(checkid_step.get("reutilizado", False))
         self.assertEqual(checkid_step.get("creditos"), 3)
 
+    def test_03b_completo_sin_checkid_fecha_no_se_congela(self):
+        """Una fila completa SIN checkid_fecha debe re-ejecutar, no devolver caché para siempre.
+
+        Reproduce el defecto que congelaba a las filas creadas vía /api/validar
+        (estado completo + checkid_fecha NULL devolvían ya_completo eternamente).
+        """
+        from perfil_crear import crear_perfil
+        self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
+        result1 = self._run_flow()
+        self.assertEqual(result1["estado"], "completo")
+
+        # Estado real de las filas congeladas: completo + checkid_fecha NULL.
+        self.con_perfil.execute(
+            "UPDATE b_perfil.perfil_completo SET checkid_fecha = NULL WHERE curp = ?", [TEST_CURP]
+        )
+
+        with patch("perfil_crear.CheckIdClient") as MockClient:
+            mock_client = MagicMock()
+            mock_client.get_full.return_value = MOCK_CHECKID_DATA.copy()
+            MockClient.return_value = mock_client
+            result2 = crear_perfil(
+                curp=TEST_CURP,
+                con_extended=self.con_extended,
+                con_perfil=self.con_perfil,
+            )
+            mock_client.get_full.assert_called_once()  # re-ejecutó, no ya_completo
+
+        self.assertNotEqual(result2["estado"], "ya_completo")
+        checkid_step = [p for p in result2["pasos"] if p["paso"] == "checkid"][0]
+        self.assertEqual(checkid_step.get("creditos"), 3)
+
     def test_04_creditos_siempre_se_cobran(self):
         self.con_perfil.execute("DELETE FROM b_perfil.perfil_completo WHERE curp = ?", [TEST_CURP])
         result1 = self._run_flow()

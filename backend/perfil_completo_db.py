@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
@@ -252,7 +253,13 @@ def insertar_padron(con, curp: str, datos_padron: dict) -> bool:
 # ══════════════════════════════════════════════════════════════════════════
 
 def updatear_checkid(con, curp: str, checkid_data: dict, checkid_ok: bool) -> bool:
-    """UPDATE con resultado de CheckID. Marca estado como checkid_ok/error."""
+    """UPDATE con resultado de CheckID. Marca estado como checkid_ok/error.
+
+    En un resultado exitoso sella también `checkid_fecha`: es lo que habilita
+    la reutilización dentro de DIAS_CADUCIDAD_CHECKID (antes NUNCA se escribía,
+    así que el cache de 30 días jamás entraba y el perfil se re-cobraba o —con
+    la fecha en NULL— quedaba congelado).
+    """
     try:
         curp = curp.upper().strip()
         estado = "checkid_ok" if checkid_ok else "checkid_error"
@@ -262,22 +269,28 @@ def updatear_checkid(con, curp: str, checkid_data: dict, checkid_ok: bool) -> bo
         checkid_json = json.dumps(checkid_data, ensure_ascii=False)
         fuentes_update = json.dumps({"checkid": True, "checkid_ok": checkid_ok})
 
-        sql = """
+        # Sólo un CheckID exitoso sella la fecha (un fallo debe poder reintentarse).
+        fecha_sql = ", checkid_fecha = ?" if checkid_ok else ""
+        sql = f"""
             UPDATE b_perfil.perfil_completo SET
                 rfc = ?,
                 nss = ?,
                 checkid_data = ?,
                 checkid_ok = ?,
-                estado = ?,
+                estado = ?{fecha_sql},
                 creditos_consumidos = creditos_consumidos + 3,
                 fuentes_consultadas = JSON_MERGE_PATCH(
-                    COALESCE(fuentes_consultadas, '{}'),
+                    COALESCE(fuentes_consultadas, '{{}}'),
                     ?
                 ),
                 actualizado_en = NOW()
             WHERE curp = ?
         """
-        con.execute(sql, [rfc, nss, checkid_json, checkid_ok, estado, fuentes_update, curp])
+        params = [rfc, nss, checkid_json, checkid_ok, estado]
+        if checkid_ok:
+            params.append(datetime.now().isoformat(sep=" ", timespec="microseconds"))
+        params += [fuentes_update, curp]
+        con.execute(sql, params)
         return True
     except Exception as e:
         import logging

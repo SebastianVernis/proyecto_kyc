@@ -129,6 +129,11 @@ def crear_perfil(
                 checkid_vencido = (datetime.now() - fecha_checkid).days >= DIAS_CADUCIDAD_CHECKID
             except Exception:
                 checkid_vencido = True
+        else:
+            # Sin fecha de checkid no hay "vigencia" que respetar: la fila se
+            # re-ejecuta en vez de congelarse devolviendo ya_completo para
+            # siempre (y cobrando el perfil sin haber corrido nada).
+            checkid_vencido = True
 
         # En fase "local" siempre se devuelve lo ya guardado sin re-correr nada
         # (es la lectura rápida para pintar el modal de datos básicos).
