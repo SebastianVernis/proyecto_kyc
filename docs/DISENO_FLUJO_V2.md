@@ -213,3 +213,34 @@ no exige suscripción ni consume cuota de uso (es solo lectura de bases locales)
   segundo plano; `sujeto.html` muestra el contacto AFOR (`card-contacto`) y ya
   no tiene el botón "Mapear".
 
+
+## 12. El expediente se mapea solo (2026-11-01)
+
+El operador ya no elige base ni escribe nombre: al abrir `sujeto.html` con
+`?curp=`, la ficha dispara en paralelo, sin bloquear el pintado inicial:
+
+1. **Bancos** — `POST /api/v1/bancos/mapeo {curp}` (`backend/bancos_mapeo.py`).
+   Cruza las 8 entidades bancarias (18 vistas api.*) con el RFC del perfil por
+   sus **10 primeros caracteres** — las bases guardan el RFC de persona física
+   sin homoclave, así que un `rfc = '<13>'` exacto da cero — y, si no hay
+   aciertos, con el par de apellidos sobre la concatenación
+   `titular_nombre1 + titular_nombre2`, porque el orden de esas dos columnas
+   cambia entre bancos (Santander pone nombres + apellidos, Clavijero los
+   apellidos primero, Amex los pega). Es gratis (solo bases locales) y el
+   resultado se persiste en `perfil_completo.bancos_data`; la respuesta se
+   reutiliza mientras la identidad de búsqueda no cambie.
+   Los aciertos por nombre se devuelven marcados como candidatos
+   (`_fuerte`: dos apellidos + nombre de pila); la ficha muestra primero esos y
+   pliega los homónimos de apellido.
+2. **Motor relacional** — `GET /api/v1/sujeto/inteligencia_completa?curp=`,
+   que antes exigía pulsar un botón. Tarda ~30-40 s: es el único paso que
+   recorre las 29 bases completas y hoy no se cachea.
+
+No queda búsqueda manual de bancos en el expediente (`/api/v1/bancos/buscar`
+nunca existió en `servir.py`; el botón apuntaba ahí y siempre fallaba).
+
+La pestaña **Por Base** arma una tarjeta por base con datos: cada lista
+(`pasada1`, `asegurado`, `servicios`, …) se pinta como tabla y los campos
+sueltos como pares etiqueta/valor; las bases sin datos se resumen en una sola
+franja. Antes se volcaba el objeto completo en una línea, que es lo que
+amontonaba la información.

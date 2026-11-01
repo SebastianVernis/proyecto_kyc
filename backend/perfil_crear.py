@@ -550,7 +550,8 @@ def _parse_perfil_from_db(perfil_db: dict) -> dict:
     # Descomponer JSON fields
     for key in ["padron_data", "checkid_data", "imss_data", "att_data",
                 "telcel_data", "repuve_data", "empleadores_data",
-                "issste_data", "cfe_data", "cu_data", "cu_contacto"]:
+                "issste_data", "cfe_data", "cu_data", "cu_contacto",
+                "bancos_data"]:
         if perfil_db.get(key):
             try:
                 perfil[key] = json.loads(perfil_db[key]) if isinstance(perfil_db[key], str) else perfil_db[key]

@@ -68,13 +68,40 @@
 .kpi .kpi-value{font-size:22px;font-weight:700;margin-top:4px;font-family:monospace}
 
 /* === Base grid === */
-.bases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.bases-grid{display:grid;grid-template-columns:1fr;gap:14px}
 .base-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.2s}
 .base-card:hover{border-color:var(--accent)}
-.base-card-head{padding:12px 16px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.base-card-head{padding:11px 16px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .base-card-head h3{margin:0;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
-.base-card-body{padding:12px 16px;max-height:300px;overflow-y:auto}
-.base-card-empty{color:var(--muted);font-size:12px;padding:8px 0;font-style:italic}
+.base-card-head .base-desc{font-size:11px;color:var(--muted);font-weight:400}
+.base-card-body{padding:12px 16px}
+.base-card-empty{color:var(--muted);font-size:12px;padding:4px 0;font-style:italic}
+.bloque{margin-bottom:14px}
+.bloque:last-child{margin-bottom:0}
+.bloque-titulo{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.bloque-titulo .n{font-family:monospace;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:0 6px;font-size:10px;color:var(--text)}
+.tabla-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:6px}
+.tabla-base{width:100%;border-collapse:collapse;font-size:11.5px}
+.tabla-base th{position:sticky;top:0;background:var(--panel2);color:var(--muted);text-align:left;padding:6px 9px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;border-bottom:1px solid var(--border);font-weight:600}
+.tabla-base td{padding:6px 9px;border-bottom:1px solid var(--border);vertical-align:top;max-width:320px;word-break:break-word}
+.tabla-base tr:last-child td{border-bottom:none}
+.tabla-base tr:hover td{background:rgba(255,255,255,.02)}
+.detalle-fila{padding:5px 0;border-bottom:1px solid var(--border)}
+.detalle-fila:last-child{border-bottom:none}
+.detalle-fila .k{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.mas{font-size:11px;color:var(--muted);margin-top:6px}
+.mas summary{cursor:pointer;color:var(--accent)}
+.badge-mini{font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.badge-mini.ok{border-color:rgba(110,231,183,.5);color:var(--accent2)}
+.badge-mini.warn{border-color:rgba(245,158,11,.5);color:var(--warn)}
+.ficha-banco{padding:7px 0;border-bottom:1px solid var(--border)}
+.ficha-banco:last-child{border-bottom:none}
+.ficha-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ficha-nombre{font-size:13px;font-weight:600;color:var(--text)}
+.ficha-datos{display:flex;flex-wrap:wrap;gap:2px 14px;margin-top:3px;font-size:11.5px;color:var(--text)}
+.ficha-datos i{font-style:normal;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.ficha-dir{font-size:11.5px;color:var(--muted);margin-top:2px}
+.chips-vacias{display:flex;flex-wrap:wrap;gap:6px}
 
 /* === Buttons === */
 .btn{background:linear-gradient(180deg,rgba(79,140,255,.95) 0%,rgba(59,120,235,.95) 100%);border:1px solid rgba(120,170,255,.45);color:#fff;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;transition:transform 0.12s,box-shadow 0.18s,filter 0.18s;font-family:inherit;text-decoration:none}
@@ -220,6 +247,7 @@ body>*:not(.argos-bg){position:relative;z-index:1}
 
     <!-- Tab: Por Base -->
     <div class="tab-panel" id="tab-bases">
+      <div class="status-bar running" id="bases-status"><span class="spinner"></span><span>Cruzando las bases del expediente…</span></div>
       <div class="bases-grid" id="bases-grid"></div>
     </div>
 
@@ -229,30 +257,8 @@ body>*:not(.argos-bg){position:relative;z-index:1}
         <div class="card-header">
           <div class="card-title">⚡ Motor de inteligencia integral</div>
         </div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Ejecuta el cruce completo en 29 bases. Detecta convivientes, familiares y vínculos.</p>
-        <button class="btn" id="btn-intel" onclick="ejecutarInteligencia()">⚡ Ejecutar inteligencia</button>
-        <div id="intel-result" style="margin-top:16px"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🏦 Bancos — búsqueda manual</div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:10px">
-          <select id="banco-select" style="padding:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px">
-            <option value="santander">🏦 Santander</option>
-            <option value="hsbc">🏦 HSBC</option>
-            <option value="banorte">🏦 Banorte</option>
-            <option value="bancomer">🏦 Bancomer</option>
-            <option value="citibanamex">🏦 Citibanamex</option>
-            <option value="bancoppel">🏦 Bancoppel</option>
-            <option value="amex">🏦 AMEX</option>
-          </select>
-          <input id="banco-nombre" placeholder="Nombre completo" style="padding:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px">
-          <input id="banco-rfc" placeholder="RFC" style="padding:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px">
-          <button class="btn sm" onclick="buscarBanco()">🔎 Buscar</button>
-        </div>
-        <div id="banco-result"></div>
+        <div class="status-bar running" id="intel-status"><span class="spinner"></span><span>Ejecutando el cruce relacional…</span></div>
+        <div id="intel-result"></div>
       </div>
     </div>
 
@@ -356,6 +362,11 @@ async function load() {
     const padron = perfil.padron_data || {};
     const checkid = perfil.checkid_data || {};
 
+    // Si el perfil ya trae el cruce bancario guardado, se pinta de inmediato.
+    if (perfil.bancos_data && perfil.bancos_data.bancos) {
+      bancosState = { estado: "ok", data: perfil.bancos_data, error: "" };
+    }
+
     // Nombre
     const nombre = [padron.nombre, padron.paterno, padron.materno].filter(Boolean).join(" ") || "Sin nombre";
     $("sujeto-nombre").textContent = nombre;
@@ -376,6 +387,12 @@ async function load() {
     renderBases(perfil);
 
     setStatus("ok", `✓ Expediente cargado · ${data.metadata?.creditos?.total || 0} créditos · ${data.metadata?.elapsed_ms || 0}ms`);
+
+    // El expediente se mapea solo: no hay búsquedas manuales. Los bancos y el
+    // motor relacional arrancan en cuanto la ficha está pintada; cada uno
+    // actualiza su tarjeta cuando termina.
+    mapearBancos();
+    ejecutarInteligencia();
   } catch (e) {
     setStatus("error", `Error: ${e.message}`);
   }
@@ -390,7 +407,7 @@ function setStatus(kind, msg) {
 
 /* ==== Render: KPIs ==== */
 function renderKPIs(data, perfil, padron, checkid) {
-  const bases = Object.keys(perfil).filter(k => k.endsWith("_data") && perfil[k]);
+  const bases = Object.keys(perfil).filter(k => k.endsWith("_data") && contarRegistros(perfil[k]) > 0);
   const creditos = data.metadata?.creditos || {};
   const kpis = [
     { label: "Bases con datos", value: bases.length, color: "var(--accent)" },
@@ -462,13 +479,19 @@ function renderFuentes(perfil) {
     $("fuentes-chips").innerHTML = '<span style="color:var(--muted);font-size:12px">Ninguna fuente consultada aún.</span>';
     return;
   }
-  const icons = { padron_data: "📋", checkid_data: "🧮", imss_data: "🏥", att_data: "📞", telcel_data: "📱", repuve_data: "🚗", empleadores_data: "🏢", issste_data: "🏛️", cfe_data: "⚡" };
+  const icons = { padron_data: "📋", checkid_data: "🧮", imss_data: "🏥", att_data: "📞", telcel_data: "📱", repuve_data: "🚗", empleadores_data: "🏢", issste_data: "🏛️", cfe_data: "⚡", bancos_data: "🏦" };
   $("fuentes-chips").innerHTML = fuentes.map(f => {
-    const name = f.replace("_data", "").toUpperCase();
+    const name = f === "bancos_data" ? "BANCOS" : f.replace("_data", "").toUpperCase();
     const icon = icons[f] || "📦";
     const data = perfil[f];
-    const count = Array.isArray(data) ? data.length : (data && typeof data === "object" ? Object.keys(data).length : 0);
-    return `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;font-weight:500;border-radius:999px;background:rgba(110,231,183,.12);color:var(--accent2);border:1px solid rgba(110,231,183,.25);margin:2px">${icon} ${esc(name)}${count > 0 ? ` (${count})` : ""}</span>`;
+    const count = f === "bancos_data"
+      ? (data.total_coincidencias || 0)
+      : contarRegistros(data);
+    const vacia = count === 0;
+    const estilo = vacia
+      ? "background:rgba(255,255,255,.03);color:var(--muted);border:1px solid var(--border)"
+      : "background:rgba(110,231,183,.12);color:var(--accent2);border:1px solid rgba(110,231,183,.25)";
+    return `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;font-weight:500;border-radius:999px;${estilo};margin:2px">${icon} ${esc(name)}${count > 0 ? ` (${count})` : " · 0"}</span>`;
   }).join("");
 }
 
@@ -498,66 +521,380 @@ function renderTimeline(pasos) {
 }
 
 /* ==== Render: Bases ==== */
-function renderBases(perfil) {
-  const bases = [
-    { key: "padron_data", icon: "📋", title: "Padrón Electoral", fields: ["nombre","paterno","materno","fecnac","sexo","calle","ext","colonia","cp","estado","municipio","seccion"] },
-    { key: "checkid_data", icon: "🧮", title: "CheckID (SAT)", fields: ["rfc","nss","razon_social","email","codigo_postal","regimen_fiscal"] },
-    { key: "imss_data", icon: "🏥", title: "IMSS", fields: null },
-    { key: "att_data", icon: "📞", title: "ATT", fields: null },
-    { key: "telcel_data", icon: "📱", title: "Telcel", fields: null },
-    { key: "repuve_data", icon: "🚗", title: "REPUVE", fields: null },
-    { key: "empleadores_data", icon: "🏢", title: "Empleadores", fields: null },
-    { key: "issste_data", icon: "🏛️", title: "ISSSTE", fields: null },
-    { key: "cfe_data", icon: "⚡", title: "CFE", fields: null },
-  ];
 
-  let html = "";
-  for (const b of bases) {
-    const data = perfil[b.key];
-    const hasData = data && (Array.isArray(data) ? data.length > 0 : typeof data === "object" && Object.keys(data).length > 0);
-    const count = Array.isArray(data) ? data.length : (hasData ? 1 : 0);
+/* Cada base del expediente se pinta como una tarjeta de ancho completo con
+   sus secciones reales: las filas en tabla, los campos sueltos en pares
+   etiqueta/valor. Antes se volcaba el objeto completo en una sola línea, que
+   es lo que amontonaba la información. */
 
-    html += `<div class="base-card" style="${hasData ? '' : 'opacity:0.6'}">
-      <div class="base-card-head">
-        <h3>${b.icon} ${esc(b.title)}</h3>
-        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${hasData ? 'var(--accent2)' : 'var(--border)'};color:${hasData ? '#000' : 'var(--muted)'};font-weight:600">${count}</span>
-      </div>
-      <div class="base-card-body">`;
+const BASES_DEF = [
+  { key: "padron_data",      icon: "📋", title: "Padrón Electoral", desc: "INE — identidad y domicilio declarado",
+    labels: { nombre: "Nombre(s)", paterno: "Apellido paterno", materno: "Apellido materno",
+              fecnac: "Fecha de nacimiento", sexo: "Sexo", calle: "Calle", ext: "Número exterior",
+              int: "Número interior", colonia: "Colonia", cp: "CP", estado: "Entidad", distrito: "Distrito",
+              municipio: "Municipio", seccion: "Sección", clave_elector: "Clave de elector", folio: "Folio" } },
+  { key: "checkid_data",     icon: "🧮", title: "CheckID (SAT)",    desc: "RFC, NSS y situación fiscal",
+    labels: { rfc: "RFC", razon_social: "Razón social", rfc_valido: "RFC válido", curp: "CURP",
+              nss: "NSS", codigo_postal: "CP fiscal", regimen_fiscal: "Régimen fiscal",
+              estado_69_69b: "Situación 69-B", busqueda_por: "Buscado por", exitoso: "Consulta exitosa",
+              codigo_error: "Código de error", error: "Error" } },
+  { key: "imss_data",        icon: "🏥", title: "IMSS",             desc: "Empleo formal y segmentación de salud" },
+  { key: "att_data",         icon: "📞", title: "ATT",              desc: "Líneas y domicilios por RFC" },
+  { key: "telcel_data",      icon: "📱", title: "Telcel",           desc: "Líneas móviles por RFC" },
+  { key: "repuve_data",      icon: "🚗", title: "REPUVE",           desc: "Vehículos registrados" },
+  { key: "empleadores_data", icon: "🏢", title: "Empleadores",      desc: "Registros patronales y plantilla" },
+  { key: "issste_data",      icon: "🏛️", title: "ISSSTE",           desc: "Empleo en el sector público" },
+  { key: "cfe_data",         icon: "⚡", title: "CFE",              desc: "Suministros y titulares en el domicilio" },
+];
 
-    if (!hasData) {
-      html += '<div class="base-card-empty">Sin datos</div>';
-    } else if (Array.isArray(data)) {
-      // Array of records (IMSS, ATT, Telcel, etc.)
-      for (const rec of data.slice(0, 5)) {
-        html += renderRecord(rec);
-      }
-      if (data.length > 5) html += `<div style="color:var(--muted);font-size:11px;margin-top:4px">+${data.length - 5} registros más</div>`;
-    } else {
-      // Single object (padron, checkid)
-      const fields = b.fields || Object.keys(data);
-      html += '<div class="kv">';
-      for (const f of fields) {
-        const v = data[f];
-        if (v !== undefined && v !== null && v !== "") {
-          html += `<div class="k">${esc(f)}</div><div class="v">${esc(fmtValor(v))}</div>`;
-        }
-      }
-      html += '</div>';
-    }
+const OCULTAS_BASE = new Set([
+  "curp", "curp_raw", "nss_clean", "raw", "id", "_id", "rowid",
+  "archivo_origen", "vista_origen", "_vista_origen", "_base", "_fuente",
+  "_score_components", "rfc_kind", "rfc_len", "_coincidencia", "_fuerte", "_score",
+]);
 
-    html += "</div></div>";
-  }
-  $("bases-grid").innerHTML = html;
+const ETIQUETAS = {
+  rfc: "RFC", cuenta: "Cuenta", telefono: "Teléfono", celular: "Celular",
+  titular_nombre1: "Nombre(s)", titular_nombre2: "Apellidos",
+  titular_domicilio: "Calle", titular_numero: "Número", titular_interior: "Interior",
+  titular_colonia: "Colonia", titular_ciudad: "Ciudad", titular_estado: "Estado", titular_cp: "CP",
+  nombre_patron: "Patrón", sueldo: "Sueldo", registro_patron: "Registro patronal",
+  domicilio_patron: "Domicilio del patrón", ciudad_estado: "Ciudad / estado",
+  cp_patron: "CP patrón", giro_patron: "Giro",
+  genero: "Género", edad: "Edad", ooad: "OOAD", unidad_medica: "Unidad médica",
+  segmento_hipertension: "Hipertensión", segmentacion_diabetes_mellitus: "Diabetes",
+  numero_servicio: "No. de servicio", nombre: "Titular", direccion: "Dirección",
+  colonia: "Colonia", cp: "CP", division: "División",
+  match_tipo: "Tipo de match", confianza: "Confianza",
+  calle_adicional_1: "Calle adicional 1", calle_adicional_2: "Calle adicional 2",
+  nombre_completo: "Nombre completo", nombres: "Nombre(s)",
+  apellido_paterno: "Apellido paterno", apellido_materno: "Apellido materno",
+  telefono_fijo: "Teléfono fijo", municipio: "Municipio", estado: "Estado",
+  nombre1: "Nombre(s)", nombre2: "Apellidos", domicilio: "Domicilio", ciudad: "Ciudad",
+  plan: "Plan", plan_orig: "Plan original", marca: "Marca", modelo: "Modelo",
+  esn: "ESN", imei: "IMEI", iccid: "ICCID", estado_linea: "Estado de la línea",
+  estado_cuenta: "Estado de la cuenta", fecha_activacion: "Activación",
+  fecha_cancelacion: "Cancelación", fecha_termino: "Término",
+  no_serie: "No. de serie", placa: "Placa", vin: "VIN",
+  razon_social: "Razón social", nombre_comercial: "Nombre comercial",
+  num_empleados: "Empleados", descripcion: "Descripción",
+  puesto: "Puesto", cargo: "Cargo", sueldo_bruto: "Sueldo",
+  dependencia: "Dependencia", ramo: "Ramo", entidad: "Entidad",
+  modalidad: "Modalidad", sector: "Sector", paterno: "Apellido paterno",
+  materno: "Apellido materno", rfc_valido: "RFC válido", codigo_postal: "CP fiscal",
+  regimen_fiscal: "Régimen fiscal", estado_69_69b: "Situación 69-B",
+  busqueda_por: "Buscado por", total_encontrados: "Total encontrado",
+  rfc_original: "RFC original", asesor: "Asesor",
+};
+
+/* Orden preferente de columnas: primero lo que identifica y localiza. */
+const ORDEN_COLS = [
+  "nombre_patron", "sueldo", "registro_patron", "giro_patron", "ciudad_estado",
+  "domicilio_patron", "cp_patron", "numero_servicio", "nombre", "direccion",
+  "colonia", "cp", "division", "match_tipo", "confianza",
+  "calle_adicional_1", "calle_adicional_2", "nombre_completo", "nombres",
+  "apellido_paterno", "apellido_materno", "telefono", "celular", "telefono_fijo",
+  "municipio", "estado", "plan", "marca", "modelo", "estado_linea",
+  "fecha_activacion", "placa", "no_serie", "razon_social", "nombre_comercial",
+  "num_empleados", "cargo", "sueldo_bruto", "ramo", "entidad", "modalidad", "sector",
+];
+
+const SUBTITULOS = {
+  pasada1: "Coincidencia exacta por RFC",
+  pasada2: "Coincidencia por RFC (10) + nombre",
+  asegurado: "Empleo formal (asegurado)",
+  salud: "Salud / segmentación",
+  servicios: "Suministros y titulares",
+  empleos: "Empleos registrados",
+  vehiculos: "Vehículos",
+  lineas: "Líneas",
+  por_paso: "Intentos de búsqueda",
+  buscado_por: "Buscado por",
+};
+
+let LABELS_ACTUAL = null; /* etiquetas propias de la base que se está pintando */
+
+function etiquetaCol(c) {
+  return (LABELS_ACTUAL && LABELS_ACTUAL[c]) || ETIQUETAS[c] || String(c).replace(/_/g, " ");
 }
 
-function renderRecord(rec) {
-  if (!rec || typeof rec !== "object") return "";
-  const entries = Object.entries(rec).filter(([k, v]) => v !== null && v !== undefined && v !== "" && !k.startsWith("_"));
-  if (!entries.length) return "";
-  return '<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">' +
-    entries.slice(0, 8).map(([k, v]) =>
-      `<div style="display:flex;gap:8px"><span style="color:var(--muted);min-width:80px;font-size:10px;text-transform:uppercase">${esc(k)}</span><span style="color:var(--text)">${esc(String(v).substring(0, 60))}</span></div>`
-    ).join("") + "</div>";
+function prioridadCol(c) {
+  const i = ORDEN_COLS.indexOf(c);
+  return i === -1 ? 999 : i;
+}
+
+function celda(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  if (typeof v === "object") return fmtValor(v);
+  const s = String(v);
+  return s.length > 180 ? s.slice(0, 177) + "…" : s;
+}
+
+/* Filas → tabla, con columnas relevantes primero y el resto plegado. */
+function tablaBase(rows, opt) {
+  opt = opt || {};
+  const datos = (rows || []).filter(r => r && typeof r === "object");
+  if (!datos.length) return '<div class="base-card-empty">Sin registros.</div>';
+  const cols = [];
+  for (const r of datos) {
+    for (const k of Object.keys(r)) {
+      if (OCULTAS_BASE.has(k) || cols.includes(k)) continue;
+      if (r[k] === null || r[k] === undefined || r[k] === "") continue;
+      cols.push(k);
+    }
+  }
+  if (!cols.length) return '<div class="base-card-empty">Sin campos legibles.</div>';
+  cols.sort((a, b) => prioridadCol(a) - prioridadCol(b));
+  const visibles = cols.slice(0, opt.maxCols || 7);
+  const max = opt.max || 6;
+  const fila = r => "<tr>" + visibles.map(c => `<td>${esc(celda(r[c]))}</td>`).join("") + "</tr>";
+  let h = `<div class="tabla-wrap"><table class="tabla-base"><thead><tr>${
+    visibles.map(c => `<th>${esc(etiquetaCol(c))}</th>`).join("")
+  }</tr></thead><tbody>${datos.slice(0, max).map(fila).join("")}</tbody></table></div>`;
+  if (datos.length > max) {
+    h += `<details class="mas"><summary>Ver ${datos.length - max} registro(s) más</summary><div class="tabla-wrap" style="margin-top:6px">
+      <table class="tabla-base"><thead><tr>${visibles.map(c => `<th>${esc(etiquetaCol(c))}</th>`).join("")}</tr></thead>
+      <tbody>${datos.slice(max).map(fila).join("")}</tbody></table></div></details>`;
+  }
+  if (cols.length > visibles.length) {
+    h += `<div class="mas">${cols.length - visibles.length} columna(s) adicionales en la base.</div>`;
+  }
+  return h;
+}
+
+function camposBase(obj) {
+  const filas = Object.entries(obj).filter(([k, v]) =>
+    v !== null && v !== undefined && v !== "" && !OCULTAS_BASE.has(k));
+  if (!filas.length) return "";
+  return '<div class="kv">' + filas.map(([k, v]) =>
+    `<div class="k">${esc(etiquetaCol(k))}</div><div class="v">${esc(celda(v))}</div>`).join("") + "</div>";
+}
+
+/* Parte cualquier payload de base en secciones: listas → tabla, objetos → campos. */
+function bloquesBase(data) {
+  const bloques = [];
+  if (Array.isArray(data)) {
+    if (data.length) bloques.push({ titulo: null, html: tablaBase(data) });
+    return bloques;
+  }
+  if (!data || typeof data !== "object") return bloques;
+  const sueltos = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (OCULTAS_BASE.has(k)) continue;
+    if (Array.isArray(v)) {
+      if (v.length) bloques.push({ titulo: SUBTITULOS[k] || k, n: v.length, html: tablaBase(v) });
+    } else if (v && typeof v === "object") {
+      const sub = camposBase(v);
+      if (sub) bloques.push({ titulo: SUBTITULOS[k] || k, html: sub });
+    } else if (v !== null && v !== undefined && v !== "") {
+      sueltos[k] = v;
+    }
+  }
+  if (Object.keys(sueltos).length) bloques.unshift({ titulo: null, html: camposBase(sueltos) });
+  return bloques;
+}
+
+function contarRegistros(data) {
+  if (!data) return 0;
+  if (Array.isArray(data)) return data.length;
+  if (typeof data === "object") {
+    const valores = Object.values(data);
+    const listas = valores.filter(Array.isArray);
+    // Si la base se organiza en listas (IMSS, CFE, ATT…), el total es la suma:
+    // una CFE con `servicios: []` son 0 registros aunque traiga contadores.
+    if (listas.length) return listas.reduce((a, v) => a + v.length, 0);
+    return valores.some(v => v !== null && v !== undefined && v !== "") ? 1 : 0;
+  }
+  return 0;
+}
+
+function baseCard(def, data) {
+  const n = contarRegistros(data);
+  LABELS_ACTUAL = def.labels || null;
+  const bloques = bloquesBase(data);
+  const cuerpo = bloques.length
+    ? bloques.map(b => `<div class="bloque">${
+        b.titulo ? `<div class="bloque-titulo">${esc(b.titulo)}${b.n ? ` <span class="n">${b.n}</span>` : ""}</div>` : ""
+      }${b.html}</div>`).join("")
+    : '<div class="base-card-empty">Sin datos en esta base.</div>';
+  LABELS_ACTUAL = null;
+  const badge = n
+    ? `${n} registro${n === 1 ? "" : "s"}`
+    : (bloques.length ? "0 registros" : "sin datos");
+  return `<div class="base-card" style="${n ? "" : "opacity:.55"}">
+    <div class="base-card-head">
+      <h3>${def.icon} ${esc(def.title)} <span class="base-desc">${esc(def.desc || "")}</span></h3>
+      <span class="badge-mini ${n ? "ok" : ""}">${badge}</span>
+    </div>
+    <div class="base-card-body">${cuerpo}</div>
+  </div>`;
+}
+
+/* ==== Render: bancos (mapeo automático) ==== */
+
+/* Ficha por registro: en una tabla de 9 columnas el nombre, la calle y la
+   colonia se parten en varias líneas y la tarjeta se vuelve ilegible. Aquí
+   cada cuenta va en dos renglones fijos. */
+function fichasBancos(regs) {
+  if (!regs || !regs.length) return '<div class="base-card-empty">Sin registros.</div>';
+  const linea = r => {
+    const nombre = [r.titular_nombre1, r.titular_nombre2].filter(Boolean).join(" ") || "(sin nombre)";
+    const datos = [
+      ["RFC", r.rfc], ["Cuenta", r.cuenta], ["Tel", r.telefono], ["CP", r.titular_cp],
+    ].filter(([, v]) => v);
+    const dir = [r.titular_domicilio, r.titular_numero, r.titular_colonia, r.titular_ciudad, r.titular_estado]
+      .filter(Boolean).join(", ");
+    const cl = r._fuerte ? "ok" : "";
+    return `<div class="ficha-banco">
+      <div class="ficha-top">
+        <span class="ficha-nombre">${esc(nombre)}</span>
+        <span class="badge-mini ${cl}">${esc(r._coincidencia || "")}</span>
+      </div>
+      ${datos.length ? `<div class="ficha-datos">${datos.map(([k, v]) => `<span><i>${k}</i> ${esc(celda(v))}</span>`).join("")}</div>` : ""}
+      ${dir ? `<div class="ficha-dir">📍 ${esc(dir)}</div>` : ""}
+    </div>`;
+  };
+  const max = 8;
+  let h = regs.slice(0, max).map(linea).join("");
+  if (regs.length > max) {
+    h += `<details class="mas"><summary>Ver ${regs.length - max} registro(s) más</summary>${regs.slice(max).map(linea).join("")}</details>`;
+  }
+  return h;
+}
+
+function renderBancos(b) {
+  const icono = "🏦";
+  if (!b) {
+    return `<div class="base-card">
+      <div class="base-card-head"><h3>${icono} Bases bancarias <span class="base-desc">Santander, HSBC, Banorte, Bancomer, Citibanamex, Bancoppel, Amex, Clavijero</span></h3>
+        <span class="badge-mini">pendiente</span></div>
+      <div class="base-card-body"><div class="base-card-empty">Cruzando el sujeto con las bases bancarias…</div></div></div>`;
+  }
+  if (b.error) {
+    return `<div class="base-card">
+      <div class="base-card-head"><h3>${icono} Bases bancarias</h3><span class="badge-mini">sin cruce</span></div>
+      <div class="base-card-body"><div class="base-card-empty">${esc(b.error)}</div></div></div>`;
+  }
+
+  const bancos = b.bancos || {};
+  const consultas = b.consultas || {};
+  const criterio = b.criterio_global === "rfc"
+    ? "identificado por RFC"
+    : (b.criterio_global === "nombre" ? "candidatos por nombre" : "sin coincidencias");
+
+  const chips = Object.entries(bancos).map(([k, v]) => {
+    const n = v.total || 0;
+    const cl = v.criterio === "rfc" ? "ok" : (n ? "warn" : "");
+    return `<span class="badge-mini ${cl}" title="${esc(v.criterio || "")}">${esc(v.etiqueta || k)}: ${n}</span>`;
+  }).join(" ");
+
+  let cuerpo = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${chips}</div>`;
+  cuerpo += `<div class="mas" style="margin-bottom:8px">Cruce por RFC <b>${esc(consultas.rfc10 || "—")}</b> y por apellidos <b>${esc([consultas.paterno, consultas.materno].filter(Boolean).join(" ") || "—")}</b>${
+    b.elapsed_s ? ` · ${b.elapsed_s}s` : ""}${b.cache ? " · en caché" : ""}</div>`;
+
+  const conDatos = (b.bancos_con_datos || []).filter(k => bancos[k] && bancos[k].registros && bancos[k].registros.length);
+  if (!conDatos.length) {
+    cuerpo += '<div class="base-card-empty">Ningún banco devolvió coincidencias con esta identidad.</div>';
+  } else {
+    for (const k of conDatos) {
+      const v = bancos[k];
+      const regs = v.registros || [];
+      const fuertes = regs.filter(r => r._fuerte);
+      const debiles = regs.filter(r => !r._fuerte);
+      // Con coincidencia por RFC o por nombre completo se muestran ésas; si
+      // sólo hay homónimos de apellido, se destacan los 3 mejores y el resto
+      // queda plegado: nadie lee 15 homónimos de corrido.
+      const principales = fuertes.length ? fuertes : regs.slice(0, 3);
+      const resto = fuertes.length ? debiles : regs.slice(3);
+      const badge = v.criterio === "rfc"
+        ? '<span class="badge-mini ok">RFC</span>'
+        : '<span class="badge-mini warn">por nombre</span>';
+      const nota = (!fuertes.length && regs.length)
+        ? '<div class="mas" style="margin:2px 0 4px">Sin nombre de pila coincidente: se muestran los apellidos más cercanos.</div>'
+        : "";
+      cuerpo += `<div class="bloque">
+        <div class="bloque-titulo">${esc(v.etiqueta || k)} <span class="n">${v.total}${v.truncado ? "+" : ""}</span> ${badge}</div>
+        ${nota}
+        ${fichasBancos(principales)}
+        ${resto.length ? `<details class="mas"><summary>Ver ${resto.length} candidato(s) más</summary><div style="margin-top:6px">${fichasBancos(resto)}</div></details>` : ""}
+      </div>`;
+    }
+  }
+
+  return `<div class="base-card">
+    <div class="base-card-head">
+      <h3>${icono} Bases bancarias <span class="base-desc">8 bases · ${esc(criterio)}</span></h3>
+      <span class="badge-mini ${b.total_coincidencias ? "ok" : ""}">${b.total_coincidencias || 0} coincidencia(s)</span>
+    </div>
+    <div class="base-card-body">${cuerpo}</div>
+  </div>`;
+}
+
+let bancosState = { estado: "cargando", data: null, error: "" };
+
+function actualizarEstadoBases() {
+  const el = $("bases-status");
+  if (!el) return;
+  if (bancosState.estado === "cargando") {
+    el.className = "status-bar running";
+    el.innerHTML = '<span class="spinner"></span><span>Cruzando bancos (RFC y apellidos)…</span>';
+    return;
+  }
+  if (bancosState.estado === "error") {
+    el.className = "status-bar error";
+    el.innerHTML = `<span>Bancos: ${esc(bancosState.error)}</span>`;
+    return;
+  }
+  const b = bancosState.data || {};
+  const nb = (b.bancos_con_datos || []).length;
+  el.className = "status-bar ok";
+  el.innerHTML = `<span>✓ ${esc(b.criterio_global === "rfc" ? "Identificado por RFC en las bases bancarias" : "Cruce bancario por nombre (candidatos)")}</span>
+    <span style="color:var(--muted)">· ${b.total_coincidencias || 0} coincidencia(s) en ${nb} de ${Object.keys(b.bancos || {}).length} banco(s) · ${b.elapsed_s || 0}s${b.cache ? " · caché" : ""}</span>`;
+}
+
+function renderBases(perfil) {
+  const conDatos = [], vacias = [];
+  for (const def of BASES_DEF) {
+    (contarRegistros(perfil[def.key]) ? conDatos : vacias).push(def);
+  }
+
+  let html = conDatos.map(def => baseCard(def, perfil[def.key])).join("");
+  html += renderBancos(bancosState.estado === "ok" ? bancosState.data
+    : (bancosState.estado === "error" ? { error: bancosState.error } : null));
+
+  // Las bases sin datos no ocupan una tarjeta cada una: se resumen en una
+  // franja. Así la pestaña no arrastra seis bloques grises hasta el fondo.
+  if (vacias.length) {
+    html += `<div class="base-card" style="opacity:.75">
+      <div class="base-card-head">
+        <h3>🗄 Bases sin datos <span class="base-desc">consultadas, sin coincidencias para este sujeto</span></h3>
+        <span class="badge-mini">${vacias.length}</span>
+      </div>
+      <div class="base-card-body"><div class="chips-vacias">${
+        vacias.map(def => `<span class="badge-mini">${def.icon} ${esc(def.title)}: 0</span>`).join("")
+      }</div></div>
+    </div>`;
+  }
+
+  $("bases-grid").innerHTML = html;
+  actualizarEstadoBases();
+}
+
+async function mapearBancos() {
+  if (!CURP) return;
+  bancosState = { estado: "cargando", data: null, error: "" };
+  renderBases((perfilData && perfilData.perfil) || {});
+  try {
+    const r = await fetch(`${API_URL}/api/v1/bancos/mapeo`, {
+      method: "POST", headers: authHJ(), body: JSON.stringify({ curp: CURP }),
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ("HTTP " + r.status));
+    bancosState = { estado: "ok", data: d, error: "" };
+  } catch (e) {
+    bancosState = { estado: "error", data: null, error: e.message };
+  }
+  renderBases((perfilData && perfilData.perfil) || {});
 }
 
 /* ==== Utilidades de render (nunca JSON crudo) ==== */
@@ -785,58 +1122,24 @@ function activarFiltrosDossier() {
 
 async function ejecutarInteligencia() {
   if (!CURP) return;
-  const btn = $("btn-intel");
-  const original = btn.innerHTML;
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Consultando las bases (puede tardar ~20s)…';
+  const st = $("intel-status");
+  st.className = "status-bar running";
+  st.innerHTML = '<span class="spinner"></span><span>Cruzando el universo relacional en 29 bases (puede tardar ~20 s)…</span>';
+  $("intel-result").innerHTML = "";
   try {
     const r = await fetch(`${API_URL}/api/v1/sujeto/inteligencia_completa?curp=${encodeURIComponent(CURP)}`, { headers: authH() });
     const data = await r.json();
-    if (data.error && !data.dossier_sujetos) {
-      $("intel-result").innerHTML = `<div class="error-msg">No se pudo ejecutar el motor: ${esc(data.error)}</div>`;
-      return;
-    }
+    if (data.error && !data.dossier_sujetos) throw new Error(data.error);
     ultimaInteligencia = data;
+    st.className = "status-bar ok";
+    st.innerHTML = `<span>✓ ${data.total_sujetos_auditados || 0} sujetos auditados · ${data.tiempo_ejecucion_s || 0}s</span>`;
     $("intel-result").innerHTML = renderInteligencia(data);
     activarFiltrosDossier();
   } catch (e) {
-    $("intel-result").innerHTML = `<div class="error-msg">Error: ${esc(e.message)}</div>`;
-  } finally { btn.disabled = false; btn.innerHTML = original; }
-}
-
-async function buscarBanco() {
-  const banco = $("banco-select").value;
-  const nombre = $("banco-nombre").value.trim();
-  const rfc = $("banco-rfc").value.trim();
-  if (!nombre && !rfc) { alert("Ingresa al menos nombre o RFC"); return; }
-  const q = new URLSearchParams({ banco });
-  if (nombre) q.set("nombre", nombre);
-  if (rfc) q.set("rfc", rfc);
-  const cont = $("banco-result");
-  cont.innerHTML = '<div style="color:var(--muted);font-size:12px"><span class="spinner"></span> Consultando…</div>';
-  try {
-    const r = await fetch(`${API_URL}/api/v1/bancos/buscar?${q}`, { headers: authH() });
-    const data = await r.json();
-    if (data.error) { cont.innerHTML = `<div class="error-msg">${esc(data.error)}</div>`; return; }
-    // El endpoint puede devolver una lista o un dict con la lista dentro:
-    // se busca la primera clave que sea un arreglo de registros.
-    let filas = null;
-    if (Array.isArray(data)) filas = data;
-    else {
-      for (const k of ["resultados", "registros", "rows", "data", "hits", "cuentas", "coincidencias"]) {
-        if (Array.isArray(data[k])) { filas = data[k]; break; }
-      }
-      if (!filas) {
-        for (const v of Object.values(data)) {
-          if (Array.isArray(v) && v.length && typeof v[0] === "object") { filas = v; break; }
-        }
-      }
-    }
-    const encabezado = `<div style="font-size:11px;color:var(--muted);margin-bottom:6px">
-      ${filas ? filas.length + " registro(s)" : "resultado"} · banco <b>${esc(banco)}</b></div>`;
-    cont.innerHTML = encabezado + (filas
-      ? tablaGenerica(filas, { max: 40, alto: 420, maxCols: 12, vacio: "El banco no devolvió coincidencias." })
-      : tablaGenerica([data], { max: 1, alto: 320 }));
-  } catch (e) { cont.innerHTML = `<div class="error-msg">Error: ${esc(e.message)}</div>`; }
+    st.className = "status-bar error";
+    st.innerHTML = `<span>No se pudo ejecutar el motor: ${esc(e.message)}</span>
+      <button class="btn sm secondary" onclick="ejecutarInteligencia()">Reintentar</button>`;
+  }
 }
 
 /* ==== Dossier: PDF + mapa interactivo, en segundo plano ==== */

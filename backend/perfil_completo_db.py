@@ -142,6 +142,9 @@ def _migrar_cu(con):
         "cu_contacto": "JSON",
         "cu_fecha": "TIMESTAMP",
         "cu_costo_creditos": "INTEGER DEFAULT 0",
+        # Mapeo bancario automático del expediente (bancos_mapeo). Se guarda
+        # para que reabrir la ficha no repita el cruce contra 18 vistas.
+        "bancos_data": "JSON",
     }
     try:
         existentes = _columnas(con)
@@ -203,6 +206,36 @@ def updatear_consultaunica(con, curp: str, cu_data: dict,
     except Exception as e:
         import logging
         logging.error(f"Error actualizando ConsultaÚnica para {curp}: {e}")
+        return False
+
+
+def updatear_bancos(con, curp: str, bancos_data: dict) -> bool:
+    """Persiste el mapeo bancario automático del expediente.
+
+    Lo produce `bancos_mapeo.mapear_bancos`. Se guarda completo (incluida la
+    clave de búsqueda) para que reabrir la ficha lo reutilice sin repetir el
+    cruce, y para que el generador de informes pueda leerlo de la base.
+    """
+    try:
+        curp = curp.upper().strip()
+        payload = json.dumps(bancos_data or {}, ensure_ascii=False)
+        fuentes_update = json.dumps({"bancos": True})
+        con.execute(
+            """
+            UPDATE b_perfil.perfil_completo SET
+                bancos_data = ?,
+                fuentes_consultadas = JSON_MERGE_PATCH(
+                    COALESCE(fuentes_consultadas, '{}'), ?
+                ),
+                actualizado_en = NOW()
+            WHERE curp = ?
+            """,
+            [payload, fuentes_update, curp],
+        )
+        return True
+    except Exception as e:
+        import logging
+        logging.error(f"Error guardando bancos para {curp}: {e}")
         return False
 
 

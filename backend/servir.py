@@ -1559,6 +1559,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_uso_consumir()
         elif url.path == "/api/perfil/crear":
             self._handle_perfil_crear()
+        elif url.path == "/api/v1/bancos/mapeo":
+            self._handle_bancos_mapeo()
         elif url.path == "/webhook/consultaunica/actas":
             self._handle_webhook_consultaunica_actas()
         elif url.path == "/api/consultaunica/afore":
@@ -1951,6 +1953,98 @@ class Handler(BaseHTTPRequestHandler):
             query_summary={"curp": curp},
         )
         self._json(200, result)
+
+    def _handle_bancos_mapeo(self):
+        """POST /api/v1/bancos/mapeo — cruza al sujeto con TODAS las bases bancarias.
+
+        Se dispara al abrir el expediente (no hay búsqueda manual de bancos).
+        Usa el RFC del perfil (prefijo de 10: las bases lo guardan sin
+        homoclave) y, si no hay aciertos, el par de apellidos + nombre.
+
+        Body: {curp: str, refrescar?: bool}
+        Respuesta: {bancos: {entidad: {etiqueta, criterio, total, registros}},
+                    total_coincidencias, total_fuertes, bancos_con_datos,
+                    consultas, elapsed_s, cache}
+
+        Es gratis: sólo toca bases locales. El resultado se persiste en
+        `perfil_completo.bancos_data` para que reabrir no repita el cruce.
+        """
+        session = self._require_session()
+        if not session:
+            return
+        body = self._read_json_body()
+        curp = (body.get("curp") or "").upper().strip()
+        if not curp or len(curp) != 18:
+            self._json(400, {"error": "CURP requerida (18 caracteres)"})
+            return
+        refrescar = bool(body.get("refrescar"))
+
+        try:
+            from perfil_completo_db import leer_perfil, updatear_bancos
+            con = _init_extended_con()
+            row = leer_perfil(con, curp)
+            if not row:
+                self._json(404, {
+                    "error": "El sujeto no tiene perfil todavía: primero hay que "
+                             "crearlo con /api/perfil/crear",
+                })
+                return
+
+            padron = row.get("padron_data")
+            if isinstance(padron, str):
+                try:
+                    padron = json.loads(padron)
+                except Exception:
+                    padron = {}
+            padron = padron or {}
+            rfc = row.get("rfc") or padron.get("rfc") or ""
+            nombre = padron.get("nombre") or ""
+            paterno = padron.get("paterno") or ""
+            materno = padron.get("materno") or ""
+
+            guardado = row.get("bancos_data")
+            if isinstance(guardado, str):
+                try:
+                    guardado = json.loads(guardado)
+                except Exception:
+                    guardado = None
+            if guardado and not refrescar:
+                # Reutilizar sólo si se buscó con la misma identidad.
+                c = guardado.get("consultas") or {}
+                misma = (
+                    (c.get("rfc") or "") == (rfc or "").upper()
+                    and (c.get("paterno") or "") == paterno.upper()
+                    and (c.get("materno") or "") == materno.upper()
+                )
+                if misma:
+                    guardado["cache"] = True
+                    self._json(200, guardado)
+                    return
+
+            from bancos_mapeo import mapear_bancos
+            resultado = mapear_bancos(
+                con, curp=curp, rfc=rfc, nombre=nombre,
+                paterno=paterno, materno=materno,
+            )
+            resultado["cache"] = False
+            resultado["curp"] = curp
+            if not resultado.get("error"):
+                resultado["guardado"] = updatear_bancos(con, curp, resultado)
+        except Exception as e:
+            self._json(500, {"error": f"Error mapeando bancos: {str(e)[:200]}"})
+            return
+
+        try:
+            self._audit(
+                session=session, action="bancos_mapeo",
+                endpoint="/api/v1/bancos/mapeo", method="POST",
+                status_code=200,
+                duration_ms=int(float(resultado.get("elapsed_s", 0)) * 1000),
+                query_summary={"curp": curp},
+            )
+        except Exception:
+            pass
+        self._json(200, resultado)
 
     def _handle_oraculo(self):
         """POST /api/oraculo — Agente de IA multi-tenant para investigación KYC.
@@ -2692,7 +2786,7 @@ class Handler(BaseHTTPRequestHandler):
                     public_url = "https://nominatim.openstreetmap.org/search"
                     url = f"{public_url}?{params_}"
                     req = urllib.request.Request(url, headers={
-                        "User-Agent": "CuartoDePazSearch/1.0 (search.cuartodepaz.org)",
+                        "User-Agent": "ArgosOSINT/1.0 (argos-osint.com)",
                         "Accept": "application/json",
                     })
                     with urllib.request.urlopen(req, timeout=10) as resp:
@@ -5262,7 +5356,7 @@ class Handler(BaseHTTPRequestHandler):
         local_url = _os.environ.get("NOMINATIM_LOCAL_URL", "http://127.0.0.1:8088")
         public_url = _os.environ.get("NOMINATIM_PUBLIC_URL",
                                       "https://nominatim.openstreetmap.org")
-        ua = "KYCSearch/1.0 (cuartodepaz.org/contact)"  # TOS OSM, solo para público
+        ua = "ArgosOSINT/1.0 (argos-osint.com)"  # TOS OSM, solo para público
         query = f"lat={lat}&lon={lon}&format=jsonv2&zoom=18&addressdetails=1"
 
         geo = None
@@ -8273,7 +8367,11 @@ class Handler(BaseHTTPRequestHandler):
                 return {"ok": bool(h.get("ok")), "detail": h}
             if provider == "tlaloc":
                 from providers.tlaloc import TlalocClient
-                c = TlalocClient(api_key=api_key, timeout=15)
+                # 2026-10-13: timeout 40, no 15. El sondeo de salud tarda ~14 s (consulta
+                # real al SAT con un RFC malformado); y el sondeo anterior, que probaba la
+                # ruta de «CURP no encontrada», se iba a >90 s. Con 15 s se cortaba a media
+                # respuesta y la cuenta aparecía como «key_unreachable» estando bien.
+                c = TlalocClient(api_key=api_key, timeout=40)
                 h = c.health()
                 return {"ok": bool(h.get("ok")), "detail": h}
             return {"ok": False, "detail": f"provider sin health check: {provider}"}
@@ -9576,6 +9674,22 @@ def _generate_maps_for_addresses(addresses: list, max_maps: int = 25,
         if len(parts) >= 2 and re.fullmatch(r"\d+\w*", parts[1]):
             calle = f"{calle} {parts[1]}"
 
+        # 2026-10-13: el domicilio crudo trae el interior pegado y a veces ni una
+        # coma («RIO SAN JOAQUIN 406 INT PISO 3 OFICINA 3»). Buscado así, el LIKE
+        # contra CFE devolvía cero. Se recorta a calle+número y se completa la
+        # colonia con la que corresponde al código postal (geo.db, sin red).
+        try:
+            from report_generator import limpiar_direccion
+            limpio = limpiar_direccion(calle, cp)
+            if limpio.get("calle"):
+                calle = limpio["calle"] + (f" {limpio['num_ext']}" if limpio.get("num_ext") else "")
+            if not colonia:
+                colonia = limpio.get("colonia") or ""
+            if not cp:
+                cp = limpio.get("cp") or ""
+        except Exception:
+            pass
+
         return (calle, colonia, cp)
 
     out = []
@@ -9721,30 +9835,30 @@ def _search_cfe_by_domicilio(calle: str = "", colonia: str = "", cp: str = "",
         }
 
     limit = max(1, min(limit, 100))
-    where, params = [], []
-    if calle:
-        where.append("""(
+    import time
+
+    def _consulta(c_calle, c_colonia, c_cp, c_division):
+        where, params = [], []
+        if c_calle:
+            where.append("""(
             UPPER(TRIM(COALESCE(direccion, ''))) LIKE ? OR
             UPPER(TRIM(COALESCE(calle_adicional_1, ''))) LIKE ? OR
             UPPER(TRIM(COALESCE(calle_adicional_2, ''))) LIKE ?
         )""")
-        params.extend([f"%{calle}%"] * 3)
-    if colonia:
-        where.append("UPPER(TRIM(COALESCE(colonia, ''))) LIKE ?")
-        params.append(f"%{colonia}%")
-    if cp_norm:
-        where.append("cp = ?")
-        params.append(cp_norm)
-    if division:
-        where.append("division = ?")
-        params.append(division)
-    where_sql = " AND ".join(where)
-    params.append(limit)
-
-    rows, err, elapsed = [], None, None
-    try:
-        import time
-        t0 = time.time()
+            params.extend([f"%{c_calle}%"] * 3)
+        if c_colonia:
+            where.append("UPPER(TRIM(COALESCE(colonia, ''))) LIKE ?")
+            params.append(f"%{c_colonia}%")
+        if c_cp:
+            where.append("cp = ?")
+            params.append(c_cp)
+        if c_division:
+            where.append("division = ?")
+            params.append(c_division)
+        if not where:
+            return [], None
+        where_sql = " AND ".join(where)
+        params.append(limit)
         sql = f"""
             SELECT numero_servicio, division, zona_cod, zona_nom,
                    agencia_cod, agencia_nom,
@@ -9754,10 +9868,38 @@ def _search_cfe_by_domicilio(calle: str = "", colonia: str = "", cp: str = "",
             WHERE {where_sql}
             LIMIT ?
         """
-        rows = con.execute(sql, params).fetchall()
-        elapsed = time.time() - t0
-    except Exception as e:
-        err = str(e)[:200]
+        t0 = time.time()
+        res = con.execute(sql, params).fetchall()
+        return res, time.time() - t0
+
+    # 2026-10-13: el campo cp de la CFE viene vacío en la mayoría de los registros,
+    # así que exigirlo devuelve cero aunque la calle exista; y el número pegado a la
+    # calle puede no coincidir por formato. En vez de reportar «sin coincidencias»
+    # se relajan los filtros por pasos y se dice cuál se relajó.
+    intentos = [(calle, colonia, cp_norm, division)]
+    if cp_norm:
+        intentos.append((calle, colonia, "", division))
+    if calle and re.search(r"\s\d", calle):
+        intentos.append((re.split(r"\s+\d", calle)[0].strip(), colonia, "", division))
+    if calle and len(calle.split()) > 1:
+        intentos.append((calle.split()[0], colonia, "", division))
+
+    rows, err, elapsed, relax = [], None, None, None
+    for idx, (c1, c2, c3, c4) in enumerate(intentos):
+        if not (c1 or c2 or c3 or c4):
+            continue
+        try:
+            rows, elapsed = _consulta(c1, c2, c3, c4)
+        except Exception as e:
+            err = str(e)[:200]
+            rows = []
+        if rows:
+            if idx:
+                relax = {1: "se reintentó sin el código postal, que la CFE trae vacío",
+                         2: "se reintentó sólo con el nombre de la calle, sin el número",
+                         3: "se reintentó con la primera palabra de la calle"}.get(
+                             idx, "se relajaron filtros")
+            break
 
     cols = ["num_servicio","division","zona_cod","zona_nom",
             "agencia_cod","agencia_nom","cp","nombre",
@@ -9766,15 +9908,16 @@ def _search_cfe_by_domicilio(calle: str = "", colonia: str = "", cp: str = "",
     return {
         "query": {"calle": calle or None, "colonia": colonia or None,
                   "cp": cp_norm or None, "division": division or None,
-                  "limit": limit},
+                  "limit": limit, "relajado": relax},
         "rows": [dict(zip(cols, r)) for r in rows],
         "count": len(rows),
         "elapsed_s": round(elapsed, 3) if elapsed else None,
         "truncated": len(rows) >= limit,
         "found": bool(rows),
         "error": err,
-        "nota": "Búsqueda sobre 66M de filas; pasar cp es lo más eficiente. "
-                "Si count=0 probar con menos filtros.",
+        "nota": ("Búsqueda sobre 66M de filas; pasar cp es lo más eficiente. "
+                 "Si count=0 probar con menos filtros."
+                 + (f" En esta búsqueda {relax}." if relax else "")),
     }
 
 
