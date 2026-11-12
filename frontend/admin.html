@@ -106,6 +106,7 @@ body > *:not(.argos-bg) { position: relative; z-index: 1; }
           <button class="tab" data-tab="kyc">Verificaciones KYC</button>
           <button class="tab" data-tab="users">Todos los usuarios</button>
           <button class="tab" data-tab="subs">Suscripciones</button>
+          <button class="tab" data-tab="konfio">Pagos Konfio <span id="konfio-count" style="color:var(--accent2)"></span></button>
           <button class="tab" data-tab="transactions">Actividad</button>
         </div>
 
@@ -149,6 +150,16 @@ body > *:not(.argos-bg) { position: relative; z-index: 1; }
           </div>
         </div>
 
+        <!-- Konfio payments (declared, pending validation) -->
+        <div class="tab-panel" id="panel-konfio">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Folio</th><th>Usuario</th><th>Plan</th><th>Monto</th><th>Concepto</th><th>Titular</th><th>Referencia</th><th>Método</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="konfio-body"><tr><td colspan="11" class="empty">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Activity log -->
         <div class="tab-panel" id="panel-transactions">
           <div class="table-wrap">
@@ -174,6 +185,11 @@ body > *:not(.argos-bg) { position: relative; z-index: 1; }
       if(!ts)return'—';
       const d=new Date(typeof ts==='number'?ts*1000:ts);
       return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    }
+
+    // Los campos de Konfio los escribe el usuario: nunca inyectarlos crudos.
+    function esc(v){
+      return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
     // Tab switching
@@ -285,18 +301,52 @@ body > *:not(.argos-bg) { position: relative; z-index: 1; }
             <td>${statusBadge(s.status)}</td>
             <td>${s.expires_at?fmtDate(s.expires_at):'—'}</td>
             <td>${s.tx_count||0}</td>
-            <td>${s.total_paid?'$'+s.total_paid.toFixed(0)+' USD':'—'}</td>
+            <td>${s.total_paid?'$'+s.total_paid.toFixed(0)+' MXN':'—'}</td>
             <td class="actions-cell">
               <select class="form-input text-xs p-1" onchange="changeSubPlan(${s.user_id},this.value)">
                 <option value="">Cambiar plan</option>
-                <option value="basico">Básico ($29)</option>
-                <option value="profesional">Profesional ($99)</option>
-                <option value="empresarial">Empresarial ($299)</option>
-                <option value="corporativo">Corporativo ($500)</option>
+                <option value="basico">Básico ($580 MXN)</option>
+                <option value="profesional">Profesional ($1,980 MXN)</option>
+                <option value="empresarial">Empresarial ($5,980 MXN)</option>
+                <option value="corporativo">Corporativo ($10,000 MXN)</option>
               </select>
               ${s.status==='active'
                 ?`<button class="btn btn-danger btn-sm" onclick="changeSubStatus(${s.sub_id||0},'cancelled')">Cancelar</button>`
                 :s.sub_id?`<button class="btn btn-success btn-sm" onclick="changeSubStatus(${s.sub_id},'active')">Reactivar</button>`:''}
+            </td>
+          </tr>`).join('');
+        }
+      }catch(e){}
+
+      // Pagos Konfio
+      try{
+        const r=await fetch(API+'/api/admin/konfio/pagos',{headers:H});
+        const d=await r.json();
+        const pagos=d.pagos||[];
+        const cnt=document.getElementById('konfio-count');
+        if(cnt)cnt.textContent=d.pendientes?'('+d.pendientes+')':'';
+        const kb=document.getElementById('konfio-body');
+        if(pagos.length===0){kb.innerHTML='<tr><td colspan="11" class="empty">No hay pagos registrados</td></tr>';}
+        else{
+          const pill=p=>p==='aprobado'?'<span class="badge badge-success">Aprobado</span>'
+            :p==='rechazado'?'<span class="badge badge-danger">Rechazado</span>'
+            :'<span class="badge badge-warning">En validación</span>';
+          kb.innerHTML=pagos.map(p=>`<tr>
+            <td class="text-xs">${esc(p.folio)}</td>
+            <td>${esc(p.username||p.display_name||'—')}</td>
+            <td><span class="badge badge-info">${esc(p.plan)}</span></td>
+            <td>$${Number(p.monto||0).toLocaleString('es-MX')} ${esc(p.moneda||'MXN')}</td>
+            <td class="text-xs">${esc(p.concepto)}</td>
+            <td class="text-xs">${esc(p.titular)}</td>
+            <td class="text-xs">${esc(p.referencia)}</td>
+            <td class="text-xs">${esc(p.metodo)}</td>
+            <td class="text-xs">${fmtDate(p.created_at)}</td>
+            <td>${pill(p.status)}</td>
+            <td class="actions-cell">
+              ${p.status==='pendiente'?`
+                <button class="btn btn-success btn-sm" onclick="revisarPagoKonfio(${p.id},'aprobar')">Aprobar</button>
+                <button class="btn btn-danger btn-sm" onclick="revisarPagoKonfio(${p.id},'rechazar')">Rechazar</button>
+              `:`<span class="text-xs text-muted">${esc(p.reviewed_by||'—')}<br>${fmtDate(p.reviewed_at)}</span>`}
             </td>
           </tr>`).join('');
         }
@@ -358,6 +408,20 @@ body > *:not(.argos-bg) { position: relative; z-index: 1; }
 
     async function changeSubStatus(subId, status){
       await fetch(API+'/api/admin/subscriptions',{method:'POST',headers:H,body:JSON.stringify({subscription_id:subId,status})});
+      load();
+    }
+
+    async function revisarPagoKonfio(pagoId, action){
+      let notas='';
+      if(action==='rechazar'){
+        notas=prompt('Motivo del rechazo (obligatorio):');
+        if(!notas)return;
+      }else{
+        notas=prompt('Nota de validación (opcional):')||'';
+      }
+      const r=await fetch(API+'/api/admin/konfio/pagos',{method:'POST',headers:H,body:JSON.stringify({pago_id:pagoId,action,notas})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok)alert(d.error||'No se pudo actualizar el pago');
       load();
     }
 

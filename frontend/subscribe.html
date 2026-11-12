@@ -33,8 +33,8 @@
     .plan-card.selected .plan-radio::after{content:"✓";color:#0f1115;font-size:10px;font-weight:700}
     .payment-section{max-width:400px;margin:0 auto;text-align:center}
     .payment-section h2{font-size:16px;margin-bottom:16px}
-    .clip-container{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:24px;min-height:80px;display:flex;align-items:center;justify-content:center}
-    .clip-container img{height:56px}
+    .pay-container{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:24px;min-height:80px;display:flex;align-items:center;justify-content:center}
+    .pay-container img{height:56px}
     .security-note{margin-top:16px;font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
     .security-note .dot{width:6px;height:6px;border-radius:50%;background:var(--accent2)}
     @media(max-width:900px)and(min-width:601px){.plans-grid{grid-template-columns:repeat(2,1fr)}}
@@ -52,42 +52,42 @@
       <div class="plans-grid-wrap">
         <div class="page-title"><h1>Elige tu plan</h1><p>Selecciona el plan que mejor se adapte a tu volumen de investigación.</p></div>
         <div class="plans-grid">
-          <div class="plan-card" data-plan="basico" data-price="29">
+          <div class="plan-card" data-plan="basico" data-price="580">
             <div class="plan-radio"></div>
             <h3>Básico</h3><div class="desc">Analistas independientes</div>
-            <div class="price">$29 <span>USD</span></div><div class="period">por mes</div>
+            <div class="price">$580 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>30 búsquedas/mes</li><li>10 rastreos OSINT/mes</li><li>Expediente unificado</li><li>Exportación PDF</li><li>1 usuario</li><li>Soporte por correo</li></ul>
           </div>
-          <div class="plan-card selected" data-plan="profesional" data-price="99">
+          <div class="plan-card selected" data-plan="profesional" data-price="1980">
             <div class="popular">Popular</div><div class="plan-radio"></div>
             <h3>Profesional</h3><div class="desc">Despachos pequeños</div>
-            <div class="price">$99 <span>USD</span></div><div class="period">por mes</div>
+            <div class="price">$1,980 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>500 búsquedas/mes</li><li>100 rastreos OSINT/mes</li><li>Oráculo LLM incluido</li><li>OSINT completo</li><li>3 usuarios</li><li>Validación CURP/RFC</li></ul>
           </div>
-          <div class="plan-card" data-plan="empresarial" data-price="299">
+          <div class="plan-card" data-plan="empresarial" data-price="5980">
             <div class="plan-radio"></div>
             <h3>Empresarial</h3><div class="desc">Despachos medianos</div>
-            <div class="price">$299 <span>USD</span></div><div class="period">por mes</div>
+            <div class="price">$5,980 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>1,000 búsquedas/mes</li><li>500 rastreos OSINT/mes</li><li>API de integración</li><li>10 usuarios</li><li>Modelos IA premium</li><li>Singula judicial</li></ul>
           </div>
-          <div class="plan-card" data-plan="corporativo" data-price="500">
+          <div class="plan-card" data-plan="corporativo" data-price="10000">
             <div class="plan-radio"></div>
             <h3>Corporativo</h3><div class="desc">Fiscalías y corporativos</div>
-            <div class="price">$500 <span>USD</span></div><div class="period">por mes</div>
+            <div class="price">$10,000 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>Búsquedas ilimitadas</li><li>Rastreos ilimitados</li><li>Usuarios ilimitados</li><li>Modelos IA personalizados</li><li>On-premise disponible</li><li>SLA garantizado</li></ul>
           </div>
         </div>
         <div class="payment-section">
           <h2>Continuar al pago</h2>
-          <div class="clip-container" id="clip-container"></div>
-          <div class="security-note"><span class="dot"></span><span>Pagos seguros procesados por Clip · TLS 1.3</span></div>
+          <div class="pay-container" id="pay-container"></div>
+          <div class="security-note"><span class="dot"></span><span>Pago con el link empresarial de Konfio · activación en un máximo de 24 h hábiles</span></div>
         </div>
       </div>
     </main>
   </div>
   <script>
     let selectedPlan='profesional';
-    const prices={basico:29,profesional:99,empresarial:299,corporativo:500};
+    const prices={basico:580,profesional:1980,empresarial:5980,corporativo:10000};
     document.querySelectorAll('.plan-card').forEach(c=>{
       c.addEventListener('click',()=>{
         document.querySelectorAll('.plan-card').forEach(x=>x.classList.remove('selected'));
@@ -97,7 +97,7 @@
       });
     });
     function updateBtn(){
-      document.getElementById('clip-container').innerHTML='<a href="/checkout.html?plan='+selectedPlan+'" class="btn btn-primary btn-lg btn-block">Continuar al pago — $'+prices[selectedPlan]+' USD/mes</a>';
+      document.getElementById('pay-container').innerHTML='<a href="/checkout.html?plan='+selectedPlan+'" class="btn btn-primary btn-lg btn-block">Continuar al pago — $'+prices[selectedPlan].toLocaleString('es-MX')+' MXN/mes</a>';
     }
     updateBtn();
     fetch('/api/auth/me',{headers:{'Authorization':'Bearer '+localStorage.getItem('session_token')}}).then(r=>{if(!r.ok)window.location.href='/login.html'}).catch(()=>window.location.href='/login.html');

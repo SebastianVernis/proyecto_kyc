@@ -22,7 +22,7 @@ ROOT = Path(__file__).parent.resolve()
 DB_PATH = ROOT.parent / "bases" / "auth.db"
 
 # Configuración de RP (Relying Party)
-RP_NAME = "Cuarto de Paz Search"
+RP_NAME = "Argos OSINT"
 RP_ID = None  # se setea desde servir.py basado en el hostname
 RP_ORIGIN = None  # se setea desde servir.py basado en el origin
 
@@ -212,6 +212,32 @@ def init_db():
             );
             CREATE INDEX IF NOT EXISTS idx_pt_user ON payment_tokens(user_id);
             CREATE INDEX IF NOT EXISTS idx_pt_status ON payment_tokens(status);
+
+            -- Pagos declarados por el usuario vía Link Empresarial de Konfio.
+            -- El plan NO se activa aquí: queda pendiente hasta que un admin
+            -- coteje el abono en Konfio (compromiso de 24 h hábiles).
+            CREATE TABLE IF NOT EXISTS konfio_pagos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                plan TEXT NOT NULL CHECK(plan IN ('basico','profesional','empresarial','corporativo')),
+                monto REAL NOT NULL,
+                moneda TEXT NOT NULL DEFAULT 'MXN',
+                concepto TEXT NOT NULL,
+                titular TEXT NOT NULL,
+                referencia TEXT NOT NULL,
+                metodo TEXT NOT NULL DEFAULT 'tarjeta',
+                email TEXT,
+                notas TEXT,
+                status TEXT NOT NULL DEFAULT 'pendiente' CHECK(status IN ('pendiente','aprobado','rechazado')),
+                subscription_id INTEGER,
+                created_at REAL DEFAULT (strftime('%s','now')),
+                reviewed_at REAL,
+                reviewed_by TEXT,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_kp_user ON konfio_pagos(user_id);
+            CREATE INDEX IF NOT EXISTS idx_kp_status ON konfio_pagos(status);
+            CREATE INDEX IF NOT EXISTS idx_kp_ref ON konfio_pagos(referencia);
         """)
 
     # 2026-09-03: search history, saved reports, KYC verification
@@ -912,11 +938,200 @@ def touch_provider_key_usage(username: str, provider: str, ok: bool,
 # ============================================================
 
 PLAN_PRICES = {
-    "basico": 29,
-    "profesional": 99,
-    "empresarial": 299,
-    "corporativo": 500,
+    "basico": 580,
+    "profesional": 1980,
+    "empresarial": 5980,
+    "corporativo": 10000,
 }
+
+# Atajos que van dentro del concepto de pago de Konfio. El cliente debe
+# escribirlo tal cual para que el abono se pueda cotejar sin adivinar.
+KONFIO_PLAN_ABBR = {
+    "basico": "BAS",
+    "profesional": "PRO",
+    "empresarial": "EMP",
+    "corporativo": "COR",
+}
+
+KONFIO_METODOS = ("tarjeta", "spei", "efectivo", "otro")
+KONFIO_LINK = "https://link.konfio.mx/@desarrolloysolucionesdigitales"
+
+
+def concepto_konfio(plan: str, user_id: int) -> str:
+    """Concepto único y legible que el cliente copia en el link de Konfio."""
+    if plan not in KONFIO_PLAN_ABBR:
+        raise ValueError(f"Plan inválido: {plan}")
+    return f"ARGOS-{KONFIO_PLAN_ABBR[plan]}-{int(user_id)}"
+
+
+def crear_pago_konfio(user_id: int, plan: Optional[str], titular: Optional[str],
+                      referencia: Optional[str], metodo: str = "tarjeta",
+                      email: Optional[str] = None,
+                      notas: Optional[str] = None) -> dict:
+    """Registra un pago DECLARADO por el usuario. No activa el plan.
+
+    El monto y el concepto los fija el servidor a partir del plan: lo que el
+    cliente escriba en el formulario no puede alterar el precio. La referencia
+    es la llave para cotejar contra el panel de Konfio, así que se deduplica.
+    """
+    if not plan or plan not in PLAN_PRICES:
+        raise ValueError("Plan inválido")
+    titular = (titular or "").strip()[:120]
+    referencia = " ".join((referencia or "").split())[:120]
+    metodo = (metodo or "tarjeta").strip().lower()
+    if not titular:
+        raise ValueError("El nombre del titular es obligatorio")
+    if len(referencia) < 4:
+        raise ValueError("La referencia o folio de la operación es obligatorio")
+    if metodo not in KONFIO_METODOS:
+        raise ValueError("Método de pago inválido")
+
+    now = _now()
+    concepto = concepto_konfio(plan, user_id)
+    monto = float(PLAN_PRICES[plan])
+    with _db() as conn:
+        dup = conn.execute(
+            "SELECT id, status FROM konfio_pagos WHERE lower(referencia)=lower(?) "
+            "AND status IN ('pendiente','aprobado')",
+            (referencia,),
+        ).fetchone()
+        if dup:
+            raise ValueError("Esa referencia ya fue registrada para otro pago")
+        conn.execute(
+            """INSERT INTO konfio_pagos
+               (user_id, plan, monto, moneda, concepto, titular, referencia,
+                metodo, email, notas, status, created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?, 'pendiente', ?)""",
+            (user_id, plan, monto, "MXN", concepto, titular, referencia,
+             metodo, (email or "").strip()[:160] or None,
+             (notas or "").strip()[:500] or None, now),
+        )
+        pago_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+        conn.commit()
+    return {
+        "id": pago_id,
+        "folio": f"KON-{pago_id:05d}",
+        "plan": plan,
+        "monto": monto,
+        "moneda": "MXN",
+        "concepto": concepto,
+        "status": "pendiente",
+        "created_at": now,
+        "plazo_horas": 24,
+    }
+
+
+def _pago_konfio_dict(row) -> dict:
+    d = dict(row)
+    d["folio"] = f"KON-{d['id']:05d}"
+    return d
+
+
+def listar_pagos_konfio(user_id: Optional[int] = None, status: Optional[str] = None,
+                        limit: int = 100) -> list:
+    """Lista pagos Konfio. Sin user_id es la vista de administración."""
+    where, params = [], []
+    if user_id is not None:
+        where.append("k.user_id = ?")
+        params.append(user_id)
+    if status in ("pendiente", "aprobado", "rechazado"):
+        where.append("k.status = ?")
+        params.append(status)
+    sql = """
+        SELECT k.*, u.username, u.display_name
+        FROM konfio_pagos k
+        LEFT JOIN users u ON u.id = k.user_id
+    """
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+    sql += (" ORDER BY CASE k.status WHEN 'pendiente' THEN 0 ELSE 1 END,"
+            " k.created_at DESC LIMIT ?")
+    params.append(max(1, min(int(limit), 500)))
+    with _db() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [_pago_konfio_dict(r) for r in rows]
+
+
+def aprobar_pago_konfio(pago_id: int, revisado_por: str, notas: Optional[str] = None) -> dict:
+    """Cotejado el abono: activa/renueva 30 días y registra la transacción."""
+    now = _now()
+    with _db() as conn:
+        pago = conn.execute("SELECT * FROM konfio_pagos WHERE id=?", (pago_id,)).fetchone()
+        if not pago:
+            raise ValueError("Pago no encontrado")
+        if pago["status"] != "pendiente":
+            raise ValueError(f"El pago ya fue revisado ({pago['status']})")
+
+        sub = conn.execute(
+            "SELECT * FROM subscriptions WHERE user_id=?", (pago["user_id"],)
+        ).fetchone()
+        if sub:
+            base = sub["expires_at"] if (sub["status"] == "active" and sub["expires_at"] and sub["expires_at"] > now) else now
+            expires = base + 30 * 86400
+            conn.execute(
+                "UPDATE subscriptions SET plan=?, status='active', expires_at=?, renewed_at=? WHERE id=?",
+                (pago["plan"], expires, now, sub["id"]),
+            )
+            sub_id = sub["id"]
+        else:
+            expires = now + 30 * 86400
+            conn.execute(
+                "INSERT INTO subscriptions (user_id, plan, status, started_at, expires_at) "
+                "VALUES (?,?,?,?,?)",
+                (pago["user_id"], pago["plan"], "active", now, expires),
+            )
+            sub_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        tx_hash = hashlib.sha256(
+            f"konfio:{pago_id}:{pago['user_id']}:{pago['plan']}:{now}".encode()
+        ).hexdigest()
+        conn.execute(
+            """INSERT INTO transactions
+               (user_id, subscription_id, plan, amount, currency, provider,
+                provider_tx_id, tx_hash, status, approved_at)
+               VALUES (?,?,?,?,?,?,?,?, 'approved', ?)""",
+            (pago["user_id"], sub_id, pago["plan"], pago["monto"], "MXN",
+             "konfio", pago["referencia"], tx_hash, now),
+        )
+        conn.execute(
+            """UPDATE konfio_pagos SET status='aprobado', subscription_id=?,
+               reviewed_at=?, reviewed_by=?, notas=COALESCE(?, notas) WHERE id=?""",
+            (sub_id, now, revisado_por, (notas or "").strip() or None, pago_id),
+        )
+        conn.execute(
+            "INSERT OR IGNORE INTO onboarding (user_id, tour_started_at) VALUES (?,?)",
+            (pago["user_id"], now),
+        )
+        conn.commit()
+    return {
+        "pago_id": pago_id,
+        "folio": f"KON-{pago_id:05d}",
+        "user_id": pago["user_id"],
+        "plan": pago["plan"],
+        "subscription_id": sub_id,
+        "expires_at": expires,
+        "status": "aprobado",
+    }
+
+
+def rechazar_pago_konfio(pago_id: int, revisado_por: str, notas: Optional[str] = None) -> dict:
+    now = _now()
+    with _db() as conn:
+        pago = conn.execute("SELECT * FROM konfio_pagos WHERE id=?", (pago_id,)).fetchone()
+        if not pago:
+            raise ValueError("Pago no encontrado")
+        if pago["status"] != "pendiente":
+            raise ValueError(f"El pago ya fue revisado ({pago['status']})")
+        motivo = (notas or "").strip()
+        if not motivo:
+            raise ValueError("Indica el motivo del rechazo")
+        conn.execute(
+            """UPDATE konfio_pagos SET status='rechazado', reviewed_at=?,
+               reviewed_by=?, notas=? WHERE id=?""",
+            (now, revisado_por, motivo[:500], pago_id),
+        )
+        conn.commit()
+    return {"pago_id": pago_id, "folio": f"KON-{pago_id:05d}", "status": "rechazado"}
 
 PLAN_LIMITS = {
     "basico":        {"busquedas_mes": 30,   "rastreos_mes": 10,   "osint": False, "api": False, "usuarios": 1},
@@ -969,8 +1184,8 @@ def create_subscription(user_id: int, plan: str, tx_id: str = None, ip: str = No
 
         # Create transaction
         conn.execute(
-            "INSERT INTO transactions (user_id, subscription_id, plan, amount, provider, provider_tx_id, tx_hash, status, ip_address, user_agent, approved_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (user_id, sub_id, plan, PLAN_PRICES[plan], "clip", tx_id, tx_hash, "approved", ip, ua, now)
+            "INSERT INTO transactions (user_id, subscription_id, plan, amount, currency, provider, provider_tx_id, tx_hash, status, ip_address, user_agent, approved_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (user_id, sub_id, plan, PLAN_PRICES[plan], "MXN", "clip", tx_id, tx_hash, "approved", ip, ua, now)
         )
         tx_db_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
 

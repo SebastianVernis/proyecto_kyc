@@ -819,6 +819,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/subscribe/status":
             self._handle_subscribe_status()
             return
+        if path == "/api/konfio/mis-pagos":
+            self._handle_konfio_mis_pagos()
+            return
+        if path == "/api/admin/konfio/pagos":
+            self._handle_admin_konfio_pagos()
+            return
         if path == "/api/contact":
             self._handle_contact()
             return
@@ -1521,6 +1527,10 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_subscribe_status()
         elif url.path == "/api/subscribe/confirm":
             self._handle_subscribe_confirm()
+        elif url.path == "/api/konfio/pago":
+            self._handle_konfio_pago()
+        elif url.path == "/api/admin/konfio/pagos":
+            self._handle_admin_konfio_pagos_action()
         elif url.path == "/api/onboarding/complete":
             self._handle_onboarding_complete()
         elif url.path == "/api/admin/approve-user":
@@ -2398,32 +2408,70 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, result)
 
     def _handle_subscribe_confirm(self):
+        # El flujo de Clip se retiró: activar aquí sin cobro permitía a
+        # cualquier sesión darse un plan gratis. Ahora la única vía es
+        # registrar el pago Konfio y que un admin lo coteje.
+        self._json(410, {
+            "error": "El flujo de Clip fue retirado. Registra tu pago en /checkout.html"
+        })
+
+    def _handle_konfio_pago(self):
+        """POST /api/konfio/pago — el usuario declara el pago que hizo en Konfio.
+
+        No activa nada: guarda el folio/referencia para que un admin lo coteje
+        en el panel de Konfio dentro de las siguientes 24 h hábiles.
+        """
         session = self._require_session()
         if not session:
             return
+        t0 = time.time()
         body = self._read_json_body()
-        plan = body.get("plan")
-        tx_id = body.get("tx_id")
-        source = body.get("source")
-        if not plan or not source:
-            self._json(400, {"error": "plan y source requeridos"})
+        if "_error" in body:
+            self._json(400, {"error": "JSON inválido"})
             return
         try:
-            result = auth.create_subscription(
+            pago = auth.crear_pago_konfio(
                 user_id=session["user_id"],
-                plan=plan,
-                tx_id=tx_id,
-                ip=self.client_address[0],
-                ua=self.headers.get("User-Agent", ""),
+                plan=body.get("plan"),
+                titular=body.get("titular"),
+                referencia=body.get("referencia"),
+                metodo=body.get("metodo") or "tarjeta",
+                email=body.get("email"),
+                notas=body.get("notas"),
             )
-            self._audit(session=session, action="subscription_activated",
-                        endpoint="/api/subscribe/confirm", method="POST", status_code=200, duration_ms=0,
-                        query_summary={"plan": plan, "tx_id": tx_id, "hash": result.get("tx_hash", "")[:16]})
-            self._json(200, result)
         except ValueError as e:
             self._json(400, {"error": str(e)})
+            return
         except Exception as e:
-            self._json(500, {"error": str(e)})
+            self._json(500, {"error": f"No se pudo registrar el pago: {e}"})
+            return
+        self._audit(
+            session=session, action="konfio_pago_registrado",
+            endpoint="/api/konfio/pago", method="POST", status_code=200,
+            duration_ms=int((time.time() - t0) * 1000),
+            query_summary={"folio": pago["folio"], "plan": pago["plan"],
+                           "monto": pago["monto"], "metodo": body.get("metodo")},
+        )
+        self._json(200, {
+            "ok": True,
+            **pago,
+            "mensaje": ("Pago registrado. Cotejamos el abono y activamos tu plan "
+                        "en un máximo de 24 horas hábiles."),
+        })
+
+    def _handle_konfio_mis_pagos(self):
+        """GET /api/konfio/mis-pagos — estado de los pagos del usuario."""
+        session = self._require_session()
+        if not session:
+            return
+        qs = parse_qs(urlparse(self.path).query)
+        status = (qs.get("status") or [None])[0]
+        pagos = auth.listar_pagos_konfio(user_id=session["user_id"],
+                                         status=status, limit=50)
+        self._json(200, {
+            "pagos": pagos,
+            "pendientes": sum(1 for p in pagos if p["status"] == "pendiente"),
+        })
 
     def _handle_onboarding_complete(self):
         session = self._require_session()
@@ -2650,29 +2698,14 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"token": token, "plan": plan, "expires_in": 3600})
 
     def _handle_payment_activate(self):
-        """POST /api/payment/activate — Called by payment-success.html after Clip redirect."""
-        body = self._read_json_body()
-        payment_token = body.get("token")
-        if not payment_token:
-            self._json(400, {"error": "token requerido"})
-            return
-        # Validate token (no auth required — token IS the auth)
-        result = auth.validate_payment_token(payment_token)
-        if not result:
-            self._json(401, {"error": "token inválido o expirado"})
-            return
-        # Create subscription
-        try:
-            sub = auth.create_subscription(
-                user_id=result["user_id"],
-                plan=result["plan"],
-                tx_id=payment_token[:16],
-                ip=self.client_address[0],
-                ua=self.headers.get("User-Agent", ""),
-            )
-            self._json(200, {"ok": True, "plan": result["plan"], "subscription": sub})
-        except Exception as e:
-            self._json(500, {"error": str(e)})
+        """POST /api/payment/activate — RETIRADO.
+
+        El token lo generaba el propio usuario, así que llamar aquí activaba un
+        plan sin cobro. Toda activación pasa ahora por un pago Konfio revisado.
+        """
+        self._json(410, {
+            "error": "El flujo de Clip fue retirado. Registra tu pago en /checkout.html"
+        })
 
     def _handle_payment_declined_callback(self):
         """POST /api/payment/declined — Called by payment-declined.html."""
@@ -8331,6 +8364,70 @@ class Handler(BaseHTTPRequestHandler):
             endpoint="/api/admin/subscriptions", method="POST", status_code=200,
             duration_ms=0,
             query_summary={"user_id": user_id, "plan": body.get("plan"), "status": body.get("status")},
+        )
+        self._json(200, {"ok": True, "result": result})
+
+    def _handle_admin_konfio_pagos(self):
+        """GET /api/admin/konfio/pagos — pagos declarados, pendientes primero."""
+        session = self._require_admin()
+        if not session:
+            return
+        qs = parse_qs(urlparse(self.path).query)
+        status = (qs.get("status") or [None])[0]
+        pagos = auth.listar_pagos_konfio(status=status, limit=300)
+        self._json(200, {
+            "pagos": pagos,
+            "pendientes": sum(1 for p in pagos if p["status"] == "pendiente"),
+        })
+
+    def _handle_admin_konfio_pagos_action(self):
+        """POST /api/admin/konfio/pagos — aprobar o rechazar un pago declarado.
+
+        Aprobar es lo que activa/renueva el plan 30 días; rechazar exige motivo.
+        """
+        session = self._require_admin()
+        if not session:
+            return
+        t0 = time.time()
+        body = self._read_json_body()
+        if "_error" in body:
+            self._json(400, {"error": "JSON inválido"})
+            return
+        pago_id = body.get("pago_id") or body.get("id")
+        action = (body.get("action") or "").strip().lower()
+        if not pago_id:
+            self._json(400, {"error": "pago_id requerido"})
+            return
+        try:
+            if action in ("aprobar", "aprobar_pago", "approve"):
+                result = auth.aprobar_pago_konfio(
+                    pago_id=int(pago_id),
+                    revisado_por=session["username"],
+                    notas=body.get("notas"),
+                )
+                accion = "konfio_pago_aprobado"
+            elif action in ("rechazar", "rechazar_pago", "reject"):
+                result = auth.rechazar_pago_konfio(
+                    pago_id=int(pago_id),
+                    revisado_por=session["username"],
+                    notas=body.get("notas"),
+                )
+                accion = "konfio_pago_rechazado"
+            else:
+                self._json(400, {"error": "action debe ser 'aprobar' o 'rechazar'"})
+                return
+        except ValueError as e:
+            self._json(400, {"error": str(e)})
+            return
+        except Exception as e:
+            self._json(500, {"error": str(e)})
+            return
+        self._audit(
+            session=session, action=accion,
+            endpoint="/api/admin/konfio/pagos", method="POST", status_code=200,
+            duration_ms=int((time.time() - t0) * 1000),
+            query_summary={"pago_id": pago_id, "action": action,
+                           "resultado": result.get("status")},
         )
         self._json(200, {"ok": True, "result": result})
 
