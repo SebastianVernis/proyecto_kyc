@@ -123,7 +123,7 @@
               Paga con tarjeta de crédito/débito o SPEI. Konfio te mostrará el comprobante y te lo enviará por correo.
             </li>
             <li><strong>5. Registra tu pago aquí</strong>
-              Con el folio o referencia del comprobante, llena el formulario. Validamos el abono y activamos tu plan en un máximo de <strong style="display:inline">24 horas hábiles</strong>.
+              Con el folio o referencia del comprobante, llena el formulario. Validamos el abono y activamos tu plan en un máximo de <strong style="display:inline">24 horas</strong>.
             </li>
           </ol>
 
@@ -167,7 +167,7 @@
             <div class="tick">✓</div>
             <h4>Pago registrado</h4>
             <p>Folio <span class="folio" id="folio-texto">—</span></p>
-            <p id="success-msg">Estamos cotejando el abono. Tu plan se activa en un máximo de 24 horas hábiles.</p>
+            <p id="success-msg">Estamos cotejando el abono. Tu plan se activa en un máximo de 24 horas.</p>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-estado">Consultar estado</button>
           </div>
 
@@ -302,7 +302,7 @@
         document.getElementById('registro-wrap').style.display = 'none';
         document.getElementById('success-box').style.display = 'block';
         document.getElementById('folio-texto').textContent = d.folio;
-        document.getElementById('success-msg').textContent = d.mensaje || 'Estamos cotejando el abono. Tu plan se activa en un máximo de 24 horas hábiles.';
+        document.getElementById('success-msg').textContent = d.mensaje || 'Estamos cotejando el abono. Tu plan se activa en un máximo de 24 horas.';
         document.querySelectorAll('.steps li').forEach(li => li.classList.remove('active'));
         cargarPagos();
       } catch (ex) {

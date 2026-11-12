@@ -215,7 +215,7 @@ def init_db():
 
             -- Pagos declarados por el usuario vía Link Empresarial de Konfio.
             -- El plan NO se activa aquí: queda pendiente hasta que un admin
-            -- coteje el abono en Konfio (compromiso de 24 h hábiles).
+            -- coteje el abono en Konfio (compromiso de 24 horas).
             CREATE TABLE IF NOT EXISTS konfio_pagos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,

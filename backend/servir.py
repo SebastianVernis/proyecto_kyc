@@ -2419,7 +2419,7 @@ class Handler(BaseHTTPRequestHandler):
         """POST /api/konfio/pago — el usuario declara el pago que hizo en Konfio.
 
         No activa nada: guarda el folio/referencia para que un admin lo coteje
-        en el panel de Konfio dentro de las siguientes 24 h hábiles.
+        en el panel de Konfio dentro de las siguientes 24 horas.
         """
         session = self._require_session()
         if not session:
@@ -2456,7 +2456,7 @@ class Handler(BaseHTTPRequestHandler):
             "ok": True,
             **pago,
             "mensaje": ("Pago registrado. Cotejamos el abono y activamos tu plan "
-                        "en un máximo de 24 horas hábiles."),
+                        "en un máximo de 24 horas."),
         })
 
     def _handle_konfio_mis_pagos(self):
