@@ -47,7 +47,7 @@
   <div class="page">
     <header class="page-header">
       <div class="brand"><img src="../assets/argos-osint_isotipo_mono-blanco.svg" alt="Argos" class="brand-logo"><span>ARGOS <span class="brand-accent">OSINT</span></span></div>
-      <a href="/buscar.html" class="btn btn-ghost btn-sm">← Volver</a>
+      <a href="/dashboard.html" id="back-link" class="btn btn-ghost btn-sm">← Volver</a>
     </header>
     <main class="page-content">
       <div class="plans-grid-wrap">
@@ -121,6 +121,34 @@
     }
     updateBtn();
     centrarPlanSeleccionado();
+    // "Volver" no debe caer siempre en el buscador: si el usuario llegó desde
+    // el dashboard (o la portada) regresa ahí; si entró directo, va al
+    // buscador sólo cuando tiene plan activo y, si no, al dashboard.
+    (async () => {
+      const back = document.getElementById('back-link');
+      let destino = '/dashboard.html';
+      try {
+        const r = await fetch('/api/subscribe/status', {headers:{'Authorization':'Bearer ' + localStorage.getItem('session_token')}});
+        if (r.ok) {
+          const s = await r.json();
+          if (s.has_subscription) destino = '/buscar.html';
+        }
+      } catch (e) {}
+      back.href = destino;
+      back.addEventListener('click', (e) => {
+        try {
+          if (history.length > 1 && document.referrer) {
+            const ref = new URL(document.referrer);
+            const path = ref.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
+            if (ref.origin === location.origin && ['/dashboard', '/buscar', '/account', '/'].includes(path)) {
+              e.preventDefault();
+              history.back();
+            }
+          }
+        } catch (err) {}
+      });
+    })();
+
     fetch('/api/auth/me',{headers:{'Authorization':'Bearer '+localStorage.getItem('session_token')}}).then(r=>{if(!r.ok)window.location.href='/login.html'}).catch(()=>window.location.href='/login.html');
   </script>
 <script src="js/common.js"></script>
