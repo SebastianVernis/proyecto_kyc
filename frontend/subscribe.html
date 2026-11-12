@@ -88,6 +88,12 @@
   <script>
     let selectedPlan='profesional';
     const prices={basico:580,profesional:1980,empresarial:5980,corporativo:10000};
+    // Respeta el plan que viene del botón de la portada (/subscribe.html?plan=...).
+    const planParam=new URLSearchParams(location.search).get('plan');
+    if(planParam && prices[planParam]){
+      selectedPlan=planParam;
+      document.querySelectorAll('.plan-card').forEach(c=>c.classList.toggle('selected',c.dataset.plan===planParam));
+    }
     document.querySelectorAll('.plan-card').forEach(c=>{
       c.addEventListener('click',()=>{
         document.querySelectorAll('.plan-card').forEach(x=>x.classList.remove('selected'));
