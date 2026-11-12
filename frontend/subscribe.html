@@ -15,7 +15,8 @@
     .page-title{text-align:center;margin-bottom:32px}
     .page-title h1{font-size:24px;margin-bottom:8px}
     .page-title p{color:var(--muted);font-size:14px}
-    .plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1100px;margin:0 auto 32px;align-items:stretch}
+    .plans-grid-wrap{width:100%;max-width:1100px;min-width:0}
+    .plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:100%;max-width:1100px;margin:0 auto 32px;align-items:stretch}
     .plan-card{background:var(--panel);border:2px solid var(--border);border-radius:10px;padding:24px;cursor:pointer;transition:all 0.2s;position:relative;display:flex;flex-direction:column}
     .plan-card:hover{border-color:var(--accent)}
     .plan-card.selected{border-color:var(--accent2);box-shadow:0 0 20px rgba(110,231,183,0.15)}
@@ -37,8 +38,8 @@
     .pay-container img{height:56px}
     .security-note{margin-top:16px;font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
     .security-note .dot{width:6px;height:6px;border-radius:50%;background:var(--accent2)}
-    @media(max-width:900px)and(min-width:601px){.plans-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:600px){.plans-grid{grid-template-columns:1fr;overflow-x:auto;scroll-snap-type:x mandatory;display:flex;gap:16px;padding-bottom:16px}.plan-card{min-width:280px;flex-shrink:0;scroll-snap-align:center}}
+    @media(max-width:960px) and (min-width:601px){.plans-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.plans-grid{display:flex;width:100%;max-width:100%;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding:0 0 16px;margin:0 auto 24px}.plan-card{min-width:min(280px,84vw);flex-shrink:0;scroll-snap-align:center}.payment-section{max-width:100%}}
   </style>
 </head>
 <body>
