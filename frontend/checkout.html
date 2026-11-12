@@ -308,6 +308,9 @@
         document.getElementById('folio-texto').textContent = d.folio;
         document.getElementById('success-msg').textContent = d.mensaje || 'Estamos cotejando el abono. Tu plan se activa en un máximo de 24 horas.';
         document.querySelectorAll('.steps li').forEach(li => li.classList.remove('active'));
+        // En móvil el formulario es largo: al ocultarlo la confirmación puede
+        // quedar fuera del viewport y parece que el botón no hizo nada.
+        document.getElementById('success-box').scrollIntoView({behavior:'smooth', block:'center'});
         cargarPagos();
       } catch (ex) {
         mostrarError(ex.message);
