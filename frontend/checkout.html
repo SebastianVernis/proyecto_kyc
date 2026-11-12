@@ -11,13 +11,13 @@
   <link rel="icon" href="assets/argos-osint_favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/common.css">
   <style>
-    .checkout-content{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;gap:32px;max-width:1140px;margin:0 auto;width:100%}
-    .checkout-summary{flex:1;max-width:520px}
-    .checkout-payment{width:430px;flex-shrink:0}
+    .checkout-content{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;gap:32px;max-width:1140px;margin:0 auto;width:100%;min-width:0}
+    .checkout-summary{flex:1;max-width:520px;min-width:0}
+    .checkout-payment{width:430px;max-width:100%;flex:0 0 430px;min-width:0}
     .checkout-summary h1{font-size:22px;margin-bottom:8px}
     .checkout-summary .sub{color:var(--muted);margin-bottom:24px;font-size:14px}
     .plan-detail{background:var(--panel);border:2px solid var(--accent2);border-radius:10px;padding:24px;margin-bottom:24px}
-    .plan-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    .plan-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
     .plan-detail h2{font-size:18px}
     .plan-detail .price{font-size:26px;font-weight:800;color:var(--accent2);white-space:nowrap}
     .plan-detail .price span{font-size:12px;font-weight:400;color:var(--muted)}
@@ -72,7 +72,11 @@
     .pill-aprobado{background:rgba(110,231,183,.15);color:var(--accent2)}
     .pill-rechazado{background:rgba(239,68,68,.15);color:#fca5a5}
     .btn-copied{color:var(--accent2);border-color:var(--accent2)}
-    @media(max-width:860px){.checkout-content{flex-direction:column;align-items:center;padding:20px 16px}.checkout-summary{max-width:100%}.checkout-payment{width:100%}}
+    @media(max-width:960px){.checkout-content{flex-direction:column;align-items:center;padding:24px 16px;gap:24px}.checkout-summary{max-width:100%;width:100%}.checkout-payment{width:100%;flex:0 1 auto}}
+    @media(max-width:860px){.checkout-content{padding:20px 16px}.checkout-summary,.checkout-payment{width:100%;max-width:100%}}
+    /* iOS hace zoom automático al enfocar inputs con fuente <16px y ya no vuelve. */
+    @media(max-width:860px){.form-grid input,.form-grid select,.form-grid textarea{font-size:16px}.page-header{padding:14px 16px;gap:10px}.page-header .brand{min-width:0;font-size:15px}.page-header .btn{white-space:nowrap;flex-shrink:0}}
+    @media(max-width:380px){.checkout-summary h1{font-size:19px}.plan-detail{padding:18px}.plan-detail .price{font-size:23px}.payment-box{padding:18px}.steps li{padding-left:30px}.copy-chip{font-size:12px}}
   </style>
 </head>
 <body>
