@@ -101,12 +101,26 @@
         c.classList.add('selected');
         selectedPlan=c.dataset.plan;
         updateBtn();
+        centrarPlanSeleccionado();
       });
     });
     function updateBtn(){
       document.getElementById('pay-container').innerHTML='<a href="/checkout.html?plan='+selectedPlan+'" class="btn btn-primary btn-lg btn-block">Continuar al pago — $'+prices[selectedPlan].toLocaleString('es-MX')+' MXN/mes</a>';
     }
+    // En móvil el carrusel arranca en la primera tarjeta; si el plan
+    // seleccionado es otro, hay que llevarlo a la vista o parece que el
+    // botón de pago no corresponde con lo que se ve.
+    function centrarPlanSeleccionado(){
+      const g=document.querySelector('.plans-grid');
+      const c=document.querySelector('.plan-card.selected');
+      if(!g||!c||g.scrollWidth<=g.clientWidth+2)return;
+      const gr=g.getBoundingClientRect(), cr=c.getBoundingClientRect();
+      if(cr.left>=gr.left+4 && cr.right<=gr.right-4)return;
+      const target=c.offsetLeft-(g.clientWidth-c.offsetWidth)/2;
+      g.scrollTo({left:Math.max(0,target),behavior:'smooth'});
+    }
     updateBtn();
+    centrarPlanSeleccionado();
     fetch('/api/auth/me',{headers:{'Authorization':'Bearer '+localStorage.getItem('session_token')}}).then(r=>{if(!r.ok)window.location.href='/login.html'}).catch(()=>window.location.href='/login.html');
   </script>
 <script src="js/common.js"></script>
