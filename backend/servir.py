@@ -631,6 +631,77 @@ class Handler(BaseHTTPRequestHandler):
             return None
         return session
 
+    # Rutas de API que un usuario sin plan sí puede usar: identidad, cobro,
+    # cuenta y administración. Todo lo demás bajo /api/ es herramienta y se
+    # bloquea sin suscripción activa.
+    _API_SIN_PLAN = (
+        "/api/auth/", "/api/subscribe/", "/api/konfio/", "/api/payment/",
+        "/api/contact", "/api/usage", "/api/onboarding/", "/api/account/",
+        "/api/admin/", "/api/history", "/api/reports", "/api/perfiles",
+    )
+
+    # Páginas que son herramienta: sin plan activo no se sirven (redirect a
+    # /subscribe). El Worker sirve estáticos por su cuenta, así que esto es
+    # defensa en profundidad; el candado real es _gate_api_plan.
+    _PAGINAS_HERRAMIENTA = (
+        "buscar.html", "buscar_direccion.html", "busquedas_adicionales.html",
+        "sujeto.html", "oraculo.html", "cfe_coordenadas.html", "issste.html",
+        "m.html",
+    )
+
+    def _usuario_con_plan(self, session) -> bool:
+        """True si es admin o tiene una suscripción activa (no vencida)."""
+        if not session:
+            return False
+        try:
+            with auth._db() as conn:
+                row = conn.execute(
+                    "SELECT is_admin FROM users WHERE id=?", (session["user_id"],)
+                ).fetchone()
+                if row and row["is_admin"]:
+                    return True
+        except Exception:
+            pass
+        try:
+            return bool(auth.check_subscription_access(session["user_id"])["has_subscription"])
+        except Exception:
+            return False
+
+    def _gate_api_plan(self, path: str) -> bool:
+        """Bloquea herramientas sin plan. True si ya respondió (401/403)."""
+        if not path.startswith("/api/"):
+            return False
+        if any(path == p or path.startswith(p) for p in self._API_SIN_PLAN):
+            return False
+        session = self._require_session()
+        if not session:
+            return True
+        if self._usuario_con_plan(session):
+            return False
+        self._json(403, {
+            "error": "Suscripción requerida",
+            "code": "NO_SUBSCRIPTION",
+        })
+        return True
+
+    def _serve_html_con_plan(self, filename=None):
+        """Como _serve_html_protected, pero además exige plan activo."""
+        self._set_auth_rp()
+        session = auth.validate_session(self._get_session_token())
+        if not session:
+            self.send_response(302)
+            self.send_header("Location", "/login.html")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if not self._usuario_con_plan(session):
+            self.send_response(302)
+            self.send_header("Location", "/subscribe.html")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self._serve_html(filename)
+
     def _client_ip(self) -> str:
         """Devuelve la IP del cliente. Prioriza X-Forwarded-For (Cloudflare
         tunnel) y cae al peer directo. Trunca a 64 chars."""
@@ -739,6 +810,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
         self._set_auth_rp()
+        if self._gate_api_plan(path):
+            return
         # /health — liveness sin auth: confirma que el proceso HTTP responde,
         # no solo que el socket abre. Lo usan los healthchecks de Docker/compose.
         if path == "/health":
@@ -757,7 +830,7 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_html("index.html")
             return
         if path == "/buscar.html":
-            self._serve_html_protected("buscar.html")
+            self._serve_html_con_plan("buscar.html")
             return
         if path == "/subscribe.html":
             self._serve_html("subscribe.html")
@@ -787,11 +860,11 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_payment_page("declined", path)
             return
         if path == "/oraculo.html" or path == "/oraculo":
-            self._serve_html_protected("oraculo.html")
+            self._serve_html_con_plan("oraculo.html")
             return
         # PWA mobile
         if path == "/m" or path == "/m.html" or path == "/m/":
-            self._serve_html("m.html")  # no protegida: el auth lo hace el JS
+            self._serve_html_con_plan("m.html")
             return
         if path.startswith("/static/"):
             self._serve_static(path)
@@ -850,13 +923,13 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_admin_kyc_pending()
             return
         if path == "/sujeto.html":
-            self._serve_html_protected("sujeto.html")
+            self._serve_html_con_plan("sujeto.html")
             return
         if path == "/cfe_coordenadas.html":
-            self._serve_html_protected("cfe_coordenadas.html")
+            self._serve_html_con_plan("cfe_coordenadas.html")
             return
         if path == "/issste.html":
-            self._serve_html_protected("issste.html")
+            self._serve_html_con_plan("issste.html")
             return
         if path == "/api/total":
             session = self._require_session()
@@ -1447,6 +1520,20 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/"):
             import mimetypes as _mt
             rel = path.lstrip("/")
+            if rel in self._PAGINAS_HERRAMIENTA:
+                session = auth.validate_session(self._get_session_token())
+                if not session:
+                    self.send_response(302)
+                    self.send_header("Location", "/login.html")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                if not self._usuario_con_plan(session):
+                    self.send_response(302)
+                    self.send_header("Location", "/subscribe.html")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
             raiz = self._frontend_dir().resolve()
             for candidato in (raiz / rel, raiz / "pages" / rel):
                 try:
@@ -1509,6 +1596,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         url = urlparse(self.path)
         self._set_auth_rp()
+        if self._gate_api_plan(url.path):
+            return
         if url.path == "/api/auth/register/options":
             self._handle_auth_register_options()
         elif url.path == "/api/auth/register/verify":
