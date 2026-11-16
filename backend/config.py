@@ -109,6 +109,15 @@ class Config:
         self.ollama_api_key: Optional[str] = _get_optional("OLLAMA_API_KEY")
         self.ollama_model: str = _get("OLLAMA_MODEL", "deepseek-v4-pro")
 
+        # === Oráculo LLM (tool-use) ===
+        # Endpoint OpenAI-compatible. En producción apunta al router OmniRoute,
+        # que enruta a Open Design (od/*). Si queda vacío, cae a Ollama Cloud directo.
+        self.oraculo_llm_base_url: str = _get("ORACULO_LLM_BASE_URL", "https://ollama.com/api")
+        self.oraculo_llm_model: str = _get("ORACULO_LLM_MODEL", self.ollama_model)
+        self.oraculo_llm_api_key: Optional[str] = (
+            _get_optional("ORACULO_LLM_API_KEY") or self.ollama_api_key
+        )
+
         # === Gemini (fallback de reportes IA) ===
         self.gemini_api_key: Optional[str] = _get_optional("GEMINI_API_KEY")
         self.gemini_model: str = _get("GEMINI_MODEL", "gemini-2.5-flash")

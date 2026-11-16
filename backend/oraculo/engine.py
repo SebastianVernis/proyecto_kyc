@@ -129,19 +129,108 @@ __MEMORY__
 
 
 def _get_llm():
+    """Cliente LLM del oráculo.
+
+    Usa el endpoint OpenAI-compatible configurado (ORACULO_LLM_*). En producción
+    es el router OmniRoute → Open Design (od/*); si no hay override, cae a
+    Ollama Cloud directo como antes.
+    """
+    from types import SimpleNamespace
     try:
-        from providers.ollama_cloud import OllamaCloudClient
         from config import config
-        if not config.ollama_api_key:
+        base = (getattr(config, "oraculo_llm_base_url", "") or "https://ollama.com/api").rstrip("/")
+        key = getattr(config, "oraculo_llm_api_key", None) or config.ollama_api_key
+        model = getattr(config, "oraculo_llm_model", None) or config.ollama_model
+        if not key:
             return None
-        return OllamaCloudClient(config.ollama_api_key, model=config.ollama_model)
+        return SimpleNamespace(base_url=base, model=model, api_key=key)
     except Exception:
         return None
 
 
+def _to_openai_messages(messages: list) -> list:
+    """Normaliza los mensajes al formato OpenAI (arguments como string, tool_call_id)."""
+    out: list = []
+    pending: list[str] = []
+    for m in messages:
+        role = m.get("role")
+        if role == "assistant" and m.get("tool_calls"):
+            pending = []
+            tcs = []
+            for i, tc in enumerate(m["tool_calls"]):
+                fn = tc.get("function") or {}
+                args = fn.get("arguments")
+                if not isinstance(args, str):
+                    args = json.dumps(args or {}, ensure_ascii=False, default=str)
+                tid = tc.get("id") or f"call_{int(time.time()*1000)}_{i}"
+                pending.append(tid)
+                tcs.append({"id": tid, "type": "function",
+                            "function": {"name": fn.get("name", ""), "arguments": args}})
+            out.append({"role": "assistant", "content": m.get("content") or "", "tool_calls": tcs})
+        elif role == "tool":
+            item = {"role": "tool", "content": m.get("content") or ""}
+            tid = m.get("tool_call_id") or (pending.pop(0) if pending else None)
+            if tid:
+                item["tool_call_id"] = tid
+            out.append(item)
+        else:
+            out.append({"role": role, "content": m.get("content") or ""})
+    return out
+
+
+def _chat_openai(llm, messages: list, tools: list, temperature: float = 0.2,
+                 max_tokens: int = 4096) -> dict:
+    """Llama {base_url}/chat/completions (router OpenAI-compatible / Open Design)."""
+    import requests, sys
+    url = f"{llm.base_url}/chat/completions"
+    payload = {
+        "model": llm.model,
+        "messages": _to_openai_messages(messages),
+        "tools": tools,
+        "tool_choice": "auto",
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": False,
+    }
+    r = requests.post(url, json=payload,
+                      headers={"Authorization": f"Bearer {llm.api_key}"},
+                      timeout=240)
+    if r.status_code != 200:
+        print(f"[ORACULO DEBUG] HTTP {r.status_code} ({url} · {llm.model}): {r.text[:500]}",
+              file=sys.stderr, flush=True)
+        return {"error": f"HTTP {r.status_code}: {r.text[:300]}", "raw_status": r.status_code}
+    data = r.json()
+    choice = (data.get("choices") or [{}])[0]
+    msg = choice.get("message") or {}
+    usage = data.get("usage") or {}
+    out = {
+        "role": "assistant",
+        "content": msg.get("content") or "",
+        "tool_calls": [],
+        "tokens_in": usage.get("prompt_tokens", 0),
+        "tokens_out": usage.get("completion_tokens", 0),
+        "raw": data,
+    }
+    for tc in msg.get("tool_calls") or []:
+        fn = tc.get("function") or {}
+        args = fn.get("arguments")
+        if isinstance(args, str):
+            try: args = json.loads(args)
+            except Exception: args = {"_raw": args}
+        out["tool_calls"].append({
+            "id": tc.get("id", f"call_{int(time.time()*1000)}"),
+            "name": fn.get("name", ""),
+            "arguments": args or {},
+        })
+    return out
+
+
 def _chat_with_tools(llm, messages: list, tools: list, temperature: float = 0.2, max_tokens: int = 4096) -> dict:
-    """Llama /api/chat con tools nativos. Devuelve dict normalizado."""
+    """Llama al LLM con tools nativos. Devuelve dict normalizado."""
     import requests
+    base = (getattr(llm, "base_url", "") or "https://ollama.com/api").rstrip("/")
+    if not base.endswith("/api"):
+        return _chat_openai(llm, messages, tools, temperature=temperature, max_tokens=max_tokens)
     payload = {
         "model": llm.model,
         "messages": messages,
@@ -150,7 +239,7 @@ def _chat_with_tools(llm, messages: list, tools: list, temperature: float = 0.2,
         "options": {"temperature": temperature, "num_predict": max_tokens},
     }
     r = requests.post(
-        "https://ollama.com/api/chat",
+        f"{base}/chat",
         json=payload,
         headers={"Authorization": f"Bearer {llm.api_key}"},
         timeout=180,
