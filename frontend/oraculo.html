@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0b0e14">
   <script src="js/plan-gate.js"></script>
 <title>Oráculo KYC — Plataforma Encuentra</title>
@@ -19,7 +19,7 @@ body {
   margin: 0; background: var(--bg); color: var(--text);
   font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
   font-size: 14px; line-height: 1.5;
-  height: 100vh; height: 100dvh;
+  height: 100vh; height: 100dvh; height: var(--app-h, 100dvh);
   overflow: hidden;
   display: grid; grid-template-columns: 280px 1fr;
 }
@@ -135,7 +135,8 @@ footer { color: var(--muted); font-size: 11px; text-align: center; padding: 12px
   .empty { padding: 32px 16px; }
 
   #input-bar {
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    flex: none;
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px));
     gap: 8px;
   }
   /* 16px evita que iOS haga zoom al enfocar el campo. */
@@ -337,6 +338,25 @@ backdrop.addEventListener("click", () => setDrawer(false));
 document.addEventListener("keydown", e => { if (e.key === "Escape") setDrawer(false); });
 mqDrawer.addEventListener("change", () => setDrawer(false));
 setDrawer(false);
+
+/* ── Alto real visible: la barra del sistema o el teclado no deben tapar el input ── */
+const vv = window.visualViewport;
+function ajustarAlto() {
+  const raiz = document.documentElement, chat = $("chat");
+  if (!vv || !mqDrawer.matches) { raiz.style.removeProperty("--app-h"); return; }
+  // visualViewport ya descuenta teclado, barra de navegación y barras del navegador.
+  const alto = Math.round(vv.height);
+  if (alto > 120) raiz.style.setProperty("--app-h", alto + "px");
+  // Si el usuario está escribiendo, mantén a la vista lo último del chat.
+  if (document.activeElement === $("q") && chat) chat.scrollTop = chat.scrollHeight;
+}
+if (vv) {
+  vv.addEventListener("resize", ajustarAlto);
+  vv.addEventListener("scroll", ajustarAlto);
+}
+addEventListener("resize", ajustarAlto);
+addEventListener("orientationchange", () => setTimeout(ajustarAlto, 250));
+ajustarAlto();
 
 // init
 addMsg("assistant", "Hola, soy el oráculo. Escribe una consulta y la ejecutaré contra padrón + 29 bases federadas. Ejemplo: <i>'busca a TOBIAS MALDONADO en Oaxaca'</i>");
