@@ -1038,6 +1038,7 @@ async function doSearch() {
   // Reset state
   state.rows = {}; state.cols = {}; state.total = {};
   const errores = [];
+  const noIncluidos = [];
   results.forEach((res, i) => {
     const call = calls[i];
     if (res.status === "rejected") {
@@ -1045,7 +1046,10 @@ async function doSearch() {
       return;
     }
     const d = res.value;
-    if (d.error) { errores.push(`${call.label}: ${d.error}`); return; }
+    if (d.error) {
+      if (d.code === "PLAN_FEATURE") { noIncluidos.push(call.label); return; }
+      errores.push(`${call.label}: ${d.error}`); return;
+    }
     if (call.key === "_direccion") {
       // Multi-sección: desglosar en ine/cfe/telcel/att/repuve/imss/issste
       const m = call.map(d)._multi || {};
@@ -1072,6 +1076,15 @@ async function doSearch() {
   });
   btn.disabled = false; btn.innerHTML = original;
   render(errores);
+  if (noIncluidos.length) {
+    const aviso = document.createElement("div");
+    aviso.className = "results-meta";
+    aviso.style.cssText = "display:block;margin-bottom:10px";
+    aviso.innerHTML = `<span class="meta-item"><b>🔒</b> ${
+      noIncluidos.join(" y ")
+    } no está en tu plan · <a href="/subscribe.html">ver planes</a></span>`;
+    $("results-container").prepend(aviso);
+  }
   // Si la búsqueda fue por dirección y el padrón no trajo nada exacto,
   // ofrecer candidatos fuzzy para que el usuario elija con cuál enriquecer.
   if ((f.cp || f.calle) && !(state.rows["ine"] || []).length) {

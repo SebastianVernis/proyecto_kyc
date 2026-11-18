@@ -640,6 +640,14 @@ class Handler(BaseHTTPRequestHandler):
         "/api/admin/", "/api/history", "/api/reports", "/api/perfiles",
     )
 
+    # Capacidades por plan (PLAN_LIMITS: osint / api / usuarios). El candado de
+    # arriba sólo distingue "tiene plan / no tiene plan"; esto distingue planes.
+    # Clave = prefijo de ruta; valor = bandera de PLAN_LIMITS que la habilita.
+    _CAPACIDAD_POR_RUTA = (
+        ("/api/osint", "osint"),
+        ("/api/oraculo", "osint"),
+    )
+
     # Páginas que son herramienta: sin plan activo no se sirven (redirect a
     # /subscribe). El Worker sirve estáticos por su cuenta, así que esto es
     # defensa en profundidad; el candado real es _gate_api_plan.
@@ -649,23 +657,41 @@ class Handler(BaseHTTPRequestHandler):
         "m.html",
     )
 
-    def _usuario_con_plan(self, session) -> bool:
-        """True si es admin o tiene una suscripción activa (no vencida)."""
+    def _limites_plan(self, session):
+        """Límites del plan activo, o None si no hay plan.
+
+        is_admin devuelve un plan "todo concedido" (histórico: los admin nunca
+        pagaron y no debe romperse su acceso a las herramientas).
+        """
         if not session:
-            return False
+            return None
         try:
             with auth._db() as conn:
                 row = conn.execute(
                     "SELECT is_admin FROM users WHERE id=?", (session["user_id"],)
                 ).fetchone()
                 if row and row["is_admin"]:
-                    return True
+                    return {k: True for k in ("osint", "api", "usuarios")}
         except Exception:
             pass
         try:
-            return bool(auth.check_subscription_access(session["user_id"])["has_subscription"])
+            acceso = auth.check_subscription_access(session["user_id"])
         except Exception:
-            return False
+            return None
+        if not acceso.get("has_subscription"):
+            return None
+        return acceso.get("limits") or {}
+
+    def _usuario_con_plan(self, session) -> bool:
+        """True si es admin o tiene una suscripción activa (no vencida)."""
+        return self._limites_plan(session) is not None
+
+    def _capacidad_de_ruta(self, path: str):
+        """Bandera de PLAN_LIMITS que exige la ruta, o None si no pide ninguna."""
+        for prefijo, capacidad in self._CAPACIDAD_POR_RUTA:
+            if path == prefijo or path.startswith(prefijo + "/"):
+                return capacidad
+        return None
 
     def _gate_api_plan(self, path: str) -> bool:
         """Bloquea herramientas sin plan. True si ya respondió (401/403)."""
@@ -676,13 +702,35 @@ class Handler(BaseHTTPRequestHandler):
         session = self._require_session()
         if not session:
             return True
-        if self._usuario_con_plan(session):
-            return False
-        self._json(403, {
-            "error": "Suscripción requerida",
-            "code": "NO_SUBSCRIPTION",
-        })
-        return True
+        limites = self._limites_plan(session)
+        if limites is None:
+            self._json(403, {
+                "error": "Suscripción requerida",
+                "code": "NO_SUBSCRIPTION",
+            })
+            return True
+        capacidad = self._capacidad_de_ruta(path)
+        if capacidad and not limites.get(capacidad, False):
+            plan = None
+            try:
+                plan = (auth.check_subscription_access(session["user_id"]) or {}).get("plan")
+            except Exception:
+                pass
+            # Qué plan incluye la capacidad, para que el frontend ofrezca el salto
+            minimo = next(
+                (p for p in ("profesional", "empresarial", "corporativo")
+                 if auth.PLAN_LIMITS.get(p, {}).get(capacidad)),
+                None,
+            )
+            self._json(403, {
+                "error": f"Tu plan ({plan or 'sin plan'}) no incluye {capacidad.upper()}",
+                "code": "PLAN_FEATURE",
+                "capacidad": capacidad,
+                "plan_actual": plan,
+                "plan_requerido": minimo,
+            })
+            return True
+        return False
 
     def _serve_html_con_plan(self, filename=None):
         """Como _serve_html_protected, pero además exige plan activo."""
@@ -8254,11 +8302,17 @@ class Handler(BaseHTTPRequestHandler):
 
     def _require_admin(self):
         """Devuelve session si es admin, o None (con respuesta de error ya
-        enviada). Usar antes de cada handler admin."""
+        enviada). Usar antes de cada handler admin.
+
+        Se aceptan las dos marcas: la columna `users.is_admin` (la que ven el
+        frontend y el panel para mostrar u ocultar la sección) y el nombre
+        `admin` (única cuenta que la tenía antes de existir la columna; sin
+        esto, renombrar o desmarcar esa cuenta deja el panel sin dueño).
+        """
         session = self._require_session()
         if not session:
             return None
-        if session.get("username") != "admin":
+        if not (session.get("is_admin") or session.get("username") == "admin"):
             self._json(403, {"error": "solo admin puede acceder"})
             return None
         return session

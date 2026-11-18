@@ -211,6 +211,15 @@ function addMsg(role, html, meta = "") {
 
 function escapeHtml(s) { return (s||"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+/* El login guarda el token en localStorage (no sólo la cookie): mandarlo
+   siempre, o el oráculo responde 401 cuando la cookie falta o caducó. */
+function authHeaders(extra) {
+  const h = Object.assign({}, extra || {});
+  const tok = localStorage.getItem("session_token");
+  if (tok) h["Authorization"] = "Bearer " + tok;
+  return h;
+}
+
 function renderCandidatos(cands) {
   if (!cands || !cands.length) return '<div class="empty">Sin candidatos</div>';
   return cands.map(c => {
@@ -261,14 +270,17 @@ async function sendQuery() {
   try {
     const r = await fetch("/api/oraculo", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: authHeaders({"Content-Type": "application/json"}),
       body: JSON.stringify({query: q}),
       credentials: "include",
     });
     const j = await r.json();
     pending.remove();
     if (j.error) {
-      addMsg("error", `<b>Error:</b> ${escapeHtml(j.error)}<pre>${escapeHtml((j.traceback||"").slice(0,800))}</pre>`);
+      const cta = j.code === "PLAN_FEATURE"
+        ? `<p class="mt-3">El oráculo está en el plan <b>${escapeHtml(j.plan_requerido || "profesional")}</b>. <a href="/subscribe.html">Ver planes</a></p>`
+        : "";
+      addMsg("error", `<b>Error:</b> ${escapeHtml(j.error)}<pre>${escapeHtml((j.traceback||"").slice(0,800))}</pre>${cta}`);
     } else {
       const ver = j.veredicto_global || "INCIERTO";
       const meta = `iter ${j.iteraciones} · ${(j.duration_ms/1000).toFixed(1)}s · ${j.tokens_in||0} in / ${j.tokens_out||0} out`;
@@ -299,7 +311,7 @@ async function sendQuery() {
 
 async function loadMemoria() {
   try {
-    const r = await fetch("/api/oraculo/memoria?tenant_id=1", {credentials: "include"});
+    const r = await fetch("/api/oraculo/memoria?tenant_id=1", {credentials: "include", headers: authHeaders()});
     const j = await r.json();
     $("memoria").innerHTML = j.preferencias?.length
       ? j.preferencias.map(p => `<div class="session-item">${escapeHtml(p.clave)}: ${escapeHtml(p.valor)}</div>`).join("")
@@ -311,7 +323,7 @@ async function loadMemoria() {
 }
 
 async function loadAudit() {
-  const r = await fetch("/api/oraculo/audit?limit=20", {credentials: "include"});
+  const r = await fetch("/api/oraculo/audit?limit=20", {credentials: "include", headers: authHeaders()});
   const j = await r.json();
   $("audit-list").innerHTML = (j.queries||[]).map(q =>
     `<div class="session-item" title="${escapeHtml((q.final_json||'').slice(0,500))}">${escapeHtml((q.query||'').slice(0,40))}...<br><small>${escapeHtml(q.status||'')} · ${escapeHtml(q.started_at||'')}</small></div>`
