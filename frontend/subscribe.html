@@ -53,28 +53,28 @@
       <div class="plans-grid-wrap">
         <div class="page-title"><h1>Elige tu plan</h1><p>Selecciona el plan que mejor se adapte a tu volumen de investigación.</p></div>
         <div class="plans-grid">
-          <div class="plan-card" data-plan="basico" data-price="580">
+          <div class="plan-card" data-plan="basico" data-price="1100">
             <div class="plan-radio"></div>
             <h3>Básico</h3><div class="desc">Analistas independientes</div>
-            <div class="price">$580 <span>MXN</span></div><div class="period">por mes</div>
+            <div class="price">$1,100 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>30 búsquedas/mes</li><li>10 rastreos OSINT/mes</li><li>Expediente unificado</li><li>Exportación PDF</li><li>1 usuario</li><li>Soporte por correo</li></ul>
           </div>
-          <div class="plan-card selected" data-plan="profesional" data-price="1980">
+          <div class="plan-card selected" data-plan="profesional" data-price="3500">
             <div class="popular">Popular</div><div class="plan-radio"></div>
             <h3>Profesional</h3><div class="desc">Despachos pequeños</div>
-            <div class="price">$1,980 <span>MXN</span></div><div class="period">por mes</div>
+            <div class="price">$3,500 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>500 búsquedas/mes</li><li>100 rastreos OSINT/mes</li><li>Oráculo LLM incluido</li><li>OSINT completo</li><li>3 usuarios</li><li>Validación CURP/RFC</li></ul>
           </div>
-          <div class="plan-card" data-plan="empresarial" data-price="5980">
+          <div class="plan-card" data-plan="empresarial" data-price="12000">
             <div class="plan-radio"></div>
             <h3>Empresarial</h3><div class="desc">Despachos medianos</div>
-            <div class="price">$5,980 <span>MXN</span></div><div class="period">por mes</div>
+            <div class="price">$12,000 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>1,000 búsquedas/mes</li><li>500 rastreos OSINT/mes</li><li>API de integración</li><li>10 usuarios</li><li>Modelos IA premium</li><li>Singula judicial</li></ul>
           </div>
-          <div class="plan-card" data-plan="corporativo" data-price="10000">
+          <div class="plan-card" data-plan="corporativo" data-price="30000">
             <div class="plan-radio"></div>
             <h3>Corporativo</h3><div class="desc">Fiscalías y corporativos</div>
-            <div class="price">$10,000 <span>MXN</span></div><div class="period">por mes</div>
+            <div class="price">$30,000 <span>MXN</span></div><div class="period">por mes</div>
             <ul class="plan-features"><li>Búsquedas ilimitadas</li><li>Rastreos ilimitados</li><li>Usuarios ilimitados</li><li>Modelos IA personalizados</li><li>On-premise disponible</li><li>SLA garantizado</li></ul>
           </div>
         </div>
@@ -88,7 +88,7 @@
   </div>
   <script>
     let selectedPlan='profesional';
-    const prices={basico:580,profesional:1980,empresarial:5980,corporativo:10000};
+    const prices={basico:1100,profesional:3500,empresarial:12000,corporativo:30000};
     // Respeta el plan que viene del botón de la portada (/subscribe.html?plan=...).
     const planParam=new URLSearchParams(location.search).get('plan');
     if(planParam && prices[planParam]){
