@@ -37,6 +37,17 @@
     .navbar-nav{display:flex;gap:20px;align-items:center}
     .navbar-nav a{color:var(--muted);text-decoration:none;font-size:13px;transition:color 0.2s}
     .navbar-nav a:hover{color:var(--text)}
+    /* Móvil: la barra sólo lleva marca + entrar. Los 3 anclajes de sección no caben
+       (a 390 px el botón quedaba fuera de pantalla y "Cómo funciona" se partía). */
+    @media(max-width:760px){
+      .navbar{padding:10px 14px;gap:10px}
+      .navbar-brand{font-size:14px;gap:8px;min-width:0}
+      .navbar-brand img{height:22px;flex:0 0 auto}
+      .navbar-brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .navbar-nav{margin-left:auto;gap:0;flex:0 0 auto}
+      .navbar-nav a[href^="#"]{display:none}
+      .navbar-nav .btn{padding:7px 12px;font-size:12px;white-space:nowrap}
+    }
     
 
     /* ==== Hero ==== */
