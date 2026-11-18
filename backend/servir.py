@@ -944,6 +944,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/manifest.json":
             self._serve_static("/static/manifest.json")
             return
+        if path == "/api/oraculo/chat":
+            self._handle_oraculo_chat_get(url)
+            return
         if path == "/api/oraculo/memoria":
             self._handle_oraculo_memoria()
             return
@@ -1709,6 +1712,10 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_validar()
         elif url.path == "/api/v1/rastreo/relacion":
             self._handle_rastreo_relacion()
+        elif url.path == "/api/oraculo/chat":
+            self._handle_oraculo_chat()
+        elif url.path == "/api/oraculo/chat/guardar":
+            self._handle_oraculo_chat_guardar()
         elif url.path == "/api/oraculo":
             self._handle_oraculo()
         elif url.path == "/api/v1/sujeto/mapear":
@@ -2205,6 +2212,134 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             pass
         self._json(200, resultado)
+
+    def _handle_oraculo_chat(self):
+        """POST /api/oraculo/chat — un turno de la conversación guiada.
+
+        Body: {conv_id?, mensaje}
+        Devuelve los bloques del turno; el hilo completo se pide por GET.
+
+        El flujo (qué preguntar, cuándo avanzar) lo decide
+        oraculo.conversacion, no el LLM: así una respuesta en prosa del modelo
+        ya no puede convertirse en "veredicto".
+        """
+        session = self._require_session()
+        if not session:
+            return
+        payload = self._read_json_body()
+        if payload.get("_error"):
+            self._json(400, {"error": f"JSON inválido: {payload['_error']}"})
+            return
+        texto = (payload.get("mensaje") or "").strip()
+        if not texto:
+            self._json(400, {"error": "falta 'mensaje' en el body"})
+            return
+
+        user_id = session.get("user_id", 1)
+        from auth import user_tenants
+        tenants = user_tenants(user_id)
+        if not tenants:
+            self._json(403, {"error": "no perteneces a ningún tenant"})
+            return
+        tenant_id = tenants[0]["id"]
+
+        from oraculo import conversacion as cv
+        conv = cv.cargar(payload.get("conv_id") or "", user_id) if payload.get("conv_id") else None
+        if conv is None:
+            conv = cv.nueva(user_id, tenant_id)
+        conv["tenant_id"] = tenant_id
+
+        cv._guardar_mensaje(conv["id"], "user", [{"tipo": "texto_usuario", "texto": texto}])
+        try:
+            bloques, estado = cv.turno(conv, texto)
+        except Exception as e:  # noqa: BLE001
+            import traceback
+            traceback.print_exc()
+            self._json(500, {"error": f"falló el turno: {e}"})
+            return
+        cv._guardar_mensaje(conv["id"], "bot", bloques)
+        self._json(200, {
+            "conv_id": conv["id"],
+            "bloques": bloques,
+            "estado": {
+                "fase": estado.get("fase"),
+                "slots": estado.get("slots", {}),
+                "score": estado.get("score", 0.0),
+                "titulo": (estado.get("slots", {}).get("nombre", {}) or {}).get("valor", ""),
+            },
+        })
+
+    def _handle_oraculo_chat_get(self, url):
+        """GET /api/oraculo/chat[?conv_id=…] — reanuda el hilo o lista los hilos."""
+        session = self._require_session()
+        if not session:
+            return
+        from urllib.parse import parse_qs
+        user_id = session.get("user_id", 1)
+        qs = parse_qs(url.query or "")
+        conv_id = (qs.get("conv_id") or [""])[0]
+        from oraculo import conversacion as cv
+        if not conv_id:
+            ult = cv.ultima(user_id)
+            if not ult:
+                self._json(200, {"conv_id": None, "mensajes": [], "chats": cv.listar(user_id)})
+                return
+            conv_id = ult["id"]
+        conv = cv.cargar(conv_id, user_id)
+        if not conv:
+            self._json(404, {"error": "conversación no encontrada"})
+            return
+        self._json(200, {
+            "conv_id": conv["id"],
+            "mensajes": cv.historial(conv["id"]),
+            "estado": {"fase": conv["estado"].get("fase"),
+                       "slots": conv["estado"].get("slots", {}),
+                       "score": conv["estado"].get("score", 0.0)},
+            "chats": cv.listar(user_id),
+        })
+
+    def _handle_oraculo_chat_guardar(self):
+        """POST /api/oraculo/chat/guardar — guarda al sujeto en la memoria del tenant."""
+        session = self._require_session()
+        if not session:
+            return
+        payload = self._read_json_body()
+        if payload.get("_error"):
+            self._json(400, {"error": payload["_error"]})
+            return
+        user_id = session.get("user_id", 1)
+        from oraculo import conversacion as cv
+        conv = cv.cargar(payload.get("conv_id") or "", user_id)
+        if not conv:
+            self._json(404, {"error": "conversación no encontrada"})
+            return
+        st = conv["estado"]
+        row = st.get("padron") or {}
+        curp = (row.get("curp") or "").upper()
+        if not curp:
+            self._json(400, {"error": "la conversación todavía no tiene una identidad confirmada"})
+            return
+        nombre = (st.get("slots", {}).get("nombre", {}) or {}).get("valor", "")
+        from auth import user_tenants
+        tenants = user_tenants(user_id)
+        tenant_id = tenants[0]["id"] if tenants else 1
+        fuentes = "; ".join(f"{h.get('titulo','')} — {h.get('fuente','')}"
+                            for h in (st.get("hallazgos") or []))
+        err = ""
+        resumen = (f"Identificado por padrón ({st.get('slots',{}).get('entidad',{}).get('valor','')}). "
+                   f"Confianza {int(float(st.get('score') or 0) * 100)}%.")
+        try:
+            from oraculo import memory
+            memory.remember_sujeto(tenant_id, curp, nombre, resumen, fuentes)
+            ok = True
+        except Exception as e:  # noqa: BLE001
+            ok = False
+            err = str(e)
+        if not ok:
+            self._json(500, {"error": f"no se pudo guardar: {err}"})
+            return
+        self._json(200, {"ok": True, "curp": curp, "nombre": nombre,
+                         "url": f"/sujeto.html?curp={curp}"})
 
     def _handle_oraculo(self):
         """POST /api/oraculo — Agente de IA multi-tenant para investigación KYC.

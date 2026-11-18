@@ -155,6 +155,72 @@ footer { color: var(--muted); font-size: 11px; text-align: center; padding: 12px
   aside#sidebar, #drawer-backdrop { transition: none; }
 }
 
+
+/* ── Bloques de la conversación ───────────────────────────────── */
+.msg.user { text-align: right; }
+.msg .bubble p.b-txt { margin: 0 0 10px; }
+.msg .bubble p.b-txt:last-child { margin-bottom: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip {
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 14px; font-size: 13px; cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.chip:hover:not(:disabled) { background: var(--panel-2); border-color: var(--accent); color: #fff; }
+.chip[disabled] { opacity: .45; cursor: default; }
+.tabla-datos { width: 100%; border-collapse: collapse; font-size: 13px; margin: 6px 0 2px; }
+.tabla-datos th {
+  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--muted); font-weight: 500; padding: 4px 8px; border-bottom: 1px solid var(--border);
+}
+.tabla-datos td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.tabla-datos tr:last-child td { border-bottom: none; }
+.tabla-datos .valor { overflow-wrap: anywhere; }
+.tabla-datos .fuente { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.tabla-datos .estado { font-size: 11px; white-space: nowrap; }
+.estado.confirmado { color: var(--green); }
+.estado.informado { color: var(--muted); }
+.hallazgo {
+  border-left: 3px solid var(--muted); padding: 8px 12px; margin: 10px 0;
+  background: rgba(255,255,255,.02); border-radius: 0 6px 6px 0;
+}
+.hallazgo.ok { border-left-color: var(--green); }
+.hallazgo.vacio { border-left-color: #4b5563; }
+.hallazgo.warn { border-left-color: var(--amber); }
+.hallazgo.error { border-left-color: var(--red); }
+.hallazgo .h-tit { font-weight: 600; font-size: 13px; }
+.hallazgo .h-det { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.cierre {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; margin-top: 10px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.cierre .c-niv {
+  font-size: 11px; font-weight: 700; letter-spacing: .4px; padding: 2px 8px;
+  border-radius: 4px; background: var(--amber); color: #000;
+}
+.cierre .c-niv.ALTO { background: var(--green); }
+.cierre .c-niv.BAJO { background: var(--red); color: #fff; }
+.cierre .c-accion { margin-left: auto; }
+.cand { cursor: pointer; transition: border-color .15s; }
+.cand:hover { border-color: var(--accent); }
+.cand .n {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%; margin-right: 8px;
+  background: var(--panel); border: 1px solid var(--border);
+  font-size: 11px; color: var(--muted);
+}
+.typing { display: inline-flex; gap: 4px; align-items: center; height: 18px; }
+.typing i {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
+  animation: tp 1.1s infinite ease-in-out;
+}
+.typing i:nth-child(2) { animation-delay: .18s; }
+.typing i:nth-child(3) { animation-delay: .36s; }
+@keyframes tp { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .typing i { animation: none; opacity: .6; } }
+
 /* --- Argos OSINT Portal Background --- */
 .argos-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse 80% 75% at 50% 50%, #0f1115 0%, #080C20 60%, #05081A 100%)}
 .argos-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -171,6 +237,9 @@ body > *:not(.argos-bg) { position: relative; z-index: 1; }
 <aside id="sidebar">
   <h2>Tenant</h2>
   <div class="session-item" id="tenant-id">tenant_id: 1</div>
+  <h2>Conversaciones</h2>
+  <div class="session-item" onclick="nuevaConv()">+ Nueva conversación</div>
+  <div id="chats"></div>
   <h2>Memoria</h2>
   <div id="memoria">cargando...</div>
   <h2>Sujetos recientes</h2>
@@ -192,24 +261,24 @@ body > *:not(.argos-bg) { position: relative; z-index: 1; }
   </header>
   <div id="chat"></div>
   <div id="input-bar">
-    <input id="q" type="text" placeholder="Busca un sujeto: 'encuentra a TOBIAS MALDONADO en Oaxaca, todas las bases'..." />
+    <input id="q" type="text" placeholder="Escribe el nombre completo de la persona…" />
     <button id="send">Enviar</button>
   </div>
 </main>
 <script>
+/* Oráculo conversacional.
+   El flujo lo decide el backend (oraculo/conversacion.py): aquí sólo se pintan
+   los bloques que devuelve cada turno. La conversación queda guardada por
+   usuario y se retoma al volver (GET /api/oraculo/chat). */
 const $ = id => document.getElementById(id);
 const chat = $("chat");
 let busy = false;
+let convId = localStorage.getItem("oraculo_conv") || null;
 
-function addMsg(role, html, meta = "") {
-  const d = document.createElement("div");
-  d.className = "msg " + role;
-  d.innerHTML = `<div class="role">${role}</div><div class="bubble">${html}</div>${meta ? `<div class="meta">${meta}</div>` : ""}`;
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
+function escapeHtml(s) {
+  return (s || "").toString().replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
-
-function escapeHtml(s) { return (s||"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* El login guarda el token en localStorage (no sólo la cookie): mandarlo
    siempre, o el oráculo responde 401 cuando la cookie falta o caducó. */
@@ -220,118 +289,238 @@ function authHeaders(extra) {
   return h;
 }
 
-function renderCandidatos(cands) {
-  if (!cands || !cands.length) return '<div class="empty">Sin candidatos</div>';
-  return cands.map(c => {
-    const sc = c.score >= 0.7 ? "high" : c.score >= 0.4 ? "med" : "low";
-    return `<div class="cand">
-      <span class="name">${escapeHtml(c.nombre_completo || c.id || "?")}</span>
-      <span class="score ${sc}">${(c.score||0).toFixed(2)}</span>
-      <div class="ev">${escapeHtml(c.direccion || "")} ${c.estado_probable ? "· " + escapeHtml(c.estado_probable) : ""}</div>
-      ${(c.evidencia||[]).map(e => `<div class="ev">→ ${escapeHtml(e.fuente)} (${escapeHtml(e.match||"")})</div>`).join("")}
-    </div>`;
-  }).join("");
+function scrollAbajo() { chat.scrollTop = chat.scrollHeight; }
+
+function addUser(texto) {
+  const d = document.createElement("div");
+  d.className = "msg user";
+  d.innerHTML = `<div class="role">tú</div><div class="bubble">${escapeHtml(texto)}</div>`;
+  chat.appendChild(d);
+  scrollAbajo();
 }
 
-/* Los descartados salían volcados como JSON en un <pre>. Se listan en texto
-   legible: un objeto anidado se aplana a "clave: valor". */
-function fmtDescartado(v) {
-  if (v === null || v === undefined || v === "") return "—";
-  if (Array.isArray(v)) return v.length ? v.map(fmtDescartado).filter(x => x !== "—").join(", ") || "—" : "—";
-  if (typeof v === "object") {
-    const partes = Object.entries(v)
-      .filter(([k, x]) => x !== null && x !== undefined && x !== "" && !k.startsWith("_"))
-      .map(([k, x]) => `${k.replace(/_/g, " ")}: ${fmtDescartado(x)}`);
-    return partes.join(" · ") || "—";
+function addErr(texto) {
+  const d = document.createElement("div");
+  d.className = "msg error";
+  d.innerHTML = `<div class="role">error</div><div class="bubble">${escapeHtml(texto)}</div>`;
+  chat.appendChild(d);
+  scrollAbajo();
+}
+
+function typing() {
+  const d = document.createElement("div");
+  d.className = "msg assistant";
+  d.innerHTML = `<div class="role">oráculo</div>
+    <div class="bubble"><span class="typing"><i></i><i></i><i></i></span></div>`;
+  chat.appendChild(d);
+  scrollAbajo();
+  return d;
+}
+
+function tablaDatos(b) {
+  const filas = (b.filas || []).map(f => `<tr>
+      <td class="campo">${escapeHtml(f.campo)}</td>
+      <td class="valor">${escapeHtml(f.valor)}</td>
+      <td class="fuente">${escapeHtml(f.fuente || "")}</td>
+      <td class="estado ${f.estado || ""}">${f.estado === "confirmado" ? "✓ firme" : "informado"}</td>
+    </tr>`).join("");
+  return `${b.titulo ? `<div class="meta">${escapeHtml(b.titulo)}</div>` : ""}
+    <table class="tabla-datos">
+      <thead><tr><th>Dato</th><th>Valor</th><th>Fuente</th><th>Estado</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>`;
+}
+
+function bloqueHtml(b) {
+  switch (b.tipo) {
+    case "texto":
+      return `<p class="b-txt">${escapeHtml(b.texto)}</p>`;
+    case "pregunta": {
+      const chips = (b.opciones || []).map(o =>
+        `<button class="chip" type="button" data-valor="${escapeHtml(o.valor)}">${escapeHtml(o.label)}</button>`).join("");
+      return `<p class="b-txt">${escapeHtml(b.texto)}</p>${chips ? `<div class="chips">${chips}</div>` : ""}`;
+    }
+    case "datos":
+      return tablaDatos(b);
+    case "candidatos": {
+      const items = (b.items || []).map(it => `<div class="cand" data-valor="${it.n}">
+          <span class="n">${it.n}</span><span class="name">${escapeHtml(it.nombre)}</span>
+          <div class="ev">${escapeHtml(it.fecnac)}${it.edad ? " · " + escapeHtml(it.edad) : ""} · ${escapeHtml(it.entidad || "")}</div>
+          <div class="ev">CURP ${escapeHtml(it.curp || "")}</div>
+          ${it.domicilio ? `<div class="ev">${escapeHtml(it.domicilio)}</div>` : ""}
+        </div>`).join("");
+      return `<div class="meta">${escapeHtml(b.titulo || "")}</div>${items}`;
+    }
+    case "hallazgo":
+      return `<div class="hallazgo ${escapeHtml(b.estado || "")}">
+          <div class="h-tit">${escapeHtml(b.titulo)}</div>
+          <div class="h-det">${escapeHtml(b.detalle)}</div>
+        </div>`;
+    case "cierre":
+      return `<div class="cierre">
+          <span class="c-niv ${escapeHtml(b.nivel || "")}">${escapeHtml(b.nivel || "")} · ${Math.round((b.score || 0) * 100)}%</span>
+          <span>${escapeHtml(b.texto)}</span>
+          <span class="c-accion"><button class="chip" type="button" data-guardar="1">Guardar en el expediente</button></span>
+        </div>`;
+    default:
+      return `<p class="b-txt">${escapeHtml(JSON.stringify(b))}</p>`;
   }
-  return String(v);
 }
 
-function listaDescartados(rows) {
-  if (!rows || !rows.length) return '<div class="empty">Ninguno</div>';
-  return `<div class="descartados">` + rows.map(r =>
-    `<div class="ev">× ${escapeHtml(fmtDescartado(r))}</div>`).join("") + "</div>";
+function renderBot(bloques) {
+  const d = document.createElement("div");
+  d.className = "msg assistant";
+  d.innerHTML = `<div class="role">oráculo</div><div class="bubble">${
+    (bloques || []).map(bloqueHtml).join("")}</div>`;
+  chat.appendChild(d);
+  scrollAbajo();
 }
 
-async function sendQuery() {
-  if (busy) return;
-  const q = $("q").value.trim();
-  if (!q) return;
-  $("q").value = "";
+/* Un solo listener: los chips y las tarjetas responden por delegación. */
+chat.addEventListener("click", ev => {
+  const chip = ev.target.closest("[data-valor]");
+  if (chip && !chip.disabled) {
+    chat.querySelectorAll(".chip").forEach(c => c.disabled = true);
+    enviar(chip.getAttribute("data-valor"));
+    return;
+  }
+  const g = ev.target.closest("[data-guardar]");
+  if (g) guardar(g);
+});
+
+async function enviar(texto) {
+  texto = (texto || "").trim();
+  if (busy || !texto) return;
   busy = true;
   $("send").disabled = true;
-  $("status-badge").textContent = "● procesando...";
-  addMsg("user", escapeHtml(q));
-  const pending = document.createElement("div");
-  pending.className = "msg assistant";
-  pending.innerHTML = `<div class="role">assistant</div><div class="bubble"><em>pensando...</em></div>`;
-  chat.appendChild(pending);
-  chat.scrollTop = chat.scrollHeight;
+  $("status-badge").textContent = "● procesando…";
+  addUser(texto);
+  const t = typing();
   try {
-    const r = await fetch("/api/oraculo", {
+    const r = await fetch("/api/oraculo/chat", {
       method: "POST",
-      headers: authHeaders({"Content-Type": "application/json"}),
-      body: JSON.stringify({query: q}),
       credentials: "include",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ conv_id: convId, mensaje: texto }),
     });
     const j = await r.json();
-    pending.remove();
-    if (j.error) {
-      const cta = j.code === "PLAN_FEATURE"
-        ? `<p class="mt-3">El oráculo está en el plan <b>${escapeHtml(j.plan_requerido || "profesional")}</b>. <a href="/subscribe.html">Ver planes</a></p>`
-        : "";
-      addMsg("error", `<b>Error:</b> ${escapeHtml(j.error)}<pre>${escapeHtml((j.traceback||"").slice(0,800))}</pre>${cta}`);
+    t.remove();
+    if (!r.ok || j.error) {
+      addErr(j.error || `HTTP ${r.status}`);
+      if (j.code === "PLAN_FEATURE") {
+        addErr(`El oráculo está en el plan ${j.plan_requerido || "profesional"}.`);
+      }
     } else {
-      const ver = j.veredicto_global || "INCIERTO";
-      const meta = `iter ${j.iteraciones} · ${(j.duration_ms/1000).toFixed(1)}s · ${j.tokens_in||0} in / ${j.tokens_out||0} out`;
-      const tools = (j.tools_usados||[]).map(t =>
-        `<div class="msg tool"><div class="role">tool</div><div class="bubble">${escapeHtml(t.tool)}(${escapeHtml(JSON.stringify(t.args||{}))}) → ${t.count||0} filas en ${t.duration_ms}ms</div></div>`
-      ).join("");
-      const html = `
-        <div><span class="verdict ${ver}">${ver}</span> · confianza ${((j.confianza||0)*100).toFixed(0)}%</div>
-        <h2 class="mt-3">Candidatos</h2>
-        ${renderCandidatos(j.candidatos)}
-        ${j.descartados && j.descartados.length ? `<h2>Descartados</h2>${listaDescartados(j.descartados)}` : ""}
-        ${j.nota ? `<h2>Nota</h2><div>${escapeHtml(j.nota)}</div>` : ""}
-      `;
-      addMsg("assistant", html, meta);
-      // render tools used separately
-      if (tools) chat.insertAdjacentHTML("beforeend", tools);
-      loadMemoria();
+      convId = j.conv_id;
+      localStorage.setItem("oraculo_conv", convId);
+      renderBot(j.bloques);
+      loadChats();
+      if (j.estado && j.estado.fase === "cerrado") loadMemoria();
     }
   } catch (e) {
-    pending.remove();
-    addMsg("error", `<b>Excepción:</b> ${escapeHtml(e.message)}`);
+    t.remove();
+    addErr("No se pudo contactar al servidor: " + e.message);
   } finally {
     busy = false;
     $("send").disabled = false;
     $("status-badge").textContent = "● listo";
+    $("q").focus();
   }
+}
+
+async function guardar(btn) {
+  if (!convId) return;
+  btn.disabled = true;
+  btn.textContent = "Guardando…";
+  try {
+    const r = await fetch("/api/oraculo/chat/guardar", {
+      method: "POST",
+      credentials: "include",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ conv_id: convId }),
+    });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || `HTTP ${r.status}`);
+    btn.outerHTML = `<a class="chip" href="${escapeHtml(j.url)}">Ver a ${escapeHtml(j.nombre)} en el expediente →</a>`;
+    loadMemoria();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "Guardar en el expediente";
+    addErr("No se pudo guardar: " + e.message);
+  }
+}
+
+const BIENVENIDA = [
+  { tipo: "texto", texto: "Hola. Vamos por partes para no gastar consultas a ciegas: primero " +
+      "confirmo quién es, y ya con la identidad firme reviso las bases." },
+  { tipo: "pregunta", texto: "¿A quién buscamos? Dame el nombre completo, como aparece en su " +
+      "INE, acta o credencial.", opciones: [] },
+];
+
+function nuevaConv() {
+  localStorage.removeItem("oraculo_conv");
+  convId = null;
+  chat.innerHTML = "";
+  renderBot(BIENVENIDA);
+  $("q").value = "";
+  $("q").focus();
+}
+
+/* La lista llega en la respuesta de cada turno; si no viene, no se toca. */
+function loadChats(lista) {
+  try {
+    if (!lista) return;
+    const items = lista;
+    $("chats").innerHTML = items.length
+      ? items.map(c => `<div class="session-item" onclick="abrirConv('${c.id}')" title="${escapeHtml(c.fase || '')}">
+          ${escapeHtml((c.titulo || "sin nombre").slice(0, 28))}<br><small>${escapeHtml(c.actualizada)}</small></div>`).join("")
+      : "<i>sólo ésta</i>";
+  } catch (e) { $("chats").innerHTML = ""; }
+}
+
+async function abrirConv(id) {
+  if (busy) return;
+  try {
+    const r = await fetch(`/api/oraculo/chat?conv_id=${encodeURIComponent(id)}`,
+      { credentials: "include", headers: authHeaders() });
+    const j = await r.json();
+    if (j.error) { addErr(j.error); return; }
+    convId = j.conv_id;
+    localStorage.setItem("oraculo_conv", convId);
+    chat.innerHTML = "";
+    (j.mensajes || []).forEach(m => {
+      if (m.rol === "user") addUser((m.bloques[0] || {}).texto || "");
+      else renderBot(m.bloques);
+    });
+    setDrawer(false);
+  } catch (e) { addErr("No se pudo abrir: " + e.message); }
 }
 
 async function loadMemoria() {
   try {
-    const r = await fetch("/api/oraculo/memoria?tenant_id=1", {credentials: "include", headers: authHeaders()});
+    const r = await fetch("/api/oraculo/memoria?tenant_id=1", { credentials: "include", headers: authHeaders() });
     const j = await r.json();
     $("memoria").innerHTML = j.preferencias?.length
       ? j.preferencias.map(p => `<div class="session-item">${escapeHtml(p.clave)}: ${escapeHtml(p.valor)}</div>`).join("")
       : "<i>sin preferencias</i>";
     $("sujetos").innerHTML = j.sujetos?.length
-      ? j.sujetos.map(s => `<div class="session-item" title="${escapeHtml(s.resumen||'')}">${escapeHtml(s.nombre)}<br><small>${escapeHtml(s.ultima_vez||'')}</small></div>`).join("")
+      ? j.sujetos.map(s => `<div class="session-item" title="${escapeHtml(s.resumen || '')}">${escapeHtml(s.nombre)}<br><small>${escapeHtml(s.ultima_vez || '')}</small></div>`).join("")
       : "<i>sin sujetos</i>";
   } catch (e) { $("memoria").textContent = "err: " + e.message; }
 }
 
 async function loadAudit() {
-  const r = await fetch("/api/oraculo/audit?limit=20", {credentials: "include", headers: authHeaders()});
+  const r = await fetch("/api/oraculo/audit?limit=20", { credentials: "include", headers: authHeaders() });
   const j = await r.json();
-  $("audit-list").innerHTML = (j.queries||[]).map(q =>
-    `<div class="session-item" title="${escapeHtml((q.final_json||'').slice(0,500))}">${escapeHtml((q.query||'').slice(0,40))}...<br><small>${escapeHtml(q.status||'')} · ${escapeHtml(q.started_at||'')}</small></div>`
+  $("audit-list").innerHTML = (j.queries || []).map(q =>
+    `<div class="session-item" title="${escapeHtml((q.final_json || '').slice(0, 500))}">${escapeHtml((q.query || '').slice(0, 40))}...<br><small>${escapeHtml(q.status || '')} · ${escapeHtml(q.started_at || '')}</small></div>`
   ).join("");
 }
 
-$("send").onclick = sendQuery;
-$("q").onkeydown = e => { if (e.key === "Enter" && !busy) sendQuery(); };
+$("send").onclick = () => { const v = $("q").value.trim(); $("q").value = ""; enviar(v); };
+$("q").onkeydown = e => {
+  if (e.key === "Enter" && !busy) { const v = $("q").value.trim(); $("q").value = ""; enviar(v); }
+};
 
 /* ── Cajón lateral en móvil ─────────────────────────────────── */
 const mqDrawer = matchMedia("(max-width: 900px)");
@@ -341,7 +530,6 @@ function setDrawer(open) {
   const abierto = !!open && mqDrawer.matches;
   document.body.classList.toggle("drawer-open", abierto);
   menuBtn.setAttribute("aria-expanded", abierto ? "true" : "false");
-  // En escritorio el aside es visible siempre: no debe quedar aria-hidden.
   if (mqDrawer.matches) sidebar.setAttribute("aria-hidden", abierto ? "false" : "true");
   else sidebar.removeAttribute("aria-hidden");
 }
@@ -354,26 +542,44 @@ setDrawer(false);
 /* ── Alto real visible: la barra del sistema o el teclado no deben tapar el input ── */
 const vv = window.visualViewport;
 function ajustarAlto() {
-  const raiz = document.documentElement, chat = $("chat");
+  const raiz = document.documentElement, chatEl = $("chat");
   if (!vv || !mqDrawer.matches) { raiz.style.removeProperty("--app-h"); return; }
-  // visualViewport ya descuenta teclado, barra de navegación y barras del navegador.
   const alto = Math.round(vv.height);
   if (alto > 120) raiz.style.setProperty("--app-h", alto + "px");
-  // Si el usuario está escribiendo, mantén a la vista lo último del chat.
-  if (document.activeElement === $("q") && chat) chat.scrollTop = chat.scrollHeight;
+  if (document.activeElement === $("q") && chatEl) chatEl.scrollTop = chatEl.scrollHeight;
 }
-if (vv) {
-  vv.addEventListener("resize", ajustarAlto);
-  vv.addEventListener("scroll", ajustarAlto);
-}
+if (vv) { vv.addEventListener("resize", ajustarAlto); vv.addEventListener("scroll", ajustarAlto); }
 addEventListener("resize", ajustarAlto);
 addEventListener("orientationchange", () => setTimeout(ajustarAlto, 250));
 ajustarAlto();
 
-// init
-addMsg("assistant", "Hola, soy el oráculo. Escribe una consulta y la ejecutaré contra padrón + 29 bases federadas. Ejemplo: <i>'busca a TOBIAS MALDONADO en Oaxaca'</i>");
-loadMemoria();
-loadAudit();
+/* ── Arranque: retomar el hilo guardado, o abrir uno nuevo ─── */
+(async function init() {
+  try {
+    const r = await fetch("/api/oraculo/chat", { credentials: "include", headers: authHeaders() });
+    if (r.ok) {
+      const j = await r.json();
+      if (j.conv_id && (j.mensajes || []).length) {
+        convId = j.conv_id;
+        localStorage.setItem("oraculo_conv", convId);
+        (j.mensajes || []).forEach(m => {
+          if (m.rol === "user") addUser((m.bloques[0] || {}).texto || "");
+          else renderBot(m.bloques);
+        });
+        loadChats(j.chats || []);
+      } else {
+        renderBot(BIENVENIDA);
+        loadChats(j.chats || []);
+      }
+    } else {
+      renderBot(BIENVENIDA);
+    }
+  } catch (e) {
+    renderBot(BIENVENIDA);
+  }
+  loadMemoria();
+  loadAudit();
+})();
 </script>
 <script>
 (function(){
