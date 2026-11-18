@@ -31,6 +31,7 @@
 .plan-aviso{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:8px;border:1px solid var(--warn);background:rgba(251,191,36,0.08);font-size:13px;margin-bottom:18px;line-height:1.45}
 .plan-aviso a{color:var(--accent2);font-weight:600}
 .plan-aviso.ok{border-color:var(--accent2);background:rgba(110,231,183,0.07)}
+#plan-aviso[hidden]{display:none}
 .card.locked{opacity:.62;border-style:dashed}
 .card.locked .search-form{display:none}
 .lock-nota{font-size:12px;color:var(--warn);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -206,7 +207,7 @@ function renderPlanChip() {
   if (PLAN.nombre) partes.push(`Plan <b>${esc(NOMBRE_PLAN[PLAN.nombre] || PLAN.nombre)}</b>`);
   const r = PLAN.rastreos;
   if (r) {
-    const txt = r.unlimited ? `${r.used} rastreos (ilimitado)`
+    const txt = r.unlimited ? "rastreos ilimitados"
                             : `${r.used}/${r.limit} rastreos`;
     partes.push(esc(txt));
   }
@@ -220,7 +221,7 @@ function renderAvisoPlan() {
   if (!box) return;
   const sinOsint = !incluido("apify");
   const sinSingula = !incluido("singula");
-  if (!sinOsint && !sinSingula) { box.innerHTML = ""; return; }
+  if (!sinOsint && !sinSingula) { box.innerHTML = ""; box.hidden = true; return; }
   const plan = esc(NOMBRE_PLAN[PLAN.nombre] || PLAN.nombre || "actual");
   let txt;
   if (sinOsint && sinSingula) {
@@ -232,6 +233,7 @@ function renderAvisoPlan() {
   }
   box.innerHTML = `<div class="plan-aviso"><span>🔒</span><div>${txt}
     <a href="/subscribe.html">Ver planes</a></div></div>`;
+  box.hidden = false;
 }
 
 async function loadPlan() {
