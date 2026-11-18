@@ -532,6 +532,13 @@ def turno(conv: dict, texto: str) -> tuple[list, dict]:
                        "estado (por ejemplo «14/07/1998, Oaxaca») y busco variantes.",
                        placeholder="CURP o fecha y estado")], st
 
+        # Si en vez de confirmar escribe otro nombre, se toma como persona nueva:
+        # descartarlo y volver a pedir el nombre sería perder lo que ya escribió.
+        if len(_palabras(t)) >= 2 and not (fecnac or edo_clave or curp):
+            st.update({"fase": "nombre", "padron": None, "candidatos": [],
+                       "buscado": None, "slots": {}})
+            _guardar_estado(conv)
+
     # ── Fase desambiguar: elige candidato por número o aporta datos ──
     if fase == "desambiguar" and st.get("candidatos"):
         cands = st["candidatos"]
