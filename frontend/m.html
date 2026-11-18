@@ -541,7 +541,8 @@ function renderCandidato(c) {
 
 // El oráculo ya no devuelve un veredicto único: devuelve turnos de conversación
 // (texto, candidatos, pregunta, datos, hallazgo, cierre). Se pintan en orden.
-const ESTADO_CLASE = { confirmado: "high", posible: "med", sin_dato: "low", no_encontrado: "low" };
+const ESTADO_CLASE = { confirmado: "high", ok: "high", posible: "med", parcial: "med",
+  sin_dato: "low", no_encontrado: "low", vacio: "low", warn: "med", error: "low" };
 function renderDatos(b) {
   const filas = (b.filas || []).map(f =>
     `<div class="row"><span class="k">${escapeHtml(f.campo || "")}</span>` +
