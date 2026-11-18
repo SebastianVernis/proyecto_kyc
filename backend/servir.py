@@ -1716,8 +1716,6 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_oraculo_chat()
         elif url.path == "/api/oraculo/chat/guardar":
             self._handle_oraculo_chat_guardar()
-        elif url.path == "/api/oraculo":
-            self._handle_oraculo()
         elif url.path == "/api/v1/sujeto/mapear":
             self._handle_sujeto_mapear()
         elif url.path == "/api/v1/familia/dossier":
@@ -2341,88 +2339,6 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"ok": True, "curp": curp, "nombre": nombre,
                          "url": f"/sujeto.html?curp={curp}"})
 
-    def _handle_oraculo(self):
-        """POST /api/oraculo — Agente de IA multi-tenant para investigación KYC.
-
-        Body: {query, tenant_id?, model?, max_iterations?}
-        Auth: sesión (cookie o Bearer)
-        """
-        # 1. auth
-        session = self._require_session()
-        if not session:
-            return
-        # 2. parsear body
-        try:
-            ln = int(self.headers.get("Content-Length", 0))
-            raw = self.rfile.read(ln) if ln else b"{}"
-            payload = json.loads(raw.decode("utf-8"))
-        except (ValueError, json.JSONDecodeError) as e:
-            self._json(400, {"error": f"JSON inválido: {e}"})
-            return
-
-        query = (payload.get("query") or "").strip()
-        if not query:
-            self._json(400, {"error": "falta 'query' en el body"})
-            return
-
-        # 3. tenant: por defecto el primer tenant del user (no user_id 1:1)
-        #    si el payload trae tenant_id, validar membresía
-        user_id = session.get("user_id", 1)
-        from auth import user_tenants, user_belongs_to_tenant
-        tenants = user_tenants(user_id)
-        if not tenants:
-            self._json(403, {"error": "no perteneces a ningún tenant"})
-            return
-        requested = payload.get("tenant_id")
-        if requested is not None:
-            requested = int(requested)
-            if not user_belongs_to_tenant(user_id, requested):
-                self._json(403, {"error": f"no tienes acceso al tenant {requested}"})
-                return
-            tenant_id = requested
-        else:
-            tenant_id = tenants[0]["id"]  # primer tenant del user
-
-        model = payload.get("model")
-        max_iter = min(int(payload.get("max_iterations") or 8), 16)
-
-        # 4. ejecutar motor
-        try:
-            from oraculo import engine
-            import oraculo.tools.padron
-            import oraculo.tools.curp
-            import oraculo.tools.rfc
-            import oraculo.tools.base_search
-            import oraculo.tools.cfe
-            import oraculo.tools.kyc_broker
-            import oraculo.tools.osint
-            import oraculo.tools.wiki_recall
-            import oraculo.tools.reconciliacion
-            import os
-            os.environ["ORACULO_SESSION_TOKEN"] = self._get_session_token() or ""
-            result = engine.run(
-                query=query, tenant_id=tenant_id, user_id=user_id,
-                max_iterations=max_iter, llm_model_override=model
-            )
-        except Exception as e:
-            import traceback
-            self._json(500, {"error": f"oraculo falló: {e}", "traceback": traceback.format_exc()[:1500]})
-            return
-
-        # 5. audit integrado
-        try:
-            self._audit(
-                session=session, action="oraculo_query",
-                endpoint="/api/oraculo", method="POST",
-                status_code=200, duration_ms=result.get("duration_ms", 0),
-                query_summary=query[:100],
-                results_count=len(result.get("candidatos", []))
-            )
-        except Exception:
-            pass
-
-        self._json(200, result)
-
     def _handle_sujeto_mapear(self):
         """POST /api/v1/sujeto/mapear — Mapeo completo de sujeto desde padrón."""
         session = self._require_subscription_with_usage("busqueda")
@@ -2472,89 +2388,6 @@ class Handler(BaseHTTPRequestHandler):
         )
         self._json(200, payload)
         return
-        """POST /api/oraculo — Agente de IA multi-tenant para investigación KYC.
-
-        Body: {query, tenant_id?, model?, max_iterations?}
-        Auth: sesión (cookie o Bearer)
-        """
-        # 1. auth
-        session = self._require_session()
-        if not session:
-            return
-        # 2. parsear body
-        try:
-            ln = int(self.headers.get("Content-Length", 0))
-            raw = self.rfile.read(ln) if ln else b"{}"
-            payload = json.loads(raw.decode("utf-8"))
-        except (ValueError, json.JSONDecodeError) as e:
-            self._json(400, {"error": f"JSON inválido: {e}"})
-            return
-
-        query = (payload.get("query") or "").strip()
-        if not query:
-            self._json(400, {"error": "falta 'query' en el body"})
-            return
-
-        # 3. tenant: por defecto el primer tenant del user (no user_id 1:1)
-        #    si el payload trae tenant_id, validar membresía
-        user_id = session.get("user_id", 1)
-        from auth import user_tenants, user_belongs_to_tenant
-        tenants = user_tenants(user_id)
-        if not tenants:
-            self._json(403, {"error": "no perteneces a ningún tenant"})
-            return
-        requested = payload.get("tenant_id")
-        if requested is not None:
-            requested = int(requested)
-            if not user_belongs_to_tenant(user_id, requested):
-                self._json(403, {"error": f"no tienes acceso al tenant {requested}"})
-                return
-            tenant_id = requested
-        else:
-            tenant_id = tenants[0]["id"]  # primer tenant del user
-
-        model = payload.get("model")
-        max_iter = min(int(payload.get("max_iterations") or 8), 16)
-
-        # 4. ejecutar motor
-        try:
-            # Import perezoso + side-effect: registra los 8 tools core + 7 de reconciliación
-            from oraculo import engine
-            import oraculo.tools.padron     # noqa
-            import oraculo.tools.curp       # noqa
-            import oraculo.tools.rfc        # noqa
-            import oraculo.tools.base_search  # noqa
-            import oraculo.tools.cfe        # noqa
-            import oraculo.tools.kyc_broker  # noqa
-            import oraculo.tools.osint       # noqa
-            import oraculo.tools.wiki_recall  # noqa
-            import oraculo.tools.reconciliacion  # noqa — 7 tools (capa 1-7)
-            # Pasar el session token a las tools que llaman al backend
-            import os
-            os.environ["ORACULO_SESSION_TOKEN"] = self._get_session_token() or ""
-            result = engine.run(
-                query=query, tenant_id=tenant_id, user_id=user_id,
-                max_iterations=max_iter, llm_model_override=model
-            )
-        except Exception as e:
-            import traceback
-            self._json(500, {"error": f"oraculo falló: {e}", "traceback": traceback.format_exc()[:1500]})
-            return
-
-        # 5. audit integrado
-        try:
-            self._audit(
-                session=session, action="oraculo_query",
-                endpoint="/api/oraculo", method="POST",
-                status_code=200, duration_ms=result.get("duration_ms", 0),
-                query_summary=query[:100],
-                results_count=len(result.get("candidatos", []))
-            )
-        except Exception:
-            pass
-
-        self._json(200, result)
-
     def _handle_oraculo_memoria(self):
         """GET /api/oraculo/memoria?tenant_id=1 — Preferencias, aliases y sujetos recientes."""
         session = self._require_session()

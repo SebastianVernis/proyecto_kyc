@@ -295,6 +295,13 @@ header .conn.online { background: var(--green); box-shadow: 0 0 8px var(--green)
 .m-see-more { text-align: center; padding: 6px; color: var(--accent); font-size: 13px; cursor: pointer; }
 .m-recent-value { background: var(--panel-2); }
 .m-memoria-section { margin-top: 8px; }
+.chips-q{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips-q button{background:var(--panel-2);color:var(--text);border:1px solid var(--border,#2a3142);border-radius:999px;padding:8px 12px;font-size:13px}
+.chips-q button:disabled{opacity:.45}
+.cand-m{border:1px solid var(--border,#2a3142);border-radius:10px;padding:8px 10px;margin:6px 0;background:var(--panel-2)}
+.cand-m .n{font-size:11px;color:var(--accent-2)}
+.cand-m .name{font-weight:600;font-size:14px}
+.cand-m .sub{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -490,6 +497,7 @@ async function enterApp() {
   }
   loadAudit();
   renderRecent();
+  restaurarHilo();
   $("#input").focus();
 }
 
@@ -531,6 +539,91 @@ function renderCandidato(c) {
   </div>`;
 }
 
+// El oráculo ya no devuelve un veredicto único: devuelve turnos de conversación
+// (texto, candidatos, pregunta, datos, hallazgo, cierre). Se pintan en orden.
+const ESTADO_CLASE = { confirmado: "high", posible: "med", sin_dato: "low", no_encontrado: "low" };
+function renderDatos(b) {
+  const filas = (b.filas || []).map(f =>
+    `<div class="row"><span class="k">${escapeHtml(f.campo || "")}</span>` +
+    `<span>${escapeHtml(f.valor || "—")}<br>` +
+    `<small style="color:var(--muted)">${escapeHtml(f.fuente || "")}${f.estado ? " · " + escapeHtml(f.estado) : ""}</small></span></div>`
+  ).join("");
+  const t = b.titulo ? `<div style="font-size:12px;color:var(--muted);margin:2px 0 4px">${escapeHtml(b.titulo)}</div>` : "";
+  return `<div style="margin:8px 0">${t}${filas}</div>`;
+}
+function renderCandidatos(b) {
+  const items = (b.items || []).map(c =>
+    `<div class="cand-m" onclick="sendQuery('${c.n}')">` +
+    `<div class="n">${c.n}.</div><div class="name">${escapeHtml(c.nombre || "?")}</div>` +
+    `<div class="sub">${escapeHtml([c.edad, c.entidad].filter(Boolean).join(" · "))}</div>` +
+    `<div class="sub">${escapeHtml(c.curp || "")}</div>` +
+    `<div class="sub">${escapeHtml(c.domicilio || "")}</div></div>`
+  ).join("");
+  return `<div style="margin:6px 0">${items}</div>`;
+}
+function renderPregunta(b) {
+  const ops = (b.opciones || []).map(o => {
+    const v = o.valor || o.label || o;
+    return `<button class="chip-q" data-v="${escapeHtml(v)}">${escapeHtml(o.label || v)}</button>`;
+  }).join("");
+  return `<div style="margin-top:8px">${escapeHtml(b.texto || "")}${ops ? `<div class="chips-q">${ops}</div>` : ""}</div>`;
+}
+function renderBloques(bloques) {
+  let html = "";
+  for (const b of bloques || []) {
+    if (b.tipo === "texto") html += `<div>${escapeHtml(b.texto || "")}</div>`;
+    else if (b.tipo === "candidatos") html += renderCandidatos(b);
+    else if (b.tipo === "pregunta") html += renderPregunta(b);
+    else if (b.tipo === "datos") html += renderDatos(b);
+    else if (b.tipo === "hallazgo") html +=
+      `<div style="margin:8px 0"><span class="score ${ESTADO_CLASE[b.estado] || "med"}">${escapeHtml(b.estado || "")}</span> ` +
+      `<b>${escapeHtml(b.titulo || "")}</b><div style="font-size:13px;color:var(--muted)">${escapeHtml(b.detalle || "")}` +
+      `${b.fuente ? " · " + escapeHtml(b.fuente) : ""}</div></div>`;
+    else if (b.tipo === "cierre") html +=
+      `<div style="margin:8px 0"><b>${escapeHtml(b.texto || "")}</b>` +
+      `<div class="chips-q"><button class="chip-q" data-v="guardar">Guardar en el expediente</button></div></div>`;
+    else if (b.tipo === "error") html += `<div style="color:#f87171">${escapeHtml(b.texto || "")}</div>`;
+  }
+  return html || `<div>${escapeHtml("Sin respuesta.")}</div>`;
+}
+function pintar(bloques) {
+  const el = addMsg("assistant", renderBloques(bloques));
+  el.querySelectorAll(".chip-q").forEach(btn => {
+    btn.onclick = () => {
+      const v = btn.dataset.v;
+      btn.disabled = true;
+      if (v === "guardar") return guardar();
+      sendQuery(v);
+    };
+  });
+  return el;
+}
+async function guardar() {
+  if (!convId) return addMsg("error", "Todavía no hay nada que guardar.");
+  try {
+    const r = await api("/api/oraculo/chat/guardar", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conv_id: convId })
+    });
+    addMsg("assistant", `Guardado en el expediente: <b>${escapeHtml(r.nombre || "")}</b>`);
+  } catch (e) { addMsg("error", `No se pudo guardar: ${escapeHtml(e.message)}`); }
+}
+let convId = null;
+
+// Al abrir, se retoma el hilo que quedó guardado en el servidor.
+async function restaurarHilo() {
+  try {
+    const r = await api("/api/oraculo/chat");
+    const ms = r.mensajes || [];
+    if (!ms.length) return;
+    for (const m of ms) {
+      if (m.rol === "user") addMsg("user", escapeHtml((m.bloques?.[0] || {}).texto || ""));
+      else pintar(m.bloques || []);
+    }
+    convId = r.conv_id || r.id || convId;
+  } catch (e) { /* sin hilo previo */ }
+}
+
 async function sendQuery(q) {
   if (inFlight) return;
   if (!q) return;
@@ -538,8 +631,6 @@ async function sendQuery(q) {
   $("#send").disabled = true;
 
   addMsg("user", escapeHtml(q));
-
-  // añadir a recientes
   recentSearches = [q, ...recentSearches.filter(x => x !== q)].slice(0, 8);
   saveRecent();
 
@@ -547,33 +638,19 @@ async function sendQuery(q) {
   const t0 = Date.now();
 
   try {
-    const r = await api("/api/oraculo", {
-      method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({query: q, model: "gpt-oss:120b", max_iterations: 8})
+    const r = await api("/api/oraculo/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(convId ? { conv_id: convId, mensaje: q } : { mensaje: q })
     });
     thinking.remove();
-
-    const v = r.veredicto_global || "INCIERTO";
-    const score = typeof r.confianza === "number" ? r.confianza : 0;
-    let html = `<div><span class="verdict ${v}">${v}</span> <span class="score ${score >= 0.7 ? "high" : score >= 0.3 ? "med" : "low"}">confianza ${score.toFixed(2)}</span></div>`;
-    html += `<div class="m-resumen">${escapeHtml(r.resumen || "")}</div>`;
-    const cs = r.candidatos || [];
-    if (cs.length) {
-      html += `<div class="m-cand-header">Candidatos (${cs.length})</div>`;
-      html += cs.slice(0, 3).map(renderCandidato).join("");
-      if (cs.length > 3) {
-        html += `<div class="m-see-more" onclick="showAllCandidates(${JSON.stringify(escapeHtml(JSON.stringify(cs))).slice(1, -1)})">Ver ${cs.length - 3} más ›</div>`;
-      }
-    }
-    const ds = r.descartados || [];
-    if (ds.length) {
-      html += `<details class="m-evs-block"><summary class="m-see-more" style="font-size:12px">${ds.length} descartado(s)</summary><div class="m-resumen" style="font-size:12px">${ds.slice(0, 5).map(d => `• ${escapeHtml(d.nombre || "?")}: ${escapeHtml((d.razon || "").slice(0, 60))}`).join("<br>")}</div></details>`;
-    }
-    const meta = `iter ${r.iteraciones || "?"} · ${((Date.now()-t0)/1000).toFixed(1)}s · ${r.tokens_in || 0}↘ / ${r.tokens_out || 0}↗`;
-    addMsg("assistant", html, meta);
-    vibrate(v === "LOCALIZADO" ? 30 : v === "NO_LOCALIZADO" ? [30, 50, 30] : 0);
+    convId = r.conv_id || convId;
+    pintar(r.bloques);
+    const fase = (r.estado || {}).fase || "";
+    const el = $(".msg.assistant:last-of-type .meta");
+    if (el) el.textContent = `${fase} · ${((Date.now() - t0) / 1000).toFixed(1)}s`;
+    vibrate(fase === "cerrado" ? 30 : 0);
     $("#audit-dot").classList.add("show");
-    auditCache = null; // invalidate
+    auditCache = null;
   } catch (e) {
     thinking.remove();
     addMsg("error", `Error: ${escapeHtml(e.message)}`);
