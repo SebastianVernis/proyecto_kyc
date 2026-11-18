@@ -25,6 +25,26 @@
 .topbar-actions{display:flex;gap:8px}
 .content{padding:24px;max-width:1100px}
 
+/* Plan y cupo: la vista dice qué incluye el plan en vez de fallar al pulsar */
+.plan-chip{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel2);color:var(--muted);white-space:nowrap}
+.plan-chip b{color:var(--text)}
+.plan-aviso{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:8px;border:1px solid var(--warn);background:rgba(251,191,36,0.08);font-size:13px;margin-bottom:18px;line-height:1.45}
+.plan-aviso a{color:var(--accent2);font-weight:600}
+.plan-aviso.ok{border-color:var(--accent2);background:rgba(110,231,183,0.07)}
+.card.locked{opacity:.62;border-style:dashed}
+.card.locked .search-form{display:none}
+.lock-nota{font-size:12px;color:var(--warn);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lock-nota a{color:var(--accent2);font-weight:600}
+/* El chip del plan no cabe junto al título en móvil: envuelve en su renglón
+   (con nowrap forzaba 61px de scroll horizontal en 360px). */
+@media (max-width:640px){
+  .topbar{flex-wrap:wrap;padding:10px 14px}
+  .topbar h1{font-size:15px}
+  .topbar-actions{flex-wrap:wrap;width:100%;justify-content:flex-end;gap:6px}
+  .plan-chip{order:-1;white-space:normal;text-align:right;font-size:10px;padding:3px 8px}
+  .content{padding:14px}
+}
+
 /* Cards */
 .search-section{margin-bottom:28px}
 .search-section h2{font-size:14px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin:0 0 12px;font-weight:600}
@@ -99,11 +119,14 @@
     <div class="topbar">
       <h1>🌐 Búsquedas Adicionales</h1>
       <div class="topbar-actions">
+        <span id="plan-chip" class="plan-chip" hidden></span>
         <a href="/sujeto.html" class="btn sm secondary" id="btn-volver">← Expediente</a>
       </div>
     </div>
 
     <div class="content">
+      <div id="plan-aviso"></div>
+
       <!-- CURP input -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-header">
@@ -154,6 +177,75 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const authH = () => { const t = localStorage.getItem("session_token"); return t ? {"Authorization": `Bearer ${t}`} : {}; };
 const authHJ = () => ({ "Content-Type": "application/json", ...authH() });
+
+/* ==== Plan del usuario ====
+ * /api/usage devuelve `plan` y `capacidades`; la vista se dibuja con eso, así
+ * el candado que se ve aquí es el mismo que aplica el backend. */
+const PLAN = { nombre: null, caps: {}, rastreos: null };
+
+const NOMBRE_PLAN = {
+  basico: "Básico", profesional: "Profesional",
+  empresarial: "Empresarial", corporativo: "Corporativo", admin: "Admin",
+};
+const PLAN_DE = { osint: "profesional", singula: "empresarial" };
+// El proveedor no es la capacidad: Apify consume el flag `osint`.
+const CAP_DE = { apify: "osint", singula: "singula" };
+
+function incluido(provider) {
+  const caps = PLAN.caps || {};
+  const cap = CAP_DE[provider] || provider;
+  // Sin dato (p. ej. /api/usage falló) no se bloquea nada: el backend decide.
+  if (caps[cap] === undefined) return true;
+  return !!caps[cap];
+}
+
+function renderPlanChip() {
+  const chip = $("plan-chip");
+  if (!chip) return;
+  const partes = [];
+  if (PLAN.nombre) partes.push(`Plan <b>${esc(NOMBRE_PLAN[PLAN.nombre] || PLAN.nombre)}</b>`);
+  const r = PLAN.rastreos;
+  if (r) {
+    const txt = r.unlimited ? `${r.used} rastreos (ilimitado)`
+                            : `${r.used}/${r.limit} rastreos`;
+    partes.push(esc(txt));
+  }
+  if (!partes.length) { chip.hidden = true; return; }
+  chip.innerHTML = partes.join(" · ");
+  chip.hidden = false;
+}
+
+function renderAvisoPlan() {
+  const box = $("plan-aviso");
+  if (!box) return;
+  const sinOsint = !incluido("apify");
+  const sinSingula = !incluido("singula");
+  if (!sinOsint && !sinSingula) { box.innerHTML = ""; return; }
+  const plan = esc(NOMBRE_PLAN[PLAN.nombre] || PLAN.nombre || "actual");
+  let txt;
+  if (sinOsint && sinSingula) {
+    txt = `Tu plan <b>${plan}</b> no incluye búsquedas externas: el OSINT de Apify entra desde <b>Profesional</b> y las validaciones Singula desde <b>Empresarial</b>.`;
+  } else if (sinSingula) {
+    txt = `Tu plan <b>${plan}</b> no incluye las validaciones Singula (judicial, listas negras, PEP): están en <b>Empresarial</b>.`;
+  } else {
+    txt = `Tu plan <b>${plan}</b> no incluye el OSINT de Apify: entra desde <b>Profesional</b>.`;
+  }
+  box.innerHTML = `<div class="plan-aviso"><span>🔒</span><div>${txt}
+    <a href="/subscribe.html">Ver planes</a></div></div>`;
+}
+
+async function loadPlan() {
+  try {
+    const r = await fetch(`${API_URL}/api/usage`, { headers: authH() });
+    if (!r.ok) return;
+    const d = await r.json();
+    PLAN.nombre = d.plan || null;
+    PLAN.caps = d.capacidades || {};
+    PLAN.rastreos = d.rastreos || null;
+  } catch {}
+  renderPlanChip();
+  renderAvisoPlan();
+}
 
 /* ==== Interpretación de resultados (nunca JSON crudo) ==== */
 
@@ -246,6 +338,8 @@ let sujetoData = null;
 let validationDefs = [];
 
 /* ==== Auth ==== */
+if (localStorage.getItem("session_token")) loadPlan();
+
 async function checkAuth() {
   try {
     const r = await fetch(`${API_URL}/api/auth/me`, { headers: authH() });
@@ -258,6 +352,7 @@ async function checkAuth() {
 /* ==== Load validations ==== */
 async function loadValidations() {
   if (!(await checkAuth())) return;
+  await loadPlan();   // el plan decide qué tarjetas salen activas
   CURP = $("curp-input").value.trim().toUpperCase();
   if (!CURP || CURP.length !== 18) {
     $("sujeto-info").textContent = "Ingresa una CURP válida (18 caracteres).";
@@ -283,18 +378,34 @@ async function loadValidations() {
   }
 
   // Load available validations
+  const cargando = '<div class="card" style="color:var(--muted);font-size:12px"><span class="spinner"></span> Cargando catálogo…</div>';
+  $("singula-cards").innerHTML = cargando;
+  $("apify-cards").innerHTML = cargando;
   try {
+    const s = sujetoData?.perfil?.padron_data || {};
     const r = await fetch(`${API_URL}/api/validar`, {
       method: "POST", headers: authHJ(),
-      body: JSON.stringify({ curp: CURP, query: "list", sujeto: {} }),
+      body: JSON.stringify({
+        curp: CURP,
+        query: "list",
+        rfc: sujetoData?.perfil?.rfc || "",
+        sujeto: {
+          nombre: s.nombre || "", paterno: s.paterno || "", materno: s.materno || "",
+          curp: CURP, rfc: sujetoData?.perfil?.rfc || "", fecnac: s.fecnac || "",
+        },
+      }),
     });
     const data = await r.json();
-    if (data.validations) {
-      validationDefs = data.validations;
+    // La lista trae el proveedor en el id: se pintan todas, con candado si el
+    // plan no la incluye.
+    const defs = (data.validations || []).filter(v => v.provider !== "checkid");
+    if (defs.length) {
+      validationDefs = defs;
       renderValidationCards();
+    } else {
+      renderDefaultCards();
     }
   } catch {
-    // Fallback: render default cards
     renderDefaultCards();
   }
 }
@@ -325,6 +436,19 @@ function renderDefaultCards() {
 
 function renderCard(v) {
   const tagClass = v.provider === "singula" ? "singula" : "apify";
+  const bloqueada = !incluido(v.provider);
+  if (bloqueada) {
+    const planReq = NOMBRE_PLAN[PLAN_DE[v.provider]] || PLAN_DE[v.provider];
+    return `<div class="card locked" id="vcard-${v.id}">
+      <div class="card-header">
+        <div class="card-title">🔒 ${esc(v.name)} <span class="provider-tag ${tagClass}">${v.provider}</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${esc(v.description)}</div>
+      <div class="lock-nota">Incluida desde el plan <strong>${esc(planReq)}</strong>
+        · <a href="/subscribe.html">ver planes</a></div>
+      <div id="vresult-${v.id}" style="display:none"></div>
+    </div>`;
+  }
   return `<div class="card" id="vcard-${v.id}">
     <div class="card-header">
       <div class="card-title">${esc(v.name)} <span class="provider-tag ${tagClass}">${v.provider}</span></div>
@@ -381,10 +505,22 @@ async function runValidation(vId) {
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
+      if (err.code === "PLAN_FEATURE") {
+        const planReq = NOMBRE_PLAN[err.plan_requerido] || err.plan_requerido || "superior";
+        throw Object.assign(new Error(
+          `Esta búsqueda está en el plan ${planReq}.`), { plan: planReq });
+      }
+      if (err.code === "QUOTA_EXCEEDED") {
+        const u = err.usage || {};
+        const lim = u.limit === -1 ? "" : ` (${u.used}/${u.limit} este mes)`;
+        throw Object.assign(new Error(
+          `Agotaste los rastreos de tu plan${lim}.`), { cupo: true });
+      }
       throw new Error(err.error || `HTTP ${r.status}`);
     }
 
     const data = await r.json();
+    if (data.rastreos) { PLAN.rastreos = data.rastreos; renderPlanChip(); }
     card.style.borderColor = "var(--accent2)";
     resultDiv.className = "result-box success";
     resultDiv.innerHTML = renderResult(data, vId);
@@ -392,9 +528,16 @@ async function runValidation(vId) {
     // Also add to global results area
     addToResults(vId, data);
   } catch (e) {
-    card.style.borderColor = "var(--error)";
-    resultDiv.className = "result-box error";
-    resultDiv.textContent = `Error: ${e.name === "AbortError" ? "Timeout (5 min)" : e.message}`;
+    if (e.plan || e.cupo) {
+      card.style.borderColor = "var(--warn)";
+      resultDiv.className = "result-box";
+      resultDiv.innerHTML = `<div class="lock-nota">🔒 ${esc(e.message)}
+        <a href="/subscribe.html">ver planes</a></div>`;
+    } else {
+      card.style.borderColor = "var(--error)";
+      resultDiv.className = "result-box error";
+      resultDiv.textContent = `Error: ${e.name === "AbortError" ? "Timeout (5 min)" : e.message}`;
+    }
   } finally {
     btn.disabled = false;
     btn.innerHTML = "▶ Ejecutar";

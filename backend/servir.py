@@ -671,7 +671,7 @@ class Handler(BaseHTTPRequestHandler):
                     "SELECT is_admin FROM users WHERE id=?", (session["user_id"],)
                 ).fetchone()
                 if row and row["is_admin"]:
-                    return {k: True for k in ("osint", "api", "usuarios")}
+                    return {k: True for k in ("osint", "singula", "api", "usuarios")}
         except Exception:
             pass
         try:
@@ -681,6 +681,19 @@ class Handler(BaseHTTPRequestHandler):
         if not acceso.get("has_subscription"):
             return None
         return acceso.get("limits") or {}
+
+    def _es_admin(self, session) -> bool:
+        """True si la cuenta tiene users.is_admin (salta plan y cupos)."""
+        if not session:
+            return False
+        try:
+            with auth._db() as conn:
+                row = conn.execute(
+                    "SELECT is_admin FROM users WHERE id=?", (session["user_id"],)
+                ).fetchone()
+                return bool(row and row["is_admin"])
+        except Exception:
+            return False
 
     def _usuario_con_plan(self, session) -> bool:
         """True si es admin o tiene una suscripción activa (no vencida)."""
@@ -2622,6 +2635,14 @@ class Handler(BaseHTTPRequestHandler):
         if not session:
             return
         usage = auth.get_all_usage(session["user_id"])
+        # La UI necesita saber qué incluye el plan, no sólo cuánto lleva usado:
+        # así la vista se adapta (candados, aviso de plan) sin adivinar.
+        limites = self._limites_plan(session) or {}
+        sub = auth.get_subscription(session["user_id"]) or {}
+        usage["plan"] = "admin" if self._es_admin(session) else sub.get("plan")
+        usage["capacidades"] = {
+            k: bool(limites.get(k)) for k in ("osint", "singula", "api")
+        }
         self._json(200, usage)
 
     # ============================================================
@@ -8916,17 +8937,60 @@ class Handler(BaseHTTPRequestHandler):
             sujeto = payload.get("sujeto", {})
             rfc = payload.get("rfc", "")
 
+            # Catálogo: la vista de Búsquedas Externas pide la lista antes de
+            # ejecutar nada. No consume cupo ni llama a ningún proveedor.
+            if not validation_id and query == "list":
+                defs = _build_validations(sujeto or {"curp": curp, "rfc": rfc})
+                self._json(200, {"validations": defs})
+                return
+
             if not validation_id:
                 self._json(400, {"error": "falta validation_id"})
                 return
 
+            # --- Compuerta de plan y cupo -------------------------------------
+            # Cada validación externa cuesta dinero real (Singula cobra por
+            # consulta). El id lleva el proveedor: apify-* / singula-*.
+            proveedor = validation_id.split("-", 1)[0]
+            capacidad = {"apify": "osint", "singula": "singula"}.get(proveedor)
+            if capacidad:
+                limites = self._limites_plan(session)
+                if limites is None:
+                    self._json(403, {
+                        "error": "Suscripción requerida",
+                        "code": "NO_SUBSCRIPTION",
+                    })
+                    return
+                if not limites.get(capacidad):
+                    sub = auth.get_subscription(session["user_id"]) or {}
+                    self._json(403, {
+                        "error": "Tu plan no incluye esta búsqueda externa",
+                        "code": "PLAN_FEATURE",
+                        "capacidad": capacidad,
+                        "plan_actual": sub.get("plan"),
+                        "plan_requerido": "empresarial" if capacidad == "singula" else "profesional",
+                    })
+                    return
+                if not self._es_admin(session):
+                    cupo = auth.check_and_increment(session["user_id"], "rastreo")
+                    if not cupo.get("allowed"):
+                        self._json(429, {
+                            "error": cupo.get("error") or "Cupo de rastreos agotado",
+                            "code": "QUOTA_EXCEEDED",
+                            "usage": cupo,
+                        })
+                        return
+
             result, cost = _run_validation(validation_id, curp, query, sujeto, rfc, username=username)
-            self._json(200, {
+            resp = {
                 "validation_id": validation_id,
                 "query": query,
                 "cost_mxn": cost,
                 "result": result,
-            })
+            }
+            if capacidad:
+                resp["rastreos"] = auth.get_usage(session["user_id"], "rastreo")
+            self._json(200, resp)
         except Exception as e:
             import traceback
             traceback.print_exc()

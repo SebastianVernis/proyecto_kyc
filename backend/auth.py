@@ -938,10 +938,10 @@ def touch_provider_key_usage(username: str, provider: str, ok: bool,
 # ============================================================
 
 PLAN_PRICES = {
-    "basico": 580,
-    "profesional": 1980,
-    "empresarial": 5980,
-    "corporativo": 10000,
+    "basico": 1100,
+    "profesional": 3500,
+    "empresarial": 12000,
+    "corporativo": 30000,
 }
 
 # Atajos que van dentro del concepto de pago de Konfio. El cliente debe
@@ -1133,11 +1133,15 @@ def rechazar_pago_konfio(pago_id: int, revisado_por: str, notas: Optional[str] =
         conn.commit()
     return {"pago_id": pago_id, "folio": f"KON-{pago_id:05d}", "status": "rechazado"}
 
+# Capacidades: `osint` = oráculo + OSINT completo; `singula` = validaciones
+# Singula (judicial, listas negras, PEP). Coinciden con la hoja de precios de
+# subscribe.html: el oráculo y el OSINT completo salen desde Profesional y
+# "Singula judicial" sólo aparece en Empresarial.
 PLAN_LIMITS = {
-    "basico":        {"busquedas_mes": 30,   "rastreos_mes": 10,   "osint": False, "api": False, "usuarios": 1},
-    "profesional":   {"busquedas_mes": 500,  "rastreos_mes": 100,  "osint": True,  "api": False, "usuarios": 3},
-    "empresarial":   {"busquedas_mes": 1000,  "rastreos_mes": 500,  "osint": True,  "api": True,  "usuarios": 10},
-    "corporativo":   {"busquedas_mes": -1,    "rastreos_mes": -1,   "osint": True,  "api": True,  "usuarios": -1},
+    "basico":        {"busquedas_mes": 30,   "rastreos_mes": 10,   "osint": False, "singula": False, "api": False, "usuarios": 1},
+    "profesional":   {"busquedas_mes": 500,  "rastreos_mes": 100,  "osint": True,  "singula": False, "api": False, "usuarios": 3},
+    "empresarial":   {"busquedas_mes": 1000, "rastreos_mes": 500,  "osint": True,  "singula": True,  "api": True,  "usuarios": 10},
+    "corporativo":   {"busquedas_mes": -1,    "rastreos_mes": -1,   "osint": True,  "singula": True,  "api": True,  "usuarios": -1},
 }
 
 
