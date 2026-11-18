@@ -10,6 +10,8 @@
 <link rel="icon" href="assets/argos-osint_favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/css/global.css">
 <style>
+/* === Layout y shell (mismos valores que sujeto.html: cambiar de página
+   no debe notarse) === */
 .layout{display:flex;min-height:100vh}
 .sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:50;padding:16px;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 .sidebar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
@@ -17,81 +19,107 @@
 .sidebar-section{margin-bottom:20px}
 .sidebar-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;padding:0 8px;font-weight:700}
 .sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none}
-.sidebar-item:hover{color:var(--text);background:var(--panel2)}
+.sidebar-item:hover{color:var(--text);background:var(--panel2);text-decoration:none}
 .sidebar-item.active{color:var(--accent2);background:rgba(110,231,183,0.08)}
-.main-area{flex:1;margin-left:240px;min-height:100vh}
+.main-area{flex:1;margin-left:240px;min-height:100vh;min-width:0}
 .topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;gap:12px}
-.topbar h1{margin:0;font-size:18px;font-weight:700}
-.topbar-actions{display:flex;gap:8px}
-.content{padding:24px;max-width:1100px}
+.topbar h1{margin:0;font-size:17px;font-weight:700;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.topbar h1 .topbar-ico{color:var(--accent2)}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.content{padding:24px;max-width:1180px}
 
-/* Plan y cupo: la vista dice qué incluye el plan en vez de fallar al pulsar */
-.plan-chip{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel2);color:var(--muted);white-space:nowrap}
+/* === Plan y cupo: la vista dice qué incluye el plan en vez de fallar al pulsar === */
+.plan-chip{font-size:11px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--border);background:var(--panel2);color:var(--muted);white-space:nowrap}
 .plan-chip b{color:var(--text)}
-.plan-aviso{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:8px;border:1px solid var(--warn);background:rgba(251,191,36,0.08);font-size:13px;margin-bottom:18px;line-height:1.45}
+.plan-aviso{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:8px;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.07);font-size:12.5px;margin-bottom:20px;line-height:1.5;color:var(--text)}
 .plan-aviso a{color:var(--accent2);font-weight:600}
-.plan-aviso.ok{border-color:var(--accent2);background:rgba(110,231,183,0.07)}
+.plan-aviso.ok{border-color:rgba(110,231,183,.3);background:rgba(110,231,183,.06)}
 #plan-aviso[hidden]{display:none}
-.card.locked{opacity:.62;border-style:dashed}
+.card.locked{opacity:.6;border-style:dashed;background:linear-gradient(180deg,rgba(255,255,255,.012),transparent)}
 .card.locked .search-form{display:none}
-.lock-nota{font-size:12px;color:var(--warn);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.lock-nota a{color:var(--accent2);font-weight:600}
-/* El chip del plan no cabe junto al título en móvil: envuelve en su renglón
-   (con nowrap forzaba 61px de scroll horizontal en 360px). */
+.card.locked:hover{box-shadow:none;border-color:var(--border)}
+.lock-nota{font-size:12px;color:var(--warn);line-height:1.5}
+.lock-nota a{color:var(--accent2);font-weight:600;white-space:nowrap}
+.lock-nota strong{color:var(--text)}
+
+/* === Secciones: rótulo + contador + línea, igual que las tabs del expediente === */
+.section{margin-bottom:28px}
+.section-head{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.section-head .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--muted)}
+.section-head .dot.singula{background:#ef4444}
+.section-head .dot.apify{background:#b45cf9}
+.section-head .count{font-size:10px;font-weight:700;letter-spacing:0;color:var(--muted);background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius-pill);padding:1px 7px}
+.section-head::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* === Tarjetas ===
+   Antes era una columna de 16 tarjetas con formularios de 36px de alto; en dos
+   columnas (auto-fill) la lista cabe sin tres pantallas de scroll. */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+.cards-grid > .card{margin-bottom:0}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;display:flex;flex-direction:column;min-width:0;transition:border-color var(--transition),box-shadow var(--transition)}
+.card:hover{border-color:#3a4150;box-shadow:0 2px 10px rgba(0,0,0,.22)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.card-title{font-size:13.5px;font-weight:600;line-height:1.35;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.card-title .card-ico{font-size:13px;opacity:.9}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+.empty-note{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:8px}
+.empty-note.center{justify-content:center;text-align:center;padding:22px 16px;line-height:1.6}
+.provider-tag{font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:var(--radius-pill);text-transform:uppercase;border:1px solid transparent;flex-shrink:0}
+.provider-tag.singula{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.28)}
+.provider-tag.apify{background:rgba(180,92,249,.12);color:#c084fc;border-color:rgba(180,92,249,.28)}
+.provider-tag.interno{background:rgba(79,140,255,.12);color:var(--accent);border-color:rgba(79,140,255,.28)}
+.cache-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--radius);font-family:var(--font-mono);border:1px solid transparent}
+.cache-fresh{background:rgba(110,231,183,.12);color:var(--accent2);border-color:rgba(110,231,183,.3)}
+.cache-paid{background:rgba(245,158,11,.12);color:var(--warn);border-color:rgba(245,158,11,.3)}
+
+/* === Formularios dentro de tarjeta === */
+.search-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.search-form .form-input{flex:1;min-width:150px;font-size:12.5px;padding:6px 10px}
+.search-form .btn{flex-shrink:0}
+
+/* === Resultados === */
+.result-box{margin-top:12px;padding:12px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);font-size:12.5px;line-height:1.55;max-height:420px;overflow:auto;word-break:break-word}
+.result-box.success{border-color:rgba(110,231,183,.32)}
+.result-box.error{border-color:rgba(239,68,68,.45);color:#fca5a5}
+.result-box.empty{color:var(--muted);font-style:italic}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;font-size:12.5px}
+.kv .k{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.kv .v{word-break:break-word}
+.res-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius)}
+table.res{width:100%;border-collapse:collapse;font-size:11px}
+table.res th{position:sticky;top:0;background:var(--panel2);color:var(--muted);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;border-bottom:1px solid var(--border)}
+table.res td{padding:5px 8px;border-top:1px solid var(--border);vertical-align:top;max-width:300px}
+.nota{color:var(--muted);font-size:11px;margin-top:6px}
+.bloque-titulo{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 0 6px}
+
+/* Perfiles encontrados dentro de un resultado */
+.profile-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin:6px 0}
+.profile-card-name{font-weight:600;font-size:12.5px}
+.profile-card-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.profile-card-detail{font-size:11.5px;margin-top:4px}
+
+.aviso-res{font-weight:600;font-size:12.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.aviso-res.ok{color:var(--accent2)}
+.aviso-res.warn{color:var(--warn)}
+.sujeto-line{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6}
+.sujeto-line code{color:var(--accent2)}
+.sujeto-line strong{color:var(--text)}
+
+/* === Móvil === */
+@media (max-width:900px){ .cards-grid{grid-template-columns:1fr} }
+@media (max-width:768px){
+  .sidebar{display:none}.main-area{margin-left:0}
+  .content{padding:16px}
+}
+/* El chip del plan no cabe junto al título: envuelve en su propio renglón
+   (con nowrap forzaba 61px de scroll horizontal a 360px). */
 @media (max-width:640px){
   .topbar{flex-wrap:wrap;padding:10px 14px}
   .topbar h1{font-size:15px}
   .topbar-actions{flex-wrap:wrap;width:100%;justify-content:flex-end;gap:6px}
   .plan-chip{order:-1;white-space:normal;text-align:right;font-size:10px;padding:3px 8px}
   .content{padding:14px}
-}
-
-/* Cards */
-.search-section{margin-bottom:28px}
-.search-section h2{font-size:14px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin:0 0 12px;font-weight:600}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
-.provider-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;text-transform:uppercase}
-.provider-tag.singula{background:rgba(255,94,94,.2);color:#ff5e5e}
-.provider-tag.apify{background:rgba(180,92,249,.2);color:#b45cf9}
-.provider-tag.interno{background:rgba(79,140,255,.2);color:var(--accent)}
-.cache-badge{display:inline-block;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;font-family:monospace}
-.cache-fresh{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.4)}
-.cache-paid{background:rgba(255,152,0,.15);color:#ff9800;border:1px solid rgba(255,152,0,.4)}
-
-.search-form{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.search-form input{flex:1;min-width:200px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-size:13px;font-family:inherit}
-.search-form input:focus{outline:none;border-color:var(--accent)}
-
-.btn{background:linear-gradient(180deg,rgba(79,140,255,.95) 0%,rgba(59,120,235,.95) 100%);border:1px solid rgba(120,170,255,.45);color:#fff;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;min-height:36px;transition:transform 0.12s,filter 0.18s;font-family:inherit}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
-.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-.btn.secondary{background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.02) 100%);border:1px solid rgba(255,255,255,.10);color:var(--text)}
-.btn.sm{padding:5px 10px;font-size:11px;min-height:28px}
-
-.result-box{margin-top:10px;padding:12px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;font-size:12px;max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-word}
-.result-box.success{border-color:var(--accent2)}
-.result-box.error{border-color:var(--error);color:var(--error)}
-.result-box.empty{color:var(--muted);font-style:italic}
-
-.spinner{border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;width:16px;height:16px;animation:spin .8s linear infinite;display:inline-block;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
-.badge-ok{background:rgba(110,231,183,.15);color:var(--accent2)}
-.badge-warn{background:rgba(245,158,11,.15);color:var(--warn)}
-.badge-err{background:rgba(239,68,68,.15);color:var(--error)}
-
-/* Profile cards inside results */
-.profile-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:10px;margin:6px 0}
-.profile-card-name{font-weight:600;font-size:13px}
-.profile-card-meta{font-size:11px;color:var(--muted);margin-top:2px}
-.profile-card-detail{font-size:11px;margin-top:4px;color:var(--text)}
-
-@media(max-width:768px){
-  .sidebar{display:none}.main-area{margin-left:0}
-  .content{padding:16px}
+  .kv{grid-template-columns:110px 1fr}
 }
 </style>
 </head>
@@ -118,10 +146,10 @@
 
   <div class="main-area">
     <div class="topbar">
-      <h1>🌐 Búsquedas Adicionales</h1>
+      <h1><span class="topbar-ico">🌐</span> Búsquedas Adicionales</h1>
       <div class="topbar-actions">
         <span id="plan-chip" class="plan-chip" hidden></span>
-        <a href="/sujeto.html" class="btn sm secondary" id="btn-volver">← Expediente</a>
+        <a href="/sujeto.html" class="btn btn-secondary btn-sm" id="btn-volver">← Expediente</a>
       </div>
     </div>
 
@@ -129,34 +157,36 @@
       <div id="plan-aviso"></div>
 
       <!-- CURP input -->
-      <div class="card" style="margin-bottom:20px">
+      <div class="card" style="margin-bottom:24px">
         <div class="card-header">
-          <div class="card-title">🎯 Sujeto de investigación</div>
+          <div class="card-title"><span class="card-ico">🎯</span> Sujeto de investigación</div>
         </div>
-        <div class="search-form">
-          <input id="curp-input" placeholder="CURP (18 caracteres)" maxlength="18" style="text-transform:uppercase">
-          <button class="btn" onclick="loadValidations()">Cargar validaciones</button>
+        <div class="search-form" style="margin-top:0">
+          <input id="curp-input" class="form-input" placeholder="CURP (18 caracteres)" maxlength="18" style="text-transform:uppercase;font-family:var(--font-mono);letter-spacing:.06em">
+          <button class="btn btn-primary" onclick="loadValidations()">Cargar validaciones</button>
         </div>
-        <div id="sujeto-info" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+        <div id="sujeto-info" class="sujeto-line"></div>
       </div>
 
       <!-- Singula section -->
-      <div class="search-section">
-        <h2>🔴 Singula — Inteligencia financiera</h2>
-        <div id="singula-cards"></div>
+      <div class="section">
+        <div class="section-head"><span class="dot singula"></span> Singula — Inteligencia financiera
+          <span class="count" id="count-singula">0</span></div>
+        <div id="singula-cards" class="cards-grid"></div>
       </div>
 
       <!-- Apify section -->
-      <div class="search-section">
-        <h2>🟣 Apify — OSINT y redes sociales</h2>
-        <div id="apify-cards"></div>
+      <div class="section">
+        <div class="section-head"><span class="dot apify"></span> Apify — OSINT y redes sociales
+          <span class="count" id="count-apify">0</span></div>
+        <div id="apify-cards" class="cards-grid"></div>
       </div>
 
       <!-- Results -->
-      <div class="search-section">
-        <h2>📋 Resultados</h2>
+      <div class="section">
+        <div class="section-head">📋 Resultados</div>
         <div id="results-area">
-          <div class="card" style="color:var(--muted);font-size:12px;text-align:center;padding:24px">
+          <div class="card empty-note center">
             Selecciona una búsqueda y ejecútala para ver resultados aquí.
           </div>
         </div>
@@ -274,7 +304,7 @@ function tablaGenerica(rows, opt) {
   opt = opt || {};
   const datos = (Array.isArray(rows) ? rows : []).filter(r => r && typeof r === "object");
   if (!datos.length) {
-    return `<div style="color:var(--muted);font-size:12px;padding:6px 0">${esc(opt.vacio || "Sin registros.")}</div>`;
+    return `<div class="empty-note" style="padding:6px 0">${esc(opt.vacio || "Sin registros.")}</div>`;
   }
   const max = opt.max || 25, cap = opt.maxCols || 12;
   const cols = [];
@@ -286,31 +316,31 @@ function tablaGenerica(rows, opt) {
     }
   }
   if (!cols.length) {
-    return '<div style="font-size:12px">' + datos.slice(0, max).map((r, i) =>
+    return '<div style="font-size:12.5px">' + datos.slice(0, max).map((r, i) =>
       `<div style="padding:3px 0"><b>${i + 1}.</b> ${esc(fmtValor(r))}</div>`).join("") + "</div>";
   }
   const visibles = cols.slice(0, cap);
-  const th = c => `<th style="position:sticky;top:0;background:#1a2333;color:var(--muted);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap">${esc(c.replace(/_/g, " "))}</th>`;
-  let h = `<div style="overflow:auto;max-height:${opt.alto || 320}px;border:1px solid var(--border);border-radius:6px">
-    <table style="width:100%;border-collapse:collapse;font-size:11px">
+  const th = c => `<th>${esc(c.replace(/_/g, " "))}</th>`;
+  let h = `<div class="res-wrap" style="max-height:${opt.alto || 320}px">
+    <table class="res">
       <thead><tr>${visibles.map(th).join("")}</tr></thead><tbody>`;
   for (const r of datos.slice(0, max)) {
     h += "<tr>" + visibles.map(c =>
-      `<td style="padding:5px 8px;border-top:1px solid var(--border);vertical-align:top;max-width:300px">${esc(fmtValor(r[c]))}</td>`
+      `<td>${esc(fmtValor(r[c]))}</td>`
     ).join("") + "</tr>";
   }
   h += "</tbody></table></div>";
   const notas = [];
   if (datos.length > max) notas.push(`mostrando ${max} de ${datos.length} registros`);
   if (cols.length > cap) notas.push(`${cols.length - cap} columnas ocultas`);
-  if (notas.length) h += `<div style="color:var(--muted);font-size:11px;margin-top:5px">${esc(notas.join(" · "))}</div>`;
+  if (notas.length) h += `<div class="nota">${esc(notas.join(" · "))}</div>`;
   return h;
 }
 
 /* Traduce la respuesta de una validación a algo legible cuando NO encaja en
    ningún formato conocido: escalares como ficha, listas como tabla. */
 function resultadoInterpretado(d) {
-  if (d === null || d === undefined) return '<div style="color:var(--muted);font-size:12px">Sin resultado.</div>';
+  if (d === null || d === undefined) return '<div class="empty-note">Sin resultado.</div>';
   if (Array.isArray(d)) return tablaGenerica(d, {});
   if (typeof d !== "object") return `<div style="font-size:12px">${esc(fmtValor(d))}</div>`;
 
@@ -323,17 +353,15 @@ function resultadoInterpretado(d) {
   }
   let h = "";
   if (escalares.length) {
-    h += '<div style="display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:12px">'
+    h += '<div class="kv">'
       + escalares.map(([k, v]) =>
-        `<div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding-top:2px">${esc(k.replace(/_/g, " "))}</div>
-         <div>${esc(fmtValor(v))}</div>`).join("") + "</div>";
+        `<div class="k">${esc(k.replace(/_/g, " "))}</div><div class="v">${esc(fmtValor(v))}</div>`).join("") + "</div>";
   }
   for (const [k, filas] of bloques) {
-    h += `<div style="margin-top:12px">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px">${esc(k.replace(/_/g, " "))} (${filas.length})</div>
-      ${tablaGenerica(filas, { max: 30, alto: 340 })}</div>`;
+    h += `<div class="bloque-titulo">${esc(k.replace(/_/g, " "))} (${filas.length})</div>
+      ${tablaGenerica(filas, { max: 30, alto: 340 })}`;
   }
-  return h || '<div style="color:var(--muted);font-size:12px">Sin datos.</div>';
+  return h || '<div class="empty-note">Sin datos.</div>';
 }
 
 let sujetoData = null;
@@ -363,7 +391,7 @@ async function loadValidations() {
   $("btn-volver").href = `/sujeto.html?curp=${encodeURIComponent(CURP)}`;
 
   // Load sujeto data
-  $("sujeto-info").innerHTML = '<span class="spinner"></span> Cargando sujeto...';
+  $("sujeto-info").innerHTML = '<span class="spinner"></span> Cargando sujeto…';
   try {
     const r = await fetch(`${API_URL}/api/perfil/crear`, {
       method: "POST", headers: authHJ(),
@@ -380,7 +408,7 @@ async function loadValidations() {
   }
 
   // Load available validations
-  const cargando = '<div class="card" style="color:var(--muted);font-size:12px"><span class="spinner"></span> Cargando catálogo…</div>';
+  const cargando = '<div class="card empty-note"><span class="spinner"></span> Cargando catálogo…</div>';
   $("singula-cards").innerHTML = cargando;
   $("apify-cards").innerHTML = cargando;
   try {
@@ -419,8 +447,11 @@ function renderValidationCards() {
   const singula = validationDefs.filter(v => v.provider === "singula");
   const apify = validationDefs.filter(v => v.provider === "apify");
 
-  singulaCards.innerHTML = singula.length ? singula.map(v => renderCard(v)).join("") : '<div class="card" style="color:var(--muted);font-size:12px">No hay validaciones Singula disponibles.</div>';
-  apifyCards.innerHTML = apify.length ? apify.map(v => renderCard(v)).join("") : '<div class="card" style="color:var(--muted);font-size:12px">No hay validaciones Apify disponibles.</div>';
+  singulaCards.innerHTML = singula.length ? singula.map(v => renderCard(v)).join("") : '<div class="card empty-note">No hay validaciones Singula disponibles.</div>';
+  apifyCards.innerHTML = apify.length ? apify.map(v => renderCard(v)).join("") : '<div class="card empty-note">No hay validaciones Apify disponibles.</div>';
+  const cs = $("count-singula"), ca = $("count-apify");
+  if (cs) cs.textContent = singula.length;
+  if (ca) ca.textContent = apify.length;
 }
 
 function renderDefaultCards() {
@@ -443,9 +474,9 @@ function renderCard(v) {
     const planReq = NOMBRE_PLAN[PLAN_DE[v.provider]] || PLAN_DE[v.provider];
     return `<div class="card locked" id="vcard-${v.id}">
       <div class="card-header">
-        <div class="card-title">🔒 ${esc(v.name)} <span class="provider-tag ${tagClass}">${v.provider}</span></div>
+        <div class="card-title"><span class="card-ico">🔒</span> ${esc(v.name)} <span class="provider-tag ${tagClass}">${v.provider}</span></div>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${esc(v.description)}</div>
+      <div class="card-desc">${esc(v.description)}</div>
       <div class="lock-nota">Incluida desde el plan <strong>${esc(planReq)}</strong>
         · <a href="/subscribe.html">ver planes</a></div>
       <div id="vresult-${v.id}" style="display:none"></div>
@@ -455,10 +486,10 @@ function renderCard(v) {
     <div class="card-header">
       <div class="card-title">${esc(v.name)} <span class="provider-tag ${tagClass}">${v.provider}</span></div>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${esc(v.description)}</div>
+    <div class="card-desc">${esc(v.description)}</div>
     <div class="search-form">
-      <input type="text" id="vq-${v.id}" value="${esc(v.default_query || "")}" placeholder="Query (opcional)">
-      <button class="btn" id="vbtn-${v.id}" onclick="runValidation('${v.id}')">▶ Ejecutar</button>
+      <input type="text" class="form-input" id="vq-${v.id}" value="${esc(v.default_query || "")}" placeholder="Query (opcional)">
+      <button class="btn btn-primary btn-sm" id="vbtn-${v.id}" onclick="runValidation('${v.id}')">▶ Ejecutar</button>
     </div>
     <div id="vresult-${v.id}" style="display:none"></div>
   </div>`;
@@ -560,10 +591,10 @@ function renderResult(data, vId) {
     const perfiles = res.perfiles || [];
     let html = "";
     if (res.sin_coincidencias_determinantes) {
-      html += `<div style="color:var(--warn);font-weight:600;margin-bottom:6px">⚠ Sin coincidencias determinantes</div>`;
-      html += `<div style="color:var(--muted);font-size:11px;margin-bottom:8px">${esc(res.mensaje || "")}</div>`;
+      html += `<div class="aviso-res warn">⚠ Sin coincidencias determinantes</div>`;
+      html += `<div class="nota" style="margin-bottom:8px">${esc(res.mensaje || "")}</div>`;
     } else {
-      html += `<div style="color:var(--accent2);font-weight:600;margin-bottom:6px">✓ ${esc(res.mensaje || perfiles.length + " perfiles encontrados")}</div>`;
+      html += `<div class="aviso-res ok">✓ ${esc(res.mensaje || perfiles.length + " perfiles encontrados")}</div>`;
     }
     for (const p of perfiles) {
       html += `<div class="profile-card">
@@ -584,7 +615,7 @@ function renderResult(data, vId) {
 function addToResults(vId, data) {
   const area = $("results-area");
   // Remove placeholder
-  const placeholder = area.querySelector(".card[style]");
+  const placeholder = area.querySelector(".card.empty-note");
   if (placeholder && placeholder.textContent.includes("Selecciona")) placeholder.remove();
 
   const v = validationDefs.find(x => x.id === vId);
@@ -592,8 +623,8 @@ function addToResults(vId, data) {
   card.className = "card";
   card.innerHTML = `<div class="card-header">
     <div class="card-title">${esc(v?.name || vId)} <span class="provider-tag ${v?.provider || 'interno'}">${v?.provider || "?"}</span></div>
-    <span class="badge badge-ok">${new Date().toLocaleTimeString()}</span>
-  </div><div class="result-box success">${renderResult(data, vId)}</div>`;
+    <span class="badge badge-success">${new Date().toLocaleTimeString()}</span>
+  </div><div class="result-box success" style="margin-top:0">${renderResult(data, vId)}</div>`;
   area.prepend(card);
 }
 
